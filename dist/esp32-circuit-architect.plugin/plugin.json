@@ -1,0 +1,43 @@
+{
+  "name": "esp32-circuit-architect",
+  "displayName": "ESP32 Circuit Architect & Robotics Hardware Lab",
+  "version": "1.0.0",
+  "description": "Systematic hardware engineering protocol, safety validator, and 110+ component catalog for ESP32, ESP32-S3, IoT, and robotics development.",
+  "author": {
+    "name": "TodyLe & Antigravity Robotics Team"
+  },
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "esp32",
+    "esp32-s3",
+    "robotics",
+    "iot",
+    "circuits",
+    "hardware",
+    "pinout",
+    "sensors",
+    "actuators",
+    "schematics",
+    "wiring",
+    "embedded"
+  ],
+  "interface": {
+    "displayName": "ESP32 Circuit Architect",
+    "shortDescription": "Design safe circuits, validate pinouts, prevent brownouts/burnt GPIOs, and look up 110+ modules.",
+    "category": "Robotics & Embedded Systems",
+    "capabilities": [
+      "Component Research & Pinout Verification",
+      "Automated Electrical Sanity Audit",
+      "Interactive SVG/HTML Wiring Canvas Generation",
+      "Strapping Pin & Reserved Flash Bus Protection",
+      "110+ Component Catalog Lookup & Curation",
+      "BOM Shopping Guide Generation"
+    ],
+    "defaultPrompt": [
+      "Tra cứu thông số, sơ đồ chân và lưu ý an toàn cho cảm biến MPU6050 khi nối với ESP32-S3.",
+      "Thiết kế sơ đồ kết nối an toàn cho robot 2 bánh servo MG90S, cảm biến siêu âm và mạch đo pin.",
+      "Kiểm tra mạch điện này có bị xung đột chân GPIO Flash hoặc cấp nguồn quá tải không."
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "esp32-circuit-architect",
+  "version": "1.0.0",
+  "description": "Systematic hardware engineering protocol, safety validator, and 110+ component catalog for ESP32, ESP32-S3, IoT, and robotics development.",
+  "author": {
+    "name": "TodyLe & Antigravity Robotics Team"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ESP32 Circuit Architect",
+    "shortDescription": "Design safe circuits, validate pinouts, prevent brownouts/burnt GPIOs, and look up 110+ modules.",
+    "longDescription": "The definitive embedded hardware engineering suite for ESP32 and ESP32-S3 robotics. Includes automated circuit validation, pin conflict detection, interactive schematic canvas with jumper hops, and a curated database of 110+ components.",
+    "category": "Robotics & Embedded Systems",
+    "capabilities": [
+      "Hardware Component Curation",
+      "Electrical Sanity Audit",
+      "Pinout Safety Checking",
+      "Interactive Schematic Generation"
+    ],
+    "defaultPrompt": [
+      "Tra cứu sơ đồ chân và lưu ý kỹ thuật của ESP32-S3 DevKit 40 chân và PCA9685.",
+      "Kiểm tra tính an toàn điện của sơ đồ kết nối robot trước khi nạp code."
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "esp32-circuit-architect",
+  "version": "1.0.0",
+  "description": "Systematic hardware engineering protocol, safety validator, and 110+ component catalog for ESP32, ESP32-S3, IoT, and robotics development.",
+  "author": {
+    "name": "TodyLe & Antigravity Robotics Team"
+  },
+  "skills": "./skills/"
+}

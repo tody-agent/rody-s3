@@ -1,0 +1,4488 @@
+[
+  {
+    "id": "esp32_s3_devkit_40p",
+    "name": "ESP32-S3 DevKit 40-Pin (N16R8)",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "3.0V - 3.6V (VDD), 5V via USB-C or VBUS pin",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 150,
+    "interface": "GPIO, ADC, I2C, SPI, UART, PWM, I2S, USB OTG",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "3.3V Output from onboard LDO (max ~500mA)"
+      },
+      {
+        "name": "5V",
+        "type": "pwr",
+        "desc": "5V In/Out directly connected to USB VBUS"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common Ground reference"
+      },
+      {
+        "name": "GPIO0",
+        "type": "sig",
+        "desc": "Strapping pin (LOW on boot = download mode). Has pull-up"
+      },
+      {
+        "name": "GPIO1",
+        "type": "sig",
+        "desc": "ADC1_CH0, Touch 1, General purpose I/O"
+      },
+      {
+        "name": "GPIO2",
+        "type": "sig",
+        "desc": "ADC1_CH1, Touch 2, General purpose I/O"
+      },
+      {
+        "name": "GPIO3",
+        "type": "sig",
+        "desc": "Strapping pin (JTAG signal). Avoid pull-down on boot"
+      },
+      {
+        "name": "GPIO4",
+        "type": "sig",
+        "desc": "ADC1_CH3, General I/O, Safe default"
+      },
+      {
+        "name": "GPIO5",
+        "type": "sig",
+        "desc": "ADC1_CH4, General I/O, Safe default"
+      },
+      {
+        "name": "GPIO6",
+        "type": "sig",
+        "desc": "ADC1_CH5, General I/O, Safe default"
+      },
+      {
+        "name": "GPIO7",
+        "type": "sig",
+        "desc": "ADC1_CH6, General I/O, Safe default"
+      },
+      {
+        "name": "GPIO8",
+        "type": "sig",
+        "desc": "Default I2C SDA, General I/O"
+      },
+      {
+        "name": "GPIO9",
+        "type": "sig",
+        "desc": "Default I2C SCL, General I/O"
+      },
+      {
+        "name": "GPIO10",
+        "type": "sig",
+        "desc": "SPI CS/MOSI, General I/O"
+      },
+      {
+        "name": "GPIO19",
+        "type": "sig",
+        "desc": "USB D- (Native USB). Do not use if USB OTG active"
+      },
+      {
+        "name": "GPIO20",
+        "type": "sig",
+        "desc": "USB D+ (Native USB). Do not use if USB OTG active"
+      },
+      {
+        "name": "GPIO26-37",
+        "type": "na",
+        "desc": "RESERVED for internal Octal SPI Flash & PSRAM! DO NOT USE"
+      },
+      {
+        "name": "GPIO43",
+        "type": "sig",
+        "desc": "UART0 TX (Boot log and serial flashing)"
+      },
+      {
+        "name": "GPIO44",
+        "type": "sig",
+        "desc": "UART0 RX (Boot log and serial flashing)"
+      },
+      {
+        "name": "GPIO45",
+        "type": "sig",
+        "desc": "Strapping pin (SPI voltage 1.8V vs 3.3V). NEVER pull HIGH on boot"
+      },
+      {
+        "name": "GPIO46",
+        "type": "sig",
+        "desc": "Strapping pin (ROM messages print / boot log)"
+      }
+    ],
+    "dos": [
+      "Supply 5V to 5V pin through a Schottky diode if dual-powering with USB.",
+      "Use ADC1 pins (GPIO 1-10) when WiFi/BLE is enabled to prevent ADC2 conflicts.",
+      "Power heavy loads (servos, motors) from separate external power supply."
+    ],
+    "donts": [
+      "NEVER use GPIO 26 through 37 on N16R8 boards (causes instant crash due to Flash/PSRAM bus corruption).",
+      "NEVER pull GPIO45 HIGH at boot (sets flash voltage to 1.8V and bricks bootloader).",
+      "NEVER feed > 3.6V into any GPIO pin (ESP32-S3 is strictly NOT 5V tolerant)."
+    ],
+    "esp32_notes": "Native USB CDC requires -DARDUINO_USB_CDC_ON_BOOT=1 in PlatformIO. Enter download mode with BOOT(GPIO0) + RST.",
+    "shopee_keywords": "esp32-s3 n16r8 devkit 40 pin type c dual usb"
+  },
+  {
+    "id": "esp32_devkit_v1_30p",
+    "name": "ESP32 DevKit V1 30-Pin (ESP-WROOM-32)",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "3.0V - 3.6V (VDD), 5V via Micro-USB/VIN",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 160,
+    "interface": "GPIO, ADC, I2C, SPI, UART, PWM, DAC",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "5V In/Out from USB"
+      },
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "3.3V Output from onboard LDO (max 300mA)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "GPIO0",
+        "type": "sig",
+        "desc": "Strapping pin (Bootloader switch, internal pullup)"
+      },
+      {
+        "name": "GPIO2",
+        "type": "sig",
+        "desc": "Strapping pin & Onboard Blue LED. Must be floating/low at boot"
+      },
+      {
+        "name": "GPIO12",
+        "type": "sig",
+        "desc": "Strapping pin (MTDI flash voltage). Boot fails if pulled HIGH"
+      },
+      {
+        "name": "GPIO15",
+        "type": "sig",
+        "desc": "Strapping pin (MTDO debug log). Internal pullup"
+      },
+      {
+        "name": "GPIO21",
+        "type": "sig",
+        "desc": "Default I2C SDA"
+      },
+      {
+        "name": "GPIO22",
+        "type": "sig",
+        "desc": "Default I2C SCL"
+      },
+      {
+        "name": "GPIO34-39",
+        "type": "sig",
+        "desc": "GPI: INPUT ONLY, NO internal pullup/pulldown resistors!"
+      },
+      {
+        "name": "GPIO6-11",
+        "type": "na",
+        "desc": "RESERVED for internal SPI Flash. NEVER USE"
+      }
+    ],
+    "dos": [
+      "Use external pull-up resistors (4.7k - 10k) when reading buttons on GPIO 34-39.",
+      "Use ADC1 (GPIO 32-39) when using WiFi."
+    ],
+    "donts": [
+      "NEVER connect GPIO 6, 7, 8, 9, 10, 11 (connected to flash memory chip).",
+      "NEVER configure GPIO 34, 35, 36, 39 as OUTPUT (they are physically input-only)."
+    ],
+    "esp32_notes": "ADC2 channels cannot be read reliably while WiFi is active. Common 30-pin board has CP2102 or CH340.",
+    "shopee_keywords": "esp32 nodemcu devkit v1 30 pin cp2102 ch340"
+  },
+  {
+    "id": "esp32_devkit_38p",
+    "name": "ESP32 NodeMCU-32S 38-Pin",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "3.0V - 3.6V, 5V via USB/VIN",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 160,
+    "interface": "GPIO, ADC, I2C, SPI, UART, PWM, DAC",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "5V In/Out"
+      },
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "3.3V LDO Output"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground (multiple pins)"
+      },
+      {
+        "name": "GPIO34-39",
+        "type": "sig",
+        "desc": "Input Only pins"
+      }
+    ],
+    "dos": [
+      "Confirm pinout from manufacturer silk screen before wiring as 38-pin pinouts vary slightly between vendors."
+    ],
+    "donts": [
+      "NEVER assume pin layout matches 30-pin version."
+    ],
+    "esp32_notes": "Broader breadboard footprint: leaves only 1 pin row free on standard breadboard.",
+    "shopee_keywords": "esp32 38 pin nodemcu 32s"
+  },
+  {
+    "id": "esp32_cam",
+    "name": "ESP32-CAM AI-Thinker (OV2640)",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "5V strictly to 5V pin (current spikes > 350mA during capture)",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 310,
+    "interface": "UART, MicroSD SPI, DVP Camera",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "5V",
+        "type": "pwr",
+        "desc": "Power input (MUST provide >= 2A capability)"
+      },
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "Output only (weak LDO)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "U0TXD",
+        "type": "sig",
+        "desc": "GPIO1 UART TX to USB-TTL RX"
+      },
+      {
+        "name": "U0RXD",
+        "type": "sig",
+        "desc": "GPIO3 UART RX to USB-TTL TX"
+      },
+      {
+        "name": "GPIO0",
+        "type": "sig",
+        "desc": "Connect to GND to flash firmware, leave open to run"
+      },
+      {
+        "name": "GPIO4",
+        "type": "sig",
+        "desc": "High power Flash LED (also SD Card Data 1)"
+      },
+      {
+        "name": "GPIO33",
+        "type": "sig",
+        "desc": "Small red indicator LED on back"
+      }
+    ],
+    "dos": [
+      "Use external 5V 2A power supply with minimum 100uF capacitor near 5V/GND pins.",
+      "Short GPIO0 to GND before applying power when uploading code."
+    ],
+    "donts": [
+      "NEVER power solely from cheap 3.3V USB-TTL adapters (causes brownout reset brownout loops).",
+      "NEVER use GPIO 12, 13, 14, 15, 2, 4 for other peripherals if MicroSD card is active."
+    ],
+    "esp32_notes": "No onboard USB chip. Requires external FTDI or CP2102 USB-to-UART adapter for flashing.",
+    "shopee_keywords": "esp32 cam ov2640 module kem de nạp"
+  },
+  {
+    "id": "esp32_c3_supermini",
+    "name": "ESP32-C3 SuperMini",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "3.3V or 5V via USB-C / VBUS",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 100,
+    "interface": "RISC-V single core, ADC, I2C, SPI, UART, PWM",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "5V",
+        "type": "pwr",
+        "desc": "5V In from USB"
+      },
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "3.3V LDO Output"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "GPIO8",
+        "type": "sig",
+        "desc": "Onboard blue LED (active LOW) & Strapping pin"
+      },
+      {
+        "name": "GPIO9",
+        "type": "sig",
+        "desc": "Boot button (LOW = download mode)"
+      }
+    ],
+    "dos": [
+      "Ultra compact form factor ideal for miniature drones and wearable sensors."
+    ],
+    "donts": [
+      "NEVER apply >3.3V to GPIO pins."
+    ],
+    "esp32_notes": "Single-core RISC-V architecture. Uses Native USB-CDC on GPIO 18/19.",
+    "shopee_keywords": "esp32-c3 supermini sieu nho type-c"
+  },
+  {
+    "id": "seeed_xiao_esp32_s3",
+    "name": "Seeed Studio XIAO ESP32-S3",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "3.3V or 5V via USB-C, onboard Li-ion battery charging",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 110,
+    "interface": "GPIO, ADC, I2C, SPI, UART, I2S, Battery solder pads",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "5V",
+        "type": "pwr",
+        "desc": "5V USB"
+      },
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "3.3V output"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "BAT+",
+        "type": "pwr",
+        "desc": "Solder pad on back for 3.7V Li-ion battery"
+      },
+      {
+        "name": "D4 / D5",
+        "type": "sig",
+        "desc": "Default I2C SDA / SCL (GPIO 5 / GPIO 6)"
+      }
+    ],
+    "dos": [
+      "Use onboard battery charge management circuit for ultra-low-power IoT wearables."
+    ],
+    "donts": [
+      "NEVER reverse polarity on back battery solder pads (no reverse diode protection)."
+    ],
+    "esp32_notes": "Thumbnail-sized board with dual-core LX7 and integrated antenna connector.",
+    "shopee_keywords": "seeed xiao esp32-s3 module tiny"
+  },
+  {
+    "id": "esp32_wrover_ib",
+    "name": "ESP32-WROVER-IB DevKit (with 8MB PSRAM & IPEX)",
+    "category": "MCU & Development Boards",
+    "operating_voltage": "3.0V - 3.6V, 5V via Micro-USB",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 180,
+    "interface": "GPIO, ADC, I2C, SPI, UART, DAC, External Antenna IPEX",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "GPIO16",
+        "type": "na",
+        "desc": "USED INTERNALLY for PSRAM CS! DO NOT USE"
+      },
+      {
+        "name": "GPIO17",
+        "type": "na",
+        "desc": "USED INTERNALLY for PSRAM CLK! DO NOT USE"
+      }
+    ],
+    "dos": [
+      "Use for RAM-intensive tasks: audio streaming, speech recognition, LVGL buffers."
+    ],
+    "donts": [
+      "NEVER connect peripherals to GPIO16 or GPIO17 (PSRAM conflict causes crash)."
+    ],
+    "esp32_notes": "Requires board_build.partitions and PSRAM enabled in PlatformIO.",
+    "shopee_keywords": "esp32 wrover b devkit psram 8mb ipex"
+  },
+  {
+    "id": "mg90s_180",
+    "name": "MG90S 180° Micro Metal Gear Servo",
+    "category": "Actuators & Motors",
+    "operating_voltage": "4.8V - 6.0V (optimal 5.0V - 5.5V)",
+    "logic_level": "3.3V - 5.0V PWM signal",
+    "current_draw_typical_ma": 200,
+    "interface": "PWM (50Hz, 1ms - 2ms pulse width)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Red wire: 4.8V - 6V from dedicated power supply"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Brown wire: Common ground"
+      },
+      {
+        "name": "SIGNAL",
+        "type": "sig",
+        "desc": "Orange/Yellow wire: PWM signal (50Hz)"
+      }
+    ],
+    "dos": [
+      "Use external 5V regulator/battery capable of >= 1A stall current per servo.",
+      "Always attach a 470uF - 1000uF decoupling capacitor across servo power rails."
+    ],
+    "donts": [
+      "NEVER power servo directly from ESP32 3.3V or 5V regulator pin (induces brownout reset).",
+      "NEVER force the servo horn by hand beyond 0° - 180° mechanical stops."
+    ],
+    "esp32_notes": "Accepts 3.3V logic PWM directly from ESP32 GPIO or via PCA9685.",
+    "shopee_keywords": "servo mg90s 180 do banh rang kim loai"
+  },
+  {
+    "id": "mg90s_360",
+    "name": "MG90S 360° Continuous Rotation Servo",
+    "category": "Actuators & Motors",
+    "operating_voltage": "4.8V - 6.0V",
+    "logic_level": "3.3V - 5.0V PWM",
+    "current_draw_typical_ma": 220,
+    "interface": "PWM (50Hz, 1.5ms neutral stop)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Red wire: 5V motor power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Brown wire: Common ground"
+      },
+      {
+        "name": "SIGNAL",
+        "type": "sig",
+        "desc": "Orange wire: PWM signal"
+      }
+    ],
+    "dos": [
+      "Calibrate exact neutral stop pulse width (usually ~1500us ± 40us) in software.",
+      "Use deadband threshold of ±15us to ensure complete motor standstill."
+    ],
+    "donts": [
+      "NEVER expect absolute angle feedback (has no internal encoder).",
+      "NEVER drive directly without external current reserve."
+    ],
+    "esp32_notes": "Ideal for wheeled micro-robots like Otto DIY. Stop = ~1500us, Forward = >1500us, Reverse = <1500us.",
+    "shopee_keywords": "servo mg90s 360 do quay lien tuc otto"
+  },
+  {
+    "id": "sg90_180",
+    "name": "SG90 9g Micro Plastic Gear Servo",
+    "category": "Actuators & Motors",
+    "operating_voltage": "4.8V - 5.5V",
+    "logic_level": "3.3V - 5V PWM",
+    "current_draw_typical_ma": 150,
+    "interface": "PWM (50Hz)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Red wire: 5V power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Brown wire: Ground"
+      },
+      {
+        "name": "SIGNAL",
+        "type": "sig",
+        "desc": "Orange wire: PWM"
+      }
+    ],
+    "dos": [
+      "Use for lightweight robotic arms, ultrasonic panning brackets, pan-tilt kits."
+    ],
+    "donts": [
+      "NEVER overload (plastic gears strip easily under mechanical shock)."
+    ],
+    "esp32_notes": "Low cost starter servo. Stall current ~650mA.",
+    "shopee_keywords": "servo sg90 9g banh rang nhua"
+  },
+  {
+    "id": "mg996r",
+    "name": "MG996R High Torque Metal Gear Servo",
+    "category": "Actuators & Motors",
+    "operating_voltage": "4.8V - 7.2V (optimal 6.0V)",
+    "logic_level": "3.3V - 5V PWM",
+    "current_draw_typical_ma": 500,
+    "interface": "PWM (50Hz)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Red wire: 6V high current supply"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Brown wire: Ground"
+      },
+      {
+        "name": "SIGNAL",
+        "type": "sig",
+        "desc": "Orange wire: PWM"
+      }
+    ],
+    "dos": [
+      "Provide minimum 2.5A peak current capacity per servo (stall current is 2.5A at 6V)."
+    ],
+    "donts": [
+      "NEVER power via thin breadboard jumper wires (copper resistance causes massive voltage drop)."
+    ],
+    "esp32_notes": "Use PCA9685 driver with independent terminal block power and thick AWG20 wire.",
+    "shopee_keywords": "servo mg996r luc keo lon banh rang kim loai"
+  },
+  {
+    "id": "stepper_28byj_48",
+    "name": "28BYJ-48 5V Unipolar Stepper Motor",
+    "category": "Actuators & Motors",
+    "operating_voltage": "5V DC (coil resistance ~50 ohm)",
+    "logic_level": "5V driven via ULN2003",
+    "current_draw_typical_ma": 240,
+    "interface": "4-phase stepper sequence (Blue, Pink, Yellow, Orange, Red VCC)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Red: +5V Common"
+      },
+      {
+        "name": "Coil 1-4",
+        "type": "sig",
+        "desc": "Blue, Pink, Yellow, Orange coils"
+      }
+    ],
+    "dos": [
+      "Drive using ULN2003 Darlington driver board or 4x NPN transistors."
+    ],
+    "donts": [
+      "NEVER connect coils directly to ESP32 pins (back-EMF will instantly destroy MCU)."
+    ],
+    "esp32_notes": "Gear ratio ~64:1 (4096 steps per full output shaft revolution in half-step mode).",
+    "shopee_keywords": "dong co buoc 28byj-48 5v kem uln2003"
+  },
+  {
+    "id": "n20_gear_motor",
+    "name": "N20 Micro Metal Gear Motor (6V)",
+    "category": "Actuators & Motors",
+    "operating_voltage": "3.0V - 6.0V DC",
+    "logic_level": "Driven via H-bridge PWM",
+    "current_draw_typical_ma": 120,
+    "interface": "2-pin DC motor terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "M+",
+        "type": "pwr",
+        "desc": "Positive terminal"
+      },
+      {
+        "name": "M-",
+        "type": "pwr",
+        "desc": "Negative terminal"
+      }
+    ],
+    "dos": [
+      "Use DRV8833 or TB6612FNG motor driver.",
+      "Solder a 100nF ceramic capacitor across the motor terminals to suppress brush spark EMI."
+    ],
+    "donts": [
+      "NEVER run directly from microcontroller pin."
+    ],
+    "esp32_notes": "Stall current ~600mA at 6V. Perfect for mini line-following robots and micro sumos.",
+    "shopee_keywords": "dong co giam toc n20 6v banh rang kim loai"
+  },
+  {
+    "id": "tt_motor_yellow",
+    "name": "TT DC Gearbox Motor (Yellow Dual Shaft 3-6V)",
+    "category": "Actuators & Motors",
+    "operating_voltage": "3.0V - 6.0V DC",
+    "logic_level": "Driven via H-bridge PWM",
+    "current_draw_typical_ma": 250,
+    "interface": "2-pin DC motor terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "M1",
+        "type": "pwr",
+        "desc": "Motor pin 1"
+      },
+      {
+        "name": "M2",
+        "type": "pwr",
+        "desc": "Motor pin 2"
+      }
+    ],
+    "dos": [
+      "Pair with L298N, L9110S, or TB6612 driver.",
+      "Add optical encoder slotted wheel on rear shaft."
+    ],
+    "donts": [
+      "NEVER leave unsuppressed (noisy DC brush noise can reset ESP32 WiFi module)."
+    ],
+    "esp32_notes": "Ubiquitous yellow motor used in 2WD/4WD DIY smart car chassis.",
+    "shopee_keywords": "dong co giam toc vang tt motor 2 truc kem banh xe"
+  },
+  {
+    "id": "coreless_motor_8520",
+    "name": "Coreless DC Motor 8520 (3.7V)",
+    "category": "Actuators & Motors",
+    "operating_voltage": "3.2V - 4.2V DC",
+    "logic_level": "Driven via N-channel MOSFET",
+    "current_draw_typical_ma": 800,
+    "interface": "2 wires",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "V+",
+        "type": "pwr",
+        "desc": "Positive power"
+      },
+      {
+        "name": "V-",
+        "type": "pwr",
+        "desc": "MOSFET drain"
+      }
+    ],
+    "dos": [
+      "Always install a flyback diode (1N5819) across motor terminals when switching via MOSFET."
+    ],
+    "donts": [
+      "NEVER run dry without propeller for prolonged duration (overheats coreless windings)."
+    ],
+    "esp32_notes": "High RPM (>35,000 RPM). Commonly used in micro quadcopters and hovercraft.",
+    "shopee_keywords": "dong co khong loi coreless 8520 3.7v"
+  },
+  {
+    "id": "solenoid_lock_12v",
+    "name": "Mini Solenoid Electromagnetic Door Lock (12V)",
+    "category": "Actuators & Motors",
+    "operating_voltage": "9V - 12V DC",
+    "logic_level": "Driven via Relay or Power MOSFET",
+    "current_draw_typical_ma": 600,
+    "interface": "2 wires",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "V+",
+        "type": "pwr",
+        "desc": "+12V Supply"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Switched Ground"
+      }
+    ],
+    "dos": [
+      "Limit activation duration to < 10 seconds to avoid overheating the solenoid coil.",
+      "Add 1N4007 flyback diode."
+    ],
+    "donts": [
+      "NEVER drive without flyback diode (inductive voltage spike can reach >100V)."
+    ],
+    "esp32_notes": "Drive gate of logic-level N-MOSFET (e.g. LR7843) from ESP32 GPIO with 10k pulldown.",
+    "shopee_keywords": "khoa dien tu mini solenoid lock 12v"
+  },
+  {
+    "id": "pca9685",
+    "name": "PCA9685 16-Channel 12-bit PWM I2C Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "VCC: 3.0V - 5.5V (Logic), V+: 4.8V - 6.0V (Servo Power)",
+    "logic_level": "3.3V / 5.0V I2C compliant",
+    "current_draw_typical_ma": 15,
+    "interface": "I2C (Fast Mode 400kHz)",
+    "default_address": "0x40 (configurable up to 0x7F via A0-A5 solder pads)",
+    "pinout": [
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Logic Ground"
+      },
+      {
+        "name": "OE",
+        "type": "sig",
+        "desc": "Output Enable (active LOW, internal pull-down)"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C Clock line (connect to ESP32 SCL)"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C Data line (connect to ESP32 SDA)"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Logic Power (connect to ESP32 3.3V)"
+      },
+      {
+        "name": "V+",
+        "type": "pwr",
+        "desc": "Terminal block screw power for servos (4.8V - 6V)"
+      }
+    ],
+    "dos": [
+      "Power logic VCC from ESP32 3.3V, and servo V+ from external battery/boost.",
+      "Install a 470uF - 1000uF 10V electrolytic capacitor on the dedicated C1 capacitor pads."
+    ],
+    "donts": [
+      "NEVER connect external 5V/6V battery power to logic VCC pin (will blow ESP32 I2C bus).",
+      "NEVER leave ground between ESP32 and PCA9685 disconnected."
+    ],
+    "esp32_notes": "Hardware PWM offloader. Free 16 channels with only 2 I2C pins. Adafruit_PWMServoDriver library standard.",
+    "shopee_keywords": "mach dieu khien servo pca9685 16 kenh i2c"
+  },
+  {
+    "id": "l298n_driver",
+    "name": "L298N Dual H-Bridge Motor Driver Module",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "Power: 5V - 35V, Logic: 5V",
+    "logic_level": "5V logic (accepts 3.3V signals)",
+    "current_draw_typical_ma": 35,
+    "interface": "ENA, IN1, IN2, IN3, IN4, ENB (PWM + Direction)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "12V",
+        "type": "pwr",
+        "desc": "Motor power input (7V - 35V)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common Ground"
+      },
+      {
+        "name": "5V",
+        "type": "pwr",
+        "desc": "5V output (if 5V enable jumper fitted) or input"
+      },
+      {
+        "name": "IN1-IN4",
+        "type": "sig",
+        "desc": "Direction control logic"
+      },
+      {
+        "name": "ENA/ENB",
+        "type": "sig",
+        "desc": "Speed control PWM (remove jumper to control)"
+      }
+    ],
+    "dos": [
+      "Remove the 5V regulator jumper if motor supply exceeds 12V.",
+      "Ensure common GND between L298N and ESP32."
+    ],
+    "donts": [
+      "NEVER connect L298N onboard 5V output directly to ESP32 3.3V pin.",
+      "Expect significant ~2V voltage drop across internal bipolar transistors."
+    ],
+    "esp32_notes": "Bipolar technology has low efficiency. TB6612FNG or DRV8833 is preferred for low-voltage battery projects.",
+    "shopee_keywords": "mach cau h l298n dieu khien dong co dc"
+  },
+  {
+    "id": "tb6612fng_driver",
+    "name": "TB6612FNG Dual DC Motor Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "VM: 4.5V - 13.5V (Motor), VCC: 2.7V - 5.5V (Logic)",
+    "logic_level": "3.3V / 5V compatible",
+    "current_draw_typical_ma": 1,
+    "interface": "PWMA, AIN1, AIN2, STBY, BIN1, BIN2, PWMB",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VM",
+        "type": "pwr",
+        "desc": "Motor power supply (4.5V - 13.5V)"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Logic power supply (3.3V from ESP32)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common ground"
+      },
+      {
+        "name": "STBY",
+        "type": "sig",
+        "desc": "Standby pin (MUST be pulled HIGH to enable driver)"
+      },
+      {
+        "name": "AIN1/AIN2",
+        "type": "sig",
+        "desc": "Motor A direction"
+      },
+      {
+        "name": "PWMA",
+        "type": "sig",
+        "desc": "Motor A speed PWM"
+      }
+    ],
+    "dos": [
+      "Tie STBY pin to ESP32 3.3V or a control GPIO to wake up the driver.",
+      "Efficient MOSFET bridge with low Rdson."
+    ],
+    "donts": [
+      "NEVER leave STBY floating (defaults to shutdown mode)."
+    ],
+    "esp32_notes": "Much higher efficiency than L298N. Virtually zero heat at 1.2A continuous current.",
+    "shopee_keywords": "mach tb6612fng dieu khien dong co mosfet"
+  },
+  {
+    "id": "drv8833_driver",
+    "name": "DRV8833 Dual H-Bridge Motor Driver Module",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "2.7V - 10.8V DC",
+    "logic_level": "3.3V / 5.0V logic",
+    "current_draw_typical_ma": 2,
+    "interface": "IN1, IN2, IN3, IN4, EEP (Sleep)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VM",
+        "type": "pwr",
+        "desc": "Motor Power (2.7V - 10.8V, perfect for 1S/2S Li-ion)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "IN1/IN2",
+        "type": "sig",
+        "desc": "Motor A PWM / Direction"
+      },
+      {
+        "name": "ULT",
+        "type": "sig",
+        "desc": "Fault output pin (open drain)"
+      }
+    ],
+    "dos": [
+      "Ideal for battery-operated robots running on a single 3.7V 18650 Li-ion cell."
+    ],
+    "donts": [
+      "NEVER exceed 10.8V VM voltage limit."
+    ],
+    "esp32_notes": "Ultra compact, built-in current limit sensing and thermal shutdown.",
+    "shopee_keywords": "mach cau h drv8833 2 dong co dc mini"
+  },
+  {
+    "id": "l9110s_driver",
+    "name": "L9110S Dual Channel DC Motor Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "2.5V - 12V DC",
+    "logic_level": "3.3V - 5V compatible",
+    "current_draw_typical_ma": 5,
+    "interface": "A-IA, A-IB, B-IA, B-IB",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "2.5V - 12V Power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "A-IA / A-IB",
+        "type": "sig",
+        "desc": "Motor A PWM forward / reverse inputs"
+      }
+    ],
+    "dos": [
+      "Simplest 4-wire control: drive A-IA with PWM and A-IB LOW for forward rotation."
+    ],
+    "donts": [
+      "NEVER pull both IA and IB HIGH at the same time (causes motor brake)."
+    ],
+    "esp32_notes": "Rated 800mA continuous per channel. Great for low-cost mini rovers.",
+    "shopee_keywords": "mach dieu khien dong co l9110s mini"
+  },
+  {
+    "id": "uln2003_driver",
+    "name": "ULN2003 Darlington Transistor Array Stepper Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "5V - 12V DC",
+    "logic_level": "3.3V / 5V input trigger",
+    "current_draw_typical_ma": 10,
+    "interface": "IN1, IN2, IN3, IN4, 5-pin JST stepper connector",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "+5V to +12V power supply"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common ground"
+      },
+      {
+        "name": "IN1-IN4",
+        "type": "sig",
+        "desc": "Inputs from ESP32 GPIOs"
+      }
+    ],
+    "dos": [
+      "Has onboard indicator LEDs showing active coil step sequence."
+    ],
+    "donts": [
+      "NEVER power 5V stepper motor from ESP32 3.3V pin."
+    ],
+    "esp32_notes": "Built-in clamping flyback diodes protect inputs against inductive spikes.",
+    "shopee_keywords": "mach uln2003 dieu khien dong co buoc 28byj"
+  },
+  {
+    "id": "a4988_driver",
+    "name": "A4988 Microstepping Stepper Motor Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "VMOT: 8V - 35V, VDD: 3.0V - 5.5V",
+    "logic_level": "3.3V / 5V compatible",
+    "current_draw_typical_ma": 8,
+    "interface": "STEP, DIR, ENABLE, MS1, MS2, MS3",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VMOT",
+        "type": "pwr",
+        "desc": "Motor power (8V - 35V with 100uF cap!)"
+      },
+      {
+        "name": "VDD",
+        "type": "pwr",
+        "desc": "Logic power (3.3V from ESP32)"
+      },
+      {
+        "name": "STEP",
+        "type": "sig",
+        "desc": "Pulse to advance step"
+      },
+      {
+        "name": "DIR",
+        "type": "sig",
+        "desc": "Direction HIGH/LOW"
+      }
+    ],
+    "dos": [
+      "MUST calibrate current limit via onboard Vref trimpot BEFORE attaching motor.",
+      "Install aluminum heat sink on top of driver IC."
+    ],
+    "donts": [
+      "NEVER connect or disconnect motor wires while VMOT is powered (burns IC instantly)."
+    ],
+    "esp32_notes": "Supports up to 1/16 microstepping. Standard driver for 3D printers and CNCs.",
+    "shopee_keywords": "mach a4988 driver dong co buoc kem tan nhiet"
+  },
+  {
+    "id": "tmc2209_driver",
+    "name": "TMC2209 Ultra-Silent Stepper Motor Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "VM: 4.75V - 29V, VIO: 3.3V - 5V",
+    "logic_level": "3.3V / 5V compliant",
+    "current_draw_typical_ma": 15,
+    "interface": "STEP, DIR, UART single-wire, StealthChop2, StallGuard4",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VM",
+        "type": "pwr",
+        "desc": "Motor power"
+      },
+      {
+        "name": "VIO",
+        "type": "pwr",
+        "desc": "Logic 3.3V"
+      },
+      {
+        "name": "STEP/DIR",
+        "type": "sig",
+        "desc": "Step & Direction"
+      },
+      {
+        "name": "DIAG",
+        "type": "sig",
+        "desc": "Sensorless homing output interrupt"
+      }
+    ],
+    "dos": [
+      "Use StealthChop2 for whisper-quiet robotic joints and 3D printing.",
+      "Enable StallGuard for sensorless endstops."
+    ],
+    "donts": [
+      "NEVER run at high currents without heat sink and active cooling airflow."
+    ],
+    "esp32_notes": "Can be configured dynamically over single-wire UART from ESP32.",
+    "shopee_keywords": "driver tmc2209 sieu em stepper motor"
+  },
+  {
+    "id": "bts7960_driver",
+    "name": "BTS7960 43A High Power H-Bridge Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "6V - 27V DC",
+    "logic_level": "3.3V - 5V logic input",
+    "current_draw_typical_ma": 20,
+    "interface": "RPWM, LPWM, R_EN, L_EN, R_IS, L_IS",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "B+/B-",
+        "type": "pwr",
+        "desc": "High current DC battery power"
+      },
+      {
+        "name": "M+/M-",
+        "type": "pwr",
+        "desc": "Motor screw terminals"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V logic supply (3.3V or 5V)"
+      },
+      {
+        "name": "RPWM/LPWM",
+        "type": "sig",
+        "desc": "Forward / Reverse PWM signals"
+      }
+    ],
+    "dos": [
+      "Use for heavy robots, electric wheelchairs, lawnmowers requiring up to 43A peak."
+    ],
+    "donts": [
+      "NEVER reverse polarity on battery input terminals (causes explosive MOSFET destruction)."
+    ],
+    "esp32_notes": "Huge aluminum heatsink integrated. Has current alarm feedback pins.",
+    "shopee_keywords": "mach cau h cong suat lon bts7960 43a"
+  },
+  {
+    "id": "mx1508_driver",
+    "name": "MX1508 Mini Dual DC Motor Driver",
+    "category": "Motor & Servo Drivers",
+    "operating_voltage": "2.0V - 10.0V DC",
+    "logic_level": "1.8V - 7.0V compliant",
+    "current_draw_typical_ma": 1,
+    "interface": "IN1, IN2, IN3, IN4",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "MOTOR-A / B",
+        "type": "pwr",
+        "desc": "Dual motor outputs"
+      },
+      {
+        "name": "Power +/-",
+        "type": "pwr",
+        "desc": "2V - 10V battery power"
+      },
+      {
+        "name": "IN1-IN4",
+        "type": "sig",
+        "desc": "PWM inputs"
+      }
+    ],
+    "dos": [
+      "Ultra compact size (25x21mm), peak 2.5A, low standby current."
+    ],
+    "donts": [
+      "NEVER short motor outputs to GND (no short-circuit protection)."
+    ],
+    "esp32_notes": "Cheapest and smallest dual H-bridge module for budget toy hacking.",
+    "shopee_keywords": "mach dieu khien dong co mini mx1508"
+  },
+  {
+    "id": "tp4056_protection",
+    "name": "TP4056 1S Li-ion Battery Charger with Protection (Type-C / Micro-USB)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "Input: 4.5V - 5.5V USB, Output: 4.2V CC/CV",
+    "logic_level": "Power module",
+    "current_draw_typical_ma": 1000,
+    "interface": "IN+, IN-, B+, B-, OUT+, OUT-",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "IN+ / IN-",
+        "type": "pwr",
+        "desc": "5V DC input from USB or external adapter"
+      },
+      {
+        "name": "B+",
+        "type": "pwr",
+        "desc": "Connect directly to Li-ion 3.7V Cell Positive terminal"
+      },
+      {
+        "name": "B-",
+        "type": "pwr",
+        "desc": "Connect directly to Li-ion 3.7V Cell Negative terminal"
+      },
+      {
+        "name": "OUT+",
+        "type": "pwr",
+        "desc": "Protected Power Output Positive (to power switch/boost)"
+      },
+      {
+        "name": "OUT-",
+        "type": "pwr",
+        "desc": "Protected Power Output Negative (to common GND)"
+      }
+    ],
+    "dos": [
+      "Always choose the module with 2 ICs (TP4056 + DW01A + FS8205A) with OUT+/OUT- terminals.",
+      "Wire battery directly to B+/B- and loads to OUT+/OUT-."
+    ],
+    "donts": [
+      "NEVER connect loads directly across B+/B- (bypasses under-voltage and short-circuit protection).",
+      "NEVER reverse battery polarity (instantly burns DW01 protection IC)."
+    ],
+    "esp32_notes": "Provides 2.5V cut-off protection preventing Li-ion over-discharge. Standard charge current 1A.",
+    "shopee_keywords": "mach sac pin 1s tp4056 co bao ve type-c"
+  },
+  {
+    "id": "mt3608_boost",
+    "name": "MT3608 2A DC-DC Step-Up Boost Converter",
+    "category": "Power & Battery Management",
+    "operating_voltage": "VIN: 2.0V - 24V, VOUT: 5.0V - 28V (Adjustable)",
+    "logic_level": "Power module",
+    "current_draw_typical_ma": 1,
+    "interface": "VIN+, VIN-, VOUT+, VOUT-",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN+",
+        "type": "pwr",
+        "desc": "Input positive from battery OUT+"
+      },
+      {
+        "name": "VIN-",
+        "type": "pwr",
+        "desc": "Input negative GND"
+      },
+      {
+        "name": "VOUT+",
+        "type": "pwr",
+        "desc": "Boosted output positive (adjusted to 5.1V)"
+      },
+      {
+        "name": "VOUT-",
+        "type": "gnd",
+        "desc": "Output negative GND (internally common with VIN-)"
+      }
+    ],
+    "dos": [
+      "Turn multi-turn potentiometer counter-clockwise 10-20 turns if output voltage does not rise initially.",
+      "Use multimeter to verify and lock output to exactly 5.1V BEFORE connecting any servos or ESP32."
+    ],
+    "donts": [
+      "NEVER connect loads before measuring output voltage (factory setting can be >20V!).",
+      "NEVER exceed 2A peak current (add heatsink if continuous current > 1.2A)."
+    ],
+    "esp32_notes": "Ideal to step up 3.7V Li-ion to 5.1V to power ESP32 and SG90/MG90S servos.",
+    "shopee_keywords": "mach tang ap mini mt3608 2a dc-dc"
+  },
+  {
+    "id": "lm2596_buck",
+    "name": "LM2596 DC-DC Step-Down Buck Converter (3A)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "VIN: 4.0V - 40V, VOUT: 1.25V - 35V",
+    "logic_level": "Power module",
+    "current_draw_typical_ma": 5,
+    "interface": "IN+, IN-, OUT+, OUT-",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "IN+",
+        "type": "pwr",
+        "desc": "DC Input positive (e.g. 12V adapter, 3S LiPo)"
+      },
+      {
+        "name": "IN-",
+        "type": "gnd",
+        "desc": "DC Input negative"
+      },
+      {
+        "name": "OUT+",
+        "type": "pwr",
+        "desc": "Regulated output (e.g. set to 5.0V)"
+      },
+      {
+        "name": "OUT-",
+        "type": "gnd",
+        "desc": "Regulated output ground"
+      }
+    ],
+    "dos": [
+      "Check output with voltmeter before connecting electronics.",
+      "Use for 12V/24V robotic power supplies."
+    ],
+    "donts": [
+      "NEVER use if VIN is less than VOUT + 1.5V (it is step-down only)."
+    ],
+    "esp32_notes": "Rock-solid 3A output. Can easily power ESP32, cameras, and multiple servos from a 3S 11.1V LiPo.",
+    "shopee_keywords": "mach ha ap lm2596 3a dc-dc co bien tro"
+  },
+  {
+    "id": "mp1584en_buck",
+    "name": "MP1584EN Ultra-Small DC-DC Step-Down Buck (3A)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "VIN: 4.5V - 28V, VOUT: 0.8V - 20V",
+    "logic_level": "Power module",
+    "current_draw_typical_ma": 1,
+    "interface": "IN+, IN-, OUT+, OUT-",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "IN+ / IN-",
+        "type": "pwr",
+        "desc": "Input terminals"
+      },
+      {
+        "name": "OUT+ / OUT-",
+        "type": "pwr",
+        "desc": "Output terminals"
+      }
+    ],
+    "dos": [
+      "Super miniature size (22x17mm). High 1.5MHz switching frequency."
+    ],
+    "donts": [
+      "Potentiometer is tiny and delicate; turn gently with miniature ceramic screwdriver."
+    ],
+    "esp32_notes": "Great space-saving replacement for LM2596 in compact combat bots and drones.",
+    "shopee_keywords": "mach ha ap mini mp1584en 3a"
+  },
+  {
+    "id": "xl6009_boost_buck",
+    "name": "XL6009 DC-DC Step-Up Boost Converter (4A)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "VIN: 3.0V - 32V, VOUT: 5.0V - 35V",
+    "logic_level": "Power module",
+    "current_draw_typical_ma": 10,
+    "interface": "IN+, IN-, OUT+, OUT-",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "IN+ / IN-",
+        "type": "pwr",
+        "desc": "Power in"
+      },
+      {
+        "name": "OUT+ / OUT-",
+        "type": "pwr",
+        "desc": "Power out"
+      }
+    ],
+    "dos": [
+      "Capable of higher 4A switch current for heavier robotic drive systems."
+    ],
+    "donts": [
+      "NEVER short-circuit output (XL6009 has no output short circuit protection)."
+    ],
+    "esp32_notes": "Upgraded replacement for older LM2577 boost modules.",
+    "shopee_keywords": "mach tang ap xl6009 4a dc-dc"
+  },
+  {
+    "id": "battery_shield_18650",
+    "name": "18650 Battery Shield V3 (with 5V / 3V outputs)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "3.7V 18650 battery to 5V (USB-A) and 3.3V pin headers",
+    "logic_level": "Power module",
+    "current_draw_typical_ma": 15,
+    "interface": "USB-A output, 5V/GND headers, 3V/GND headers, MicroUSB/Type-C charging",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "5V Header",
+        "type": "pwr",
+        "desc": "Regulated 5V output (max 2A)"
+      },
+      {
+        "name": "3V Header",
+        "type": "pwr",
+        "desc": "Regulated 3.3V output (max 1A)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common ground"
+      }
+    ],
+    "dos": [
+      "Check battery polarity marked inside the plastic holder (+ and -) carefully before insertion."
+    ],
+    "donts": [
+      "NEVER insert 18650 in reverse (destroys charging controller IC immediately)."
+    ],
+    "esp32_notes": "All-in-one power solution for portable ESP32 robots. Has physical ON/OFF switch.",
+    "shopee_keywords": "de pin 18650 shield v3 kem mach sac va tang ap"
+  },
+  {
+    "id": "bms_2s_20a",
+    "name": "2S 7.4V / 8.4V Li-ion BMS Protection Board (20A)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "7.4V nominal (8.4V fully charged)",
+    "logic_level": "Battery protection",
+    "current_draw_typical_ma": 0.05,
+    "interface": "B+, B-, BM (Middle tap), P+, P-",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "B+",
+        "type": "pwr",
+        "desc": "Battery 2 Positive (+8.4V)"
+      },
+      {
+        "name": "BM",
+        "type": "pwr",
+        "desc": "Mid-point tap (+4.2V between cell 1 & 2)"
+      },
+      {
+        "name": "B-",
+        "type": "pwr",
+        "desc": "Battery 1 Negative (0V)"
+      },
+      {
+        "name": "P+ / P-",
+        "type": "pwr",
+        "desc": "Charge input & Load output"
+      }
+    ],
+    "dos": [
+      "Solder BM wire accurately to the series junction between two 18650 cells."
+    ],
+    "donts": [
+      "NEVER mix old and new battery cells of different capacities."
+    ],
+    "esp32_notes": "Provides high discharge current for high-torque servos (MG996R) and high-speed DC motors.",
+    "shopee_keywords": "mach bao ve pin 2s 8.4v 20a bms"
+  },
+  {
+    "id": "schottky_1n5819",
+    "name": "1N5819 / SS14 / SS34 Schottky Barrier Diode (Power OR-ing)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "Up to 40V Reverse Voltage",
+    "logic_level": "Passive Semiconductor",
+    "current_draw_typical_ma": 0,
+    "interface": "Anode, Cathode (Silver band)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "Anode",
+        "type": "pwr",
+        "desc": "Input side (connected to Boost 5V output)"
+      },
+      {
+        "name": "Cathode (Silver Band)",
+        "type": "pwr",
+        "desc": "Output side (connected to ESP32 5V pin)"
+      }
+    ],
+    "dos": [
+      "Use Schottky diode for power OR-ing between USB 5V and external Boost 5.1V.",
+      "Orient silver/white cathode line facing directly toward ESP32 5V pin."
+    ],
+    "donts": [
+      "NEVER use standard 1N4007 silicon diode (0.7V - 1.0V drop causes ESP32 brownouts)."
+    ],
+    "esp32_notes": "Ultra low forward voltage drop (~0.25V - 0.35V). Safely allows simultaneous USB logging & battery operation.",
+    "shopee_keywords": "diode schottky 1n5819 ss14 ss34 chong nguoc nguon"
+  },
+  {
+    "id": "ams1117_3v3",
+    "name": "AMS1117-3.3V Step-Down LDO Voltage Regulator Module",
+    "category": "Power & Battery Management",
+    "operating_voltage": "VIN: 4.5V - 12V, VOUT: 3.3V (800mA max)",
+    "logic_level": "Power regulation",
+    "current_draw_typical_ma": 5,
+    "interface": "VIN, GND, VOUT",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "5V DC Input"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "VOUT",
+        "type": "pwr",
+        "desc": "Clean 3.3V Output"
+      }
+    ],
+    "dos": [
+      "Add 10uF tantalum or ceramic capacitors at input and output for stability."
+    ],
+    "donts": [
+      "NEVER input >12V (linear regulator dissipates excess voltage as heat and overheats)."
+    ],
+    "esp32_notes": "Standard LDO found on most ESP32 DevKits. Dropout voltage is ~1.1V at full load.",
+    "shopee_keywords": "mach nguon ha ap ams1117 3.3v mini"
+  },
+  {
+    "id": "ap2112k_3v3",
+    "name": "AP2112K-3.3 Ultra-Low Dropout 3.3V LDO (600mA)",
+    "category": "Power & Battery Management",
+    "operating_voltage": "VIN: 3.5V - 6.0V, VOUT: 3.3V (Dropout only 250mV at 600mA)",
+    "logic_level": "Power regulation",
+    "current_draw_typical_ma": 0.05,
+    "interface": "VIN, GND, EN, VOUT",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "Input from 3.7V Li-ion battery directly"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "VOUT",
+        "type": "pwr",
+        "desc": "Clean 3.3V output for ESP32"
+      }
+    ],
+    "dos": [
+      "Use for ultra-low power ESP32 battery projects (can run directly down to 3.55V battery voltage)."
+    ],
+    "donts": [
+      "NEVER exceed 6V max input rating."
+    ],
+    "esp32_notes": "Featured on Adafruit and SparkFun ESP32 boards. Outstandingly low quiescent current (55uA).",
+    "shopee_keywords": "ap2112k-3.3 sot23-5 ldo low dropout"
+  },
+  {
+    "id": "ssd1306_oled_096",
+    "name": "0.96\" I2C OLED Display (128x64 SSD1306)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V compatible",
+    "current_draw_typical_ma": 20,
+    "interface": "I2C (400kHz Fast Mode)",
+    "default_address": "0x3C (or 0x3D via back resistor jumper)",
+    "pinout": [
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Power (3.3V recommended)"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C Clock (ESP32 SCL)"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C Data (ESP32 SDA)"
+      }
+    ],
+    "dos": [
+      "Check pin order on PCB silkscreen: some batches have VCC first, others have GND first!",
+      "Use Adafruit_SSD1306 or U8g2 library for rich graphics and Vietnamese unicode support."
+    ],
+    "donts": [
+      "NEVER plug in before verifying GND vs VCC silkscreen (reverse polarity burns OLED instantly)."
+    ],
+    "esp32_notes": "Very sharp display, high contrast, zero backlight bleed. Draws very low power (~15mA).",
+    "shopee_keywords": "man hinh oled 0.96 inch i2c 128x64 ssd1306"
+  },
+  {
+    "id": "sh1106_oled_13",
+    "name": "1.3\" I2C OLED Display (128x64 SH1106)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V compatible",
+    "current_draw_typical_ma": 25,
+    "interface": "I2C",
+    "default_address": "0x3C",
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V - 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C Clock"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C Data"
+      }
+    ],
+    "dos": [
+      "Select SH1106 driver in software (not SSD1306, which causes shifted 2-pixel static border)."
+    ],
+    "donts": [
+      "NEVER confuse with SSD1306."
+    ],
+    "esp32_notes": "Larger viewing area than 0.96\". Compatible with U8g2 library (U8G2_SH1106_128X64_NONAME_F_HW_I2C).",
+    "shopee_keywords": "man hinh oled 1.3 inch i2c sh1106"
+  },
+  {
+    "id": "st7735_tft_18",
+    "name": "1.8\" SPI TFT LCD Display (128x160 ST7735)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.3V - 5.0V (VCC), Backlight: 3.3V",
+    "logic_level": "3.3V strictly on SPI signal pins",
+    "current_draw_typical_ma": 50,
+    "interface": "SPI (up to 27MHz)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "CS",
+        "type": "sig",
+        "desc": "Chip Select"
+      },
+      {
+        "name": "RESET",
+        "type": "sig",
+        "desc": "Hardware Reset"
+      },
+      {
+        "name": "A0 / DC",
+        "type": "sig",
+        "desc": "Data / Command select"
+      },
+      {
+        "name": "SDA / MOSI",
+        "type": "sig",
+        "desc": "SPI MOSI"
+      },
+      {
+        "name": "SCK",
+        "type": "sig",
+        "desc": "SPI Clock"
+      },
+      {
+        "name": "LED / BL",
+        "type": "pwr",
+        "desc": "Backlight 3.3V (use 100 ohm resistor if connecting to 5V)"
+      }
+    ],
+    "dos": [
+      "Use TFT_eSPI library for ultra-fast DMA rendering on ESP32."
+    ],
+    "donts": [
+      "NEVER connect BL directly to 5V without current-limiting resistor."
+    ],
+    "esp32_notes": "Color 16-bit RGB565. Great for retro gaming and UI dashboards.",
+    "shopee_keywords": "man hinh tft lcd 1.8 inch st7735 spi"
+  },
+  {
+    "id": "ili9341_tft_28",
+    "name": "2.8\" SPI TFT LCD Display (240x320 ILI9341 with Touch XPT2046)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "VCC: 3.3V - 5.0V, Logic: 3.3V strictly",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 120,
+    "interface": "SPI (Display up to 40MHz, Touch up to 2.5MHz)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND",
+        "type": "pwr",
+        "desc": "Power & Ground"
+      },
+      {
+        "name": "CS/DC/MOSI/SCK/RST",
+        "type": "sig",
+        "desc": "Display SPI bus"
+      },
+      {
+        "name": "T_CLK/T_CS/T_DIN/T_DO/T_IRQ",
+        "type": "sig",
+        "desc": "Resistive Touch Controller pins"
+      }
+    ],
+    "dos": [
+      "Use separate CS pins for Display (TFT_CS) and Touch (TOUCH_CS) sharing the same SPI bus."
+    ],
+    "donts": [
+      "NEVER run SPI bus clock over 2.5MHz when reading Touch controller."
+    ],
+    "esp32_notes": "Defacto standard for rich LVGL GUI on ESP32. Configure via User_Setup.h in TFT_eSPI.",
+    "shopee_keywords": "man hinh 2.8 inch spi ili9341 cam ung xpt2046"
+  },
+  {
+    "id": "gc9a01_round_tft",
+    "name": "1.28\" Round SPI TFT IPS Display (240x240 GC9A01)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 40,
+    "interface": "SPI (4-wire)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND",
+        "type": "pwr",
+        "desc": "Power"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "SPI Clock"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "SPI MOSI"
+      },
+      {
+        "name": "RES",
+        "type": "sig",
+        "desc": "Reset"
+      },
+      {
+        "name": "DC",
+        "type": "sig",
+        "desc": "Data/Command"
+      },
+      {
+        "name": "CS",
+        "type": "sig",
+        "desc": "Chip Select"
+      },
+      {
+        "name": "BLK",
+        "type": "sig",
+        "desc": "Backlight control (PWM dimmable)"
+      }
+    ],
+    "dos": [
+      "Perfect circular display for animated robotic eyes, smart gauge dials, and smartwatch UI."
+    ],
+    "donts": [
+      "Remember that rectangular coordinate system (240x240) has cropped round corners."
+    ],
+    "esp32_notes": "Vibrant IPS 178° viewing angle. Supported in TFT_eSPI and LovyanGFX.",
+    "shopee_keywords": "man hinh tron 1.28 inch gc9a01 ips spi 240x240"
+  },
+  {
+    "id": "lcd_1602_i2c",
+    "name": "LCD 1602 Character Display with PCF8574 I2C Backpack",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "4.5V - 5.5V (optimal 5V for crisp character contrast)",
+    "logic_level": "5V logic (accepts 3.3V I2C with pullups to 3.3V)",
+    "current_draw_typical_ma": 30,
+    "interface": "I2C (Standard Mode 100kHz)",
+    "default_address": "0x27 or 0x3F (A0, A1, A2 jumpers on backpack)",
+    "pinout": [
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power (contrast drops severely if powered by 3.3V)"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C Data"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C Clock"
+      }
+    ],
+    "dos": [
+      "Adjust the blue contrast potentiometer on the backpack with a flat screwdriver until blocks appear.",
+      "Run an I2C scanner sketch if screen is blank (determines if address is 0x27 or 0x3F)."
+    ],
+    "donts": [
+      "NEVER power LCD VCC from 3.3V (characters will be invisible or extremely faint)."
+    ],
+    "esp32_notes": "Use LiquidCrystal_I2C library. ESP32 3.3V I2C pins handle PCF8574 safely.",
+    "shopee_keywords": "man hinh lcd 1602 kem module i2c pcf8574"
+  },
+  {
+    "id": "lcd_2004_i2c",
+    "name": "LCD 2004 20x4 Character Display with I2C Backpack",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "5.0V",
+    "logic_level": "5V logic / 3.3V I2C",
+    "current_draw_typical_ma": 45,
+    "interface": "I2C",
+    "default_address": "0x27 or 0x3F",
+    "pinout": [
+      {
+        "name": "VCC/GND/SDA/SCL",
+        "type": "pwr",
+        "desc": "4-pin standard I2C header"
+      }
+    ],
+    "dos": [
+      "Use for telemetry dashboards displaying 4 rows of 20 characters."
+    ],
+    "donts": [
+      "NEVER power with less than 4.8V."
+    ],
+    "esp32_notes": "Drop-in code replacement for LCD1602 by changing constructor to lcd(0x27, 20, 4).",
+    "shopee_keywords": "man hinh lcd 2004 i2c xanh duong 20x4"
+  },
+  {
+    "id": "max7219_matrix_8x8",
+    "name": "MAX7219 8x8 Dot Matrix LED Display Module",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "4.5V - 5.5V (5.0V)",
+    "logic_level": "5V / 3.3V compatible SPI-like shift register",
+    "current_draw_typical_ma": 200,
+    "interface": "DIN, CS, CLK (Daisy-chainable)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "DIN",
+        "type": "sig",
+        "desc": "Data In (from ESP32 MOSI or GPIO)"
+      },
+      {
+        "name": "CS",
+        "type": "sig",
+        "desc": "Chip Select"
+      },
+      {
+        "name": "CLK",
+        "type": "sig",
+        "desc": "Clock"
+      },
+      {
+        "name": "DOUT",
+        "type": "sig",
+        "desc": "Data Out (to next matrix DIN)"
+      }
+    ],
+    "dos": [
+      "Cascade 4 modules in series (4-in-1 matrix) for scrolling text signs and robot mouths."
+    ],
+    "donts": [
+      "NEVER connect long matrix chains without auxiliary 5V power feeds."
+    ],
+    "esp32_notes": "Driven via MD_MAX72xx and MD_Parola libraries for smooth text ticker animations.",
+    "shopee_keywords": "module led ma tran max7219 8x8 4 trong 1"
+  },
+  {
+    "id": "ws2812b_neopixel",
+    "name": "WS2812B NeoPixel Addressable RGB LED (Strip / Ring / 8-LED Stick)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.5V - 5.3V (optimal 5.0V)",
+    "logic_level": "High level input min 0.7 * VCC (~3.5V when VCC is 5V)",
+    "current_draw_typical_ma": 60,
+    "interface": "1-Wire high speed timing (800kHz NZR)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "5V / VDD",
+        "type": "pwr",
+        "desc": "+5V Power rail (add 1000uF capacitor across +/-)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground rail"
+      },
+      {
+        "name": "DIN",
+        "type": "sig",
+        "desc": "Data In (connect through 330 - 470 ohm resistor)"
+      },
+      {
+        "name": "DOUT",
+        "type": "sig",
+        "desc": "Data Out to next pixel DIN"
+      }
+    ],
+    "dos": [
+      "Put a 330 - 470 ohm resistor in series between ESP32 GPIO and the DIN pin.",
+      "Use Level Shifter (74AHCT125) if driving 5V strips from 3.3V ESP32 over long wires (>30cm)."
+    ],
+    "donts": [
+      "NEVER power a strip of >8 LEDs directly from ESP32 board pins (each pixel draws up to 60mA at full white!).",
+      "NEVER connect data wire before power and ground are securely connected."
+    ],
+    "esp32_notes": "Use Adafruit_NeoPixel or FastLED (RMT hardware peripheral based).",
+    "shopee_keywords": "led rgb ws2812b neopixel 5v thanh 8 led vong tron"
+  },
+  {
+    "id": "tm1637_display",
+    "name": "TM1637 4-Digit 7-Segment Display Module",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V compatible",
+    "current_draw_typical_ma": 40,
+    "interface": "2-Wire custom synchronous (CLK, DIO)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "CLK",
+        "type": "sig",
+        "desc": "Clock line"
+      },
+      {
+        "name": "DIO",
+        "type": "sig",
+        "desc": "Data I/O line"
+      }
+    ],
+    "dos": [
+      "Use for digital clocks, countdown timers, scoreboards, and sensor readouts."
+    ],
+    "donts": [
+      "NEVER confuse TM1637 2-wire protocol with standard I2C (cannot share bus with I2C devices)."
+    ],
+    "esp32_notes": "Use TM1637Display library. Simple, readable in direct sunlight.",
+    "shopee_keywords": "module led 7 doan 4 so tm1637"
+  },
+  {
+    "id": "hc_sr04",
+    "name": "HC-SR04 Ultrasonic Distance Sensor (5V Only)",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "5.0V strictly",
+    "logic_level": "Trig: 3.3V/5V, Echo: 5V OUT (BURNS ESP32 WITHOUT LEVEL SHIFTER!)",
+    "current_draw_typical_ma": 15,
+    "interface": "Trig (10us pulse), Echo (Pulse width proportional to distance)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "+5V Power input"
+      },
+      {
+        "name": "Trig",
+        "type": "sig",
+        "desc": "Trigger input (active HIGH 10us pulse from ESP32)"
+      },
+      {
+        "name": "Echo",
+        "type": "sig",
+        "desc": "Echo output (5V PULSE! MUST USE VOLTAGE DIVIDER / LEVEL SHIFTER)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common Ground"
+      }
+    ],
+    "dos": [
+      "MUST use a voltage divider (e.g. 1k resistor in series + 2k to GND) or Logic Level Shifter on Echo pin.",
+      "Supply clean 5V to VCC (range degrades severely below 4.7V)."
+    ],
+    "donts": [
+      "NEVER connect Echo pin directly to ESP32 GPIO (5V signal will permanently damage ESP32 input pin!).",
+      "NEVER try to measure closer than 2cm or farther than 400cm."
+    ],
+    "esp32_notes": "Calculation: distance_cm = (duration_us * 0.0343) / 2. Use pulseIn() or ESP32 RMT peripheral.",
+    "shopee_keywords": "cam bien sieu am hc-sr04 5v"
+  },
+  {
+    "id": "hc_sr05_rcwl1601",
+    "name": "HC-SR05 / RCWL-1601 Multi-Mode Ultrasonic Sensor (3.3V - 5V)",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "3.0V - 5.5V wide input range",
+    "logic_level": "3.3V native when powered by 3.3V, 5V when powered by 5V",
+    "current_draw_typical_ma": 12,
+    "interface": "GPIO / 1-Wire / UART / I2C configurable via solder jumpers on back",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V Power"
+      },
+      {
+        "name": "Trig",
+        "type": "sig",
+        "desc": "Trigger input"
+      },
+      {
+        "name": "Echo",
+        "type": "sig",
+        "desc": "Echo output (3.3V safe if powered by 3.3V)"
+      },
+      {
+        "name": "OUT",
+        "type": "na",
+        "desc": "Mode select / Serial out (leave floating for standard GPIO)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      }
+    ],
+    "dos": [
+      "Power from 3.3V rail if connecting directly to ESP32 without level shifter.",
+      "If powered from 5V for maximum sound range, Echo MUST still go through level shifter."
+    ],
+    "donts": [
+      "NEVER leave OUT shorted unless intentionally selecting UART/I2C mode."
+    ],
+    "esp32_notes": "Superior upgrade to HC-SR04 with true 3.3V MCU support and blind zone down to 1.5cm.",
+    "shopee_keywords": "cam bien sieu am rcwl-1601 hc-sr05 3.3v 5v"
+  },
+  {
+    "id": "vl53l0x_tof",
+    "name": "VL53L0X Time-of-Flight (ToF) Laser Distance Sensor",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "2.8V - 5.0V (onboard 2.8V LDO & level shift)",
+    "logic_level": "3.3V / 5.0V I2C compliant",
+    "current_draw_typical_ma": 19,
+    "interface": "I2C (Fast Mode 400kHz)",
+    "default_address": "0x29 (dynamically readdressable via XSHUT pin)",
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "3.3V or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C SCL"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C SDA"
+      },
+      {
+        "name": "XSHUT",
+        "type": "sig",
+        "desc": "Shutdown pin (pull LOW to put in reset). Essential for multi-sensor!"
+      },
+      {
+        "name": "GPIO1",
+        "type": "sig",
+        "desc": "Interrupt output (optional)"
+      }
+    ],
+    "dos": [
+      "Peel off the protective orange/yellow protective tape from optical lenses before first use!",
+      "To use 2 or more sensors, connect each XSHUT to a distinct ESP32 GPIO to assign unique I2C addresses on boot."
+    ],
+    "donts": [
+      "NEVER touch or scratch the miniature laser transmitter/receiver glass."
+    ],
+    "esp32_notes": "Millimeter accuracy, true 940nm laser light time-of-flight (up to 2 meters). Unaffected by target color.",
+    "shopee_keywords": "cam bien khoang cach laser vl53l0x tof i2c"
+  },
+  {
+    "id": "vl53l1x_tof",
+    "name": "VL53L1X Long Range ToF Laser Distance Sensor (up to 4m)",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 20,
+    "interface": "I2C",
+    "default_address": "0x29",
+    "pinout": [
+      {
+        "name": "VIN/GND/SCL/SDA/XSHUT/INT",
+        "type": "sig",
+        "desc": "Pinout identical to VL53L0X"
+      }
+    ],
+    "dos": [
+      "Programmable Region of Interest (ROI) allowing wide or narrow laser field of view."
+    ],
+    "donts": [
+      "Performance drops in direct outdoor midday sunlight (ambient infrared interference)."
+    ],
+    "esp32_notes": "Extends range up to 400cm (twice the range of VL53L0X). Pololu VL53L1X library recommended.",
+    "shopee_keywords": "cam bien khoang cach vl53l1x 4m tof"
+  },
+  {
+    "id": "tcrt5000_line_sensor",
+    "name": "TCRT5000 Infrared Reflective Line Tracking Sensor Module",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "3.3V - 5.0V DC",
+    "logic_level": "3.3V / 5.0V compatible DO (Digital Out)",
+    "current_draw_typical_ma": 15,
+    "interface": "DO (Digital Comparator LM393) and AO (Analog Output)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Connect to 3.3V (recommended) or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "DO",
+        "type": "sig",
+        "desc": "Digital output (LOW over white/reflective, HIGH over black/tape)"
+      },
+      {
+        "name": "AO",
+        "type": "sig",
+        "desc": "Analog raw voltage from phototransistor"
+      }
+    ],
+    "dos": [
+      "Adjust the onboard blue potentiometer until the indicator LED flips precisely at black/white transition.",
+      "Maintain optimal optical distance of 5mm - 15mm from floor."
+    ],
+    "donts": [
+      "NEVER mount too close (<2mm) or too far (>25mm) from surface."
+    ],
+    "esp32_notes": "Attach DO to ESP32 interrupt pin (attachInterrupt) for tachometer wheel speed measurement or line tracking.",
+    "shopee_keywords": "cam bien do line tcrt5000 do ao"
+  },
+  {
+    "id": "ir_obstacle_avoidance",
+    "name": "Active Infrared Obstacle Avoidance Sensor Module",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V logic",
+    "current_draw_typical_ma": 18,
+    "interface": "DO (Digital Output, Active LOW)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V - 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "OUT",
+        "type": "sig",
+        "desc": "Digital output (LOW when obstacle detected within 2 - 30cm)"
+      }
+    ],
+    "dos": [
+      "Calibrate detection threshold potentiometer under actual room lighting."
+    ],
+    "donts": [
+      "Avoid using under direct halogen or incandescent light sources (heavy IR emission triggers false alarms)."
+    ],
+    "esp32_notes": "Has dual LEDs (IR transmitter and IR photodiode). Simplest collision sensor for mini rovers.",
+    "shopee_keywords": "cam bien vat can hong ngoai ir tranh vat can"
+  },
+  {
+    "id": "rcwl_0516_microwave",
+    "name": "RCWL-0516 Microwave Radar Doppler Motion Sensor",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "4.0V - 28V DC (VIN)",
+    "logic_level": "3.3V OUT strictly (safe for ESP32)",
+    "current_draw_typical_ma": 3,
+    "interface": "OUT (3.3V active HIGH pulse for ~2s on motion detection)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "4V - 28V input (connect to ESP32 5V)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "OUT",
+        "type": "sig",
+        "desc": "3.3V logic output (HIGH when human/object moves)"
+      },
+      {
+        "name": "3V3",
+        "type": "pwr",
+        "desc": "3.3V reference out (max 100mA, do not power heavy loads)"
+      },
+      {
+        "name": "CDS",
+        "type": "sig",
+        "desc": "Optional light-sensor disable pin"
+      }
+    ],
+    "dos": [
+      "Can penetrate thin wooden doors, plastic enclosures, glass, and drywall (360° detection bubble)."
+    ],
+    "donts": [
+      "NEVER mount directly against metal plates (shields microwave 3.18GHz radar signals)."
+    ],
+    "esp32_notes": "Far superior to PIR in high-temperature environments where human body temp matches ambient room temp.",
+    "shopee_keywords": "cam bien radar vi song rcwl-0516 chuyen dong"
+  },
+  {
+    "id": "hc_sr501_pir",
+    "name": "HC-SR501 PIR Passive Infrared Motion Detector",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "4.5V - 20V DC (VCC)",
+    "logic_level": "3.3V OUT strictly (3.3V High / 0V Low)",
+    "current_draw_typical_ma": 0.05,
+    "interface": "OUT (3.3V Digital High on heat motion)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V power input (has internal 3.3V regulator)"
+      },
+      {
+        "name": "OUT",
+        "type": "sig",
+        "desc": "3.3V High signal output directly safe for ESP32 GPIO"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      }
+    ],
+    "dos": [
+      "Allow 30 - 60 seconds stabilization warmup time after applying power before reading outputs.",
+      "Adjust time delay (Tx) and sensitivity distance (Sx) via the two orange potentiometers."
+    ],
+    "donts": [
+      "NEVER point directly at air conditioners, heaters, or open sunny windows."
+    ],
+    "esp32_notes": "Output is native 3.3V logic level, making it 100% safe to wire directly to any ESP32 GPIO.",
+    "shopee_keywords": "cam bien chuyen dong hong ngoai hc-sr501 pir"
+  },
+  {
+    "id": "am312_mini_pir",
+    "name": "AM312 Mini Low-Power PIR Motion Sensor",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "2.7V - 12V DC (runs natively on 3.3V!)",
+    "logic_level": "3.3V digital output",
+    "current_draw_typical_ma": 0.015,
+    "interface": "OUT (3.3V digital)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V from ESP32"
+      },
+      {
+        "name": "OUT",
+        "type": "sig",
+        "desc": "3.3V output"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      }
+    ],
+    "dos": [
+      "Best PIR sensor for battery-powered deep-sleep wake-up circuits (draws only 15uA quiescent current)."
+    ],
+    "donts": [
+      "Has fixed delay (~2-3s) without manual adjustment potentiometer."
+    ],
+    "esp32_notes": "Can wake ESP32 from deep sleep via ext0/ext1 GPIO wake-up interrupt.",
+    "shopee_keywords": "cam bien chuyen dong mini am312 tiet kiem pin"
+  },
+  {
+    "id": "apds9960_gesture",
+    "name": "APDS-9960 RGB, Gesture, Proximity & Ambient Light Sensor",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "2.4V - 3.6V (optimal 3.3V strictly)",
+    "logic_level": "3.3V I2C",
+    "current_draw_typical_ma": 10,
+    "interface": "I2C (400kHz)",
+    "default_address": "0x39",
+    "pinout": [
+      {
+        "name": "VL",
+        "type": "pwr",
+        "desc": "Optional power for internal IR LED (connect to 3.3V)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V Power strictly"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C SDA"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C SCL"
+      },
+      {
+        "name": "INT",
+        "type": "sig",
+        "desc": "Interrupt output"
+      }
+    ],
+    "dos": [
+      "Detects 4-directional hand swipes: UP, DOWN, LEFT, RIGHT, and NEAR/FAR proximity."
+    ],
+    "donts": [
+      "NEVER power with 5V (destroys photodiode array)."
+    ],
+    "esp32_notes": "SparkFun_APDS9960 library provides simple non-blocking gesture state machine.",
+    "shopee_keywords": "cam bien cu chi apds-9960 rgb gesture i2c"
+  },
+  {
+    "id": "bh1750_light",
+    "name": "BH1750 Ambient Light Sensor Module (Lux Meter)",
+    "category": "Distance, Optical & Tracking Sensors",
+    "operating_voltage": "3.0V - 5.0V (onboard 3.3V LDO)",
+    "logic_level": "3.3V / 5.0V I2C compliant",
+    "current_draw_typical_ma": 0.15,
+    "interface": "I2C",
+    "default_address": "0x23 (default, ADDR pin low) or 0x5C (ADDR pin high)",
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C Clock"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C Data"
+      },
+      {
+        "name": "ADDR",
+        "type": "sig",
+        "desc": "Address select pin (pull to GND for 0x23)"
+      }
+    ],
+    "dos": [
+      "Outputs direct, calibrated light intensity in Lux (1 - 65535 lx) matching human eye response."
+    ],
+    "donts": [
+      "NEVER leave ADDR floating in noisy electrical environments."
+    ],
+    "esp32_notes": "Replaces crude photoresistor with lab-grade optical lux precision.",
+    "shopee_keywords": "cam bien anh sang gy-302 bh1750 lux i2c"
+  },
+  {
+    "id": "mpu6050_imu",
+    "name": "MPU6050 6-Axis Gyroscope & Accelerometer (GY-521)",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.0V - 5.0V (onboard 3.3V LDO)",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 4,
+    "interface": "I2C (400kHz)",
+    "default_address": "0x68 (default with AD0 grounded) or 0x69 (AD0 tied to 3.3V)",
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V (preferred) or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C SCL"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C Data"
+      },
+      {
+        "name": "XDA/XCL",
+        "type": "sig",
+        "desc": "Auxiliary I2C bus (leave floating)"
+      },
+      {
+        "name": "AD0",
+        "type": "sig",
+        "desc": "Address pin (GND = 0x68, 3.3V = 0x69)"
+      },
+      {
+        "name": "INT",
+        "type": "sig",
+        "desc": "Data ready interrupt"
+      }
+    ],
+    "dos": [
+      "Tie AD0 to GND firmly with a resistor or jumper wire to prevent random address flipping.",
+      "Run DMP (Digital Motion Processor) or Madgwick/Mahony filter on ESP32 to compute drift-free pitch and roll."
+    ],
+    "donts": [
+      "NEVER leave AD0 floating (causes intermittent I2C connection dropouts)."
+    ],
+    "esp32_notes": "Foundation of self-balancing robots and drone flight controllers. Adafruit_MPU6050 or ElectronicCats library.",
+    "shopee_keywords": "cam bien goc nghieng gy-521 mpu6050 6 truc"
+  },
+  {
+    "id": "mpu9250_imu",
+    "name": "MPU9250 9-Axis MotionTracking Device (Accel + Gyro + Magnetometer)",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.0V - 5.0V",
+    "logic_level": "3.3V I2C / SPI",
+    "current_draw_typical_ma": 6,
+    "interface": "I2C or SPI",
+    "default_address": "0x68 (MPU) + 0x0C (AK8963 Magnetometer)",
+    "pinout": [
+      {
+        "name": "VCC/GND/SCL/SDA/EDA/ECL/AD0/INT/NCS",
+        "type": "sig",
+        "desc": "Dual I2C/SPI header"
+      }
+    ],
+    "dos": [
+      "Perform 8-figure calibration on magnetometer to eliminate hard and soft iron distortion."
+    ],
+    "donts": [
+      "NEVER mount near high-current motor wires or magnetic battery holders."
+    ],
+    "esp32_notes": "Provides absolute compass heading (Yaw) in addition to Pitch and Roll.",
+    "shopee_keywords": "cam bien mpu9250 9 truc gy-9250"
+  },
+  {
+    "id": "qmc5883l_compass",
+    "name": "QMC5883L 3-Axis Digital Compass / Magnetometer",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.0V - 5.0V",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 1,
+    "interface": "I2C",
+    "default_address": "0x0D (Notice: HMC5883L was 0x1E, QMC5883L is 0x0D!)",
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C SCL"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C SDA"
+      },
+      {
+        "name": "DRDY",
+        "type": "sig",
+        "desc": "Data ready interrupt"
+      }
+    ],
+    "dos": [
+      "Verify chip marking: 'DA5883' means QMC5883L (use QMC5883L compass library, address 0x0D)."
+    ],
+    "donts": [
+      "NEVER use HMC5883L library on QMC5883L modules (different register map and address)."
+    ],
+    "esp32_notes": "Most modern blue breakout boards labeled GY-271 contain QMC5883L, not discontinued Honeywell HMC.",
+    "shopee_keywords": "cam bien la ban so gy-271 qmc5883l i2c"
+  },
+  {
+    "id": "bno055_sensor_fusion",
+    "name": "BNO055 9-Axis Absolute Orientation Sensor with Sensor Fusion",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.0V - 5.0V",
+    "logic_level": "3.3V / 5.0V I2C / UART",
+    "current_draw_typical_ma": 12,
+    "interface": "I2C (clock stretching required) or UART",
+    "default_address": "0x28 (default) or 0x29",
+    "pinout": [
+      {
+        "name": "VIN/GND/SDA/SCL/RST/INT",
+        "type": "sig",
+        "desc": "Standard I2C pinout"
+      }
+    ],
+    "dos": [
+      "Directly outputs Euler angles (Yaw, Pitch, Roll) and Quaternions calculated on internal ARM Cortex-M0 MCU!"
+    ],
+    "donts": [
+      "Notice that BNO055 uses I2C clock stretching; configure ESP32 I2C clock frequency appropriately."
+    ],
+    "esp32_notes": "The king of robotic IMUs. Zero math required on ESP32 main cores.",
+    "shopee_keywords": "cam bien goc bno055 9 truc tu tinh toan"
+  },
+  {
+    "id": "adxl345_accel",
+    "name": "ADXL345 3-Axis Digital Accelerometer (SPI / I2C)",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.0V - 5.0V (GY-291 module has 3.3V regulator)",
+    "logic_level": "3.3V / 5.0V compatible",
+    "current_draw_typical_ma": 0.1,
+    "interface": "I2C or SPI",
+    "default_address": "0x53 (default) or 0x1D (ALT ADDRESS pin tied to VCC)",
+    "pinout": [
+      {
+        "name": "VCC/GND/CS/INT1/INT2/SDO/SDA/SCL",
+        "type": "sig",
+        "desc": "I2C/SPI pins"
+      }
+    ],
+    "dos": [
+      "Has built-in hardware tap detection (single/double tap), freefall detection, and activity sensing."
+    ],
+    "donts": [
+      "NEVER leave CS floating in I2C mode (tie CS to 3.3V to enable I2C mode)."
+    ],
+    "esp32_notes": "Extremely low power. High resolution measurement (up to ±16g).",
+    "shopee_keywords": "cam bien gia toc adxl345 gy-291 i2c spi"
+  },
+  {
+    "id": "bmi160_imu",
+    "name": "BMI160 6-Axis Inertial Measurement Unit (Bosch)",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.0V - 5.0V",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 1,
+    "interface": "I2C (400kHz) or SPI",
+    "default_address": "0x69 (default) or 0x68",
+    "pinout": [
+      {
+        "name": "VCC/GND/SCL/SDA/INT1/INT2/SDO/CS",
+        "type": "sig",
+        "desc": "Bosch IMU pinout"
+      }
+    ],
+    "dos": [
+      "Ultra low power consumption (~950uA in full gyro+accel mode). Built-in step counter hardware."
+    ],
+    "donts": [
+      "Notice default address is 0x69, which is the alternate address of MPU6050."
+    ],
+    "esp32_notes": "Modern Bosch replacement for MPU6050 with lower thermal gyro drift.",
+    "shopee_keywords": "cam bien bmi160 6 truc bosch i2c"
+  },
+  {
+    "id": "sw420_vibration",
+    "name": "SW-420 Normally Closed Vibration Sensor Module",
+    "category": "IMU, Orientation & Motion",
+    "operating_voltage": "3.3V - 5.0V DC",
+    "logic_level": "3.3V / 5.0V DO",
+    "current_draw_typical_ma": 8,
+    "interface": "DO (Digital Output)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V - 5V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "DO",
+        "type": "sig",
+        "desc": "Digital output (normally LOW, pulses HIGH on vibration shock)"
+      }
+    ],
+    "dos": [
+      "Attach to ESP32 interrupt to trigger anti-theft alarms and collision alerts."
+    ],
+    "donts": [
+      "Do not use for measuring continuous vibration frequency (binary impact switch only)."
+    ],
+    "esp32_notes": "Onboard LM393 comparator with sensitivity potentiometer.",
+    "shopee_keywords": "cam bien rung sw-420 chong trom"
+  },
+  {
+    "id": "dht11_sensor",
+    "name": "DHT11 Temperature & Relative Humidity Sensor",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "3.3V - 5.5V DC",
+    "logic_level": "3.3V / 5.0V single-bus digital",
+    "current_draw_typical_ma": 1,
+    "interface": "1-Wire proprietary single-bus",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V power"
+      },
+      {
+        "name": "DATA",
+        "type": "sig",
+        "desc": "Bi-directional single wire (requires 4.7k - 10k pullup)"
+      },
+      {
+        "name": "NC",
+        "type": "na",
+        "desc": "Not connected"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      }
+    ],
+    "dos": [
+      "Use 3-pin breakout module (already has onboard 4.7k pullup resistor).",
+      "Read at intervals no faster than once every 2 seconds (1Hz max sampling rate)."
+    ],
+    "donts": [
+      "NEVER poll faster than 2 seconds (causes internal heating and stale/corrupt readings)."
+    ],
+    "esp32_notes": "Range: 0-50°C (±2°C), 20-90% RH (±5%). DHT sensor library by Adafruit.",
+    "shopee_keywords": "cam bien nhiet do do am dht11"
+  },
+  {
+    "id": "dht22_sensor",
+    "name": "DHT22 / AM2302 High Accuracy Temperature & Humidity Sensor",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "3.3V - 5.5V DC",
+    "logic_level": "3.3V / 5.0V compatible",
+    "current_draw_typical_ma": 1.5,
+    "interface": "1-Wire proprietary single-bus",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/DATA/NC/GND",
+        "type": "sig",
+        "desc": "Standard 4-pin DHT pinout"
+      }
+    ],
+    "dos": [
+      "Much higher accuracy than DHT11: -40 to +80°C (±0.5°C) and 0-100% RH (±2%)."
+    ],
+    "donts": [
+      "Sampling frequency is max 0.5Hz (read once every 2 seconds)."
+    ],
+    "esp32_notes": "White casing. Ideal upgrade to DHT11 for home weather stations.",
+    "shopee_keywords": "cam bien dht22 am2302 do am chinh xac"
+  },
+  {
+    "id": "bme280_sensor",
+    "name": "BME280 Temperature, Humidity & Barometric Pressure Sensor",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "1.8V - 3.6V (onboard regulator accepts up to 5V on GY-BME280)",
+    "logic_level": "3.3V I2C / SPI",
+    "current_draw_typical_ma": 0.5,
+    "interface": "I2C (up to 3.4MHz) or SPI",
+    "default_address": "0x76 (default on purple GY-BME280) or 0x77 (SDO tied to VCC)",
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V (preferred)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "I2C SCL"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "I2C SDA"
+      }
+    ],
+    "dos": [
+      "Check default address: Adafruit library defaults to 0x77, but 99% of AliExpress/Shopee modules use 0x76! Pass 0x76 to bme.begin(0x76).",
+      "Calculate accurate relative altitude from barometric pressure changes (resolution 1 meter)."
+    ],
+    "donts": [
+      "NEVER confuse with BMP280 (BMP280 has no humidity sensor!)."
+    ],
+    "esp32_notes": "The gold standard environmental sensor. Draws only 3.6uA at 1Hz sampling.",
+    "shopee_keywords": "cam bien bme280 nhiet do do am ap suat gy-bme280 i2c"
+  },
+  {
+    "id": "bmp280_sensor",
+    "name": "BMP280 Barometric Pressure & Temperature Sensor",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 0.3,
+    "interface": "I2C or SPI",
+    "default_address": "0x76 (SDO low) or 0x77 (SDO high)",
+    "pinout": [
+      {
+        "name": "VCC/GND/SCL/SDA/CSB/SDO",
+        "type": "sig",
+        "desc": "Standard 6-pin BMP280 header"
+      }
+    ],
+    "dos": [
+      "Use for altimeters in model rockets, quadcopter height hold, and weather trend barometers."
+    ],
+    "donts": [
+      "Does NOT measure humidity (temperature and pressure only)."
+    ],
+    "esp32_notes": "Very low cost compared to BME280. Adafruit_BMP280 library.",
+    "shopee_keywords": "cam bien ap suat khi quyen bmp280 do cao"
+  },
+  {
+    "id": "sht30_sensor",
+    "name": "SHT30 / SHT31 High Precision Digital Temp & Humidity Sensor",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "2.4V - 5.5V",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 0.8,
+    "interface": "I2C",
+    "default_address": "0x44 (default) or 0x45 (ADR pin high)",
+    "pinout": [
+      {
+        "name": "VIN/GND/SCL/SDA/AL/ADR",
+        "type": "sig",
+        "desc": "Sensirion I2C pinout"
+      }
+    ],
+    "dos": [
+      "Fastest response time among humidity sensors. High chemical resistance."
+    ],
+    "donts": [
+      "Avoid exposure to volatile organic solvents and condensing water."
+    ],
+    "esp32_notes": "Industrial-grade Sensirion silicon. Extremely stable long-term calibration.",
+    "shopee_keywords": "cam bien sht30 sht31 chinh xac cao sensirion"
+  },
+  {
+    "id": "ds18b20_waterproof",
+    "name": "DS18B20 Waterproof 1-Wire Digital Temperature Sensor (Probe)",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "3.0V - 5.5V DC",
+    "logic_level": "3.3V / 5.0V Dallas 1-Wire",
+    "current_draw_typical_ma": 1,
+    "interface": "Dallas 1-Wire (unique 64-bit ROM address per chip)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC (Red)",
+        "type": "pwr",
+        "desc": "3.3V or 5V Power"
+      },
+      {
+        "name": "GND (Black)",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "DATA (Yellow/Blue)",
+        "type": "sig",
+        "desc": "1-Wire bus (MUST have 4.7k pullup resistor to VCC!)"
+      }
+    ],
+    "dos": [
+      "MUST add a 4.7k ohm pull-up resistor between DATA and VCC.",
+      "Connect dozens of sensors on the same single wire pin (each has a unique laser-etched 64-bit ID)."
+    ],
+    "donts": [
+      "NEVER forget the 4.7k pullup resistor (sensor will not be detected on bus)."
+    ],
+    "esp32_notes": "Stainless steel probe is waterproof. Ideal for aquarium, soil, and liquids (-55°C to +125°C). OneWire + DallasTemperature library.",
+    "shopee_keywords": "cam bien nhiet do ds18b20 chong nuoc kem tro 4.7k"
+  },
+  {
+    "id": "mq2_smoke_gas",
+    "name": "MQ-2 Smoke, Flammable Gas & LPG Sensor Module",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "5.0V strictly (heater coil requires 5V ±0.1V)",
+    "logic_level": "Heater: 5V, AO: 0-5V Analog, DO: 0-5V Comparator",
+    "current_draw_typical_ma": 160,
+    "interface": "AO (Analog Out) and DO (Digital Out via LM393)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power strictly (heater coil draws ~150mA)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "DO",
+        "type": "sig",
+        "desc": "Digital output threshold"
+      },
+      {
+        "name": "AO",
+        "type": "sig",
+        "desc": "Analog output (0 - 5V. MUST use voltage divider to ESP32 ADC!)"
+      }
+    ],
+    "dos": [
+      "Allow 24-48 hours preheating burn-in time for new sensors before calibrating.",
+      "Use resistor divider (e.g. 10k + 15k) to scale AO down from 5V to max 3.0V for ESP32 ADC."
+    ],
+    "donts": [
+      "NEVER connect AO directly to ESP32 ADC pin (5V output can blow the ADC input!).",
+      "NEVER touch sensor metal casing during operation (internal heater coil operates at ~200°C and gets warm)."
+    ],
+    "esp32_notes": "Detects Methane, Butane, LPG, Smoke. Connect to ADC1 pins on ESP32.",
+    "shopee_keywords": "cam bien khi gas khoi mq-2 5v"
+  },
+  {
+    "id": "mq135_air_quality",
+    "name": "MQ-135 Air Quality & Hazardous Gas Sensor",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "5.0V strictly",
+    "logic_level": "5V power, AO requires level divider for ESP32",
+    "current_draw_typical_ma": 160,
+    "interface": "AO and DO",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/DO/AO",
+        "type": "sig",
+        "desc": "Standard MQ series pinout"
+      }
+    ],
+    "dos": [
+      "Detects Ammonia (NH3), NOx, Alcohol, Benzene, Smoke, and CO2 in indoor environments."
+    ],
+    "donts": [
+      "Requires 5V heater power; will not function accurately if powered by 3.3V."
+    ],
+    "esp32_notes": "Use MQ135 library with temperature and humidity compensation from BME280.",
+    "shopee_keywords": "cam bien chat luong khong khi mq-135"
+  },
+  {
+    "id": "capacitive_soil_moisture",
+    "name": "Capacitive Soil Moisture Sensor v1.2 (Corrosion Resistant)",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "3.3V - 5.5V DC (optimal 3.3V)",
+    "logic_level": "Analog Output (approx 1.2V - 3.0V)",
+    "current_draw_typical_ma": 5,
+    "interface": "Analog Voltage (VOUT)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V Power from ESP32"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "AOUT",
+        "type": "sig",
+        "desc": "Analog Output directly safe for ESP32 ADC1 pin"
+      }
+    ],
+    "dos": [
+      "Power directly from ESP32 3.3V rail (makes analog output directly compatible with ESP32 3.3V ADC).",
+      "Calibrate in air (Dry value ~2.8V) and submerged in water up to white line (Wet value ~1.3V)."
+    ],
+    "donts": [
+      "NEVER submerge the upper electronics board and wire connector in soil or water!",
+      "Do NOT use cheap resistive fork sensors (they corrode to dust in weeks via electrolysis; capacitive does NOT corrode)."
+    ],
+    "esp32_notes": "Notice inverse reading: HIGHER voltage = DRIER soil, LOWER voltage = WETTER soil.",
+    "shopee_keywords": "cam bien do am dat dien dung capacitive v1.2 chong an mon"
+  },
+  {
+    "id": "raindrop_sensor",
+    "name": "Raindrop / Water Droplet Detection Board with LM393",
+    "category": "Environmental & Gas Sensors",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V DO & AO",
+    "current_draw_typical_ma": 15,
+    "interface": "DO (Digital) & AO (Analog)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/DO/AO",
+        "type": "sig",
+        "desc": "4-pin sensor module header"
+      }
+    ],
+    "dos": [
+      "Use for automatic smart clothesline retraction and smart irrigation controllers."
+    ],
+    "donts": [
+      "Power via a GPIO pin to turn on only when reading (avoids continuous electrolysis corrosion)."
+    ],
+    "esp32_notes": "Nickel-coated tracks detect rain drops touching adjacent interdigitated fingers.",
+    "shopee_keywords": "cam bien mua raindrop sensor kem mach lm393"
+  },
+  {
+    "id": "ky040_rotary_encoder",
+    "name": "KY-040 Rotary Encoder Module (with Push Button)",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "3.3V - 5.0V DC",
+    "logic_level": "3.3V / 5.0V compliant",
+    "current_draw_typical_ma": 1,
+    "interface": "Quadrature CLK, DT, and Pushbutton SW",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "+",
+        "type": "pwr",
+        "desc": "3.3V Power (for onboard 10k pullup resistors)"
+      },
+      {
+        "name": "SW",
+        "type": "sig",
+        "desc": "Pushbutton switch (active LOW when knob is pressed)"
+      },
+      {
+        "name": "DT",
+        "type": "sig",
+        "desc": "Quadrature Channel B (Data)"
+      },
+      {
+        "name": "CLK",
+        "type": "sig",
+        "desc": "Quadrature Channel A (Clock)"
+      }
+    ],
+    "dos": [
+      "Attach CLK and DT to interrupt-capable GPIOs on ESP32.",
+      "Use ESP32 PCNT (Pulse Counter) hardware peripheral for 100% glitch-free rotary tracking."
+    ],
+    "donts": [
+      "NEVER use blocking delay() loops in encoder polling code."
+    ],
+    "esp32_notes": "20 detents/pulses per 360° turn. The best UI control for menu scrolling and volume adjustment.",
+    "shopee_keywords": "module rotary encoder ky-040 chiet ap xoay vo han"
+  },
+  {
+    "id": "joystick_ps2_analog",
+    "name": "2-Axis Analog Thumb Joystick (PS2 Style)",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "3.3V - 5.0V DC (optimal 3.3V)",
+    "logic_level": "Analog Voltage (0V - VCC), Digital SW",
+    "current_draw_typical_ma": 1,
+    "interface": "VRX (Analog), VRY (Analog), SW (Pushbutton)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "+5V",
+        "type": "pwr",
+        "desc": "Connect to ESP32 3.3V rail (NOT 5V) to match ADC range!"
+      },
+      {
+        "name": "VRX",
+        "type": "sig",
+        "desc": "X-axis analog voltage (center ~1.65V)"
+      },
+      {
+        "name": "VRY",
+        "type": "sig",
+        "desc": "Y-axis analog voltage (center ~1.65V)"
+      },
+      {
+        "name": "SW",
+        "type": "sig",
+        "desc": "Center push button switch (connect to GPIO with INPUT_PULLUP)"
+      }
+    ],
+    "dos": [
+      "Power from 3.3V so that analog voltage output never exceeds ESP32 3.3V ADC limit.",
+      "Implement a software deadzone (e.g. ±100 ADC counts around center) to prevent robot drifting."
+    ],
+    "donts": [
+      "NEVER power with 5V if connecting VRX/VRY directly to ESP32 ADC."
+    ],
+    "esp32_notes": "Dual 10k potentiometers + tactile momentary switch. Standard for robot remote controllers.",
+    "shopee_keywords": "module joystick 2 truc ps2 analog"
+  },
+  {
+    "id": "tactile_push_button",
+    "name": "Tactile Push Button Module with 10k Pull-up Resistor",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "Digital HIGH / LOW",
+    "current_draw_typical_ma": 0.3,
+    "interface": "Digital GPIO",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "OUT",
+        "type": "sig",
+        "desc": "Signal output (LOW when pressed, HIGH when released)"
+      }
+    ],
+    "dos": [
+      "Implement 20ms - 50ms software debounce in code to prevent contact chatter."
+    ],
+    "donts": [
+      "NEVER leave button pins floating without internal or external pullup/pulldown."
+    ],
+    "esp32_notes": "Use pinMode(pin, INPUT_PULLUP) if using bare 2-pin buttons without module board.",
+    "shopee_keywords": "module nut nhan tactile button co tro keo"
+  },
+  {
+    "id": "matrix_keypad_4x4",
+    "name": "4x4 Matrix Membrane Keypad (16 Buttons)",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "Passive switch matrix (3.3V compatible)",
+    "logic_level": "3.3V logic",
+    "current_draw_typical_ma": 1,
+    "interface": "8-pin header (4 Row pins, 4 Column pins)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "R1 - R4",
+        "type": "sig",
+        "desc": "Row 1 to Row 4 pins"
+      },
+      {
+        "name": "C1 - C4",
+        "type": "sig",
+        "desc": "Column 1 to Column 4 pins"
+      }
+    ],
+    "dos": [
+      "Use Keypad library or PCF8574 I2C expander to save 6 GPIO pins."
+    ],
+    "donts": [
+      "Avoid using strapping pins for keypad matrix lines."
+    ],
+    "esp32_notes": "Thin adhesive backing, 16 keys (0-9, *, #, A, B, C, D). Great for security locks.",
+    "shopee_keywords": "ban phim ma tran 4x4 membrane keypad 16 phim"
+  },
+  {
+    "id": "ttp223_touch_switch",
+    "name": "TTP223 Single Capacitive Touch Switch Module",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "2.0V - 5.5V DC",
+    "logic_level": "3.3V / 5.0V digital output",
+    "current_draw_typical_ma": 0.005,
+    "interface": "I/O (Active HIGH default, configurable via solder pads A & B)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V Power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "I/O",
+        "type": "sig",
+        "desc": "Digital output (HIGH on touch)"
+      }
+    ],
+    "dos": [
+      "Can sense touch through non-metallic surfaces (acrylic, glass, wood, plastic enclosures up to 3mm).",
+      "Solder jumper A to toggle active LOW, jumper B to enable latching/toggle mode."
+    ],
+    "donts": [
+      "NEVER place touching metal plates directly against the capacitive sensor pad."
+    ],
+    "esp32_notes": "Alternatively, ESP32 has 10 built-in capacitive touch pins (touchRead(T0)).",
+    "shopee_keywords": "cam bien cham dien dung ttp223 touch switch"
+  },
+  {
+    "id": "slide_potentiometer_10k",
+    "name": "Linear Slide Potentiometer Module (10k Dual Output)",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "3.3V - 5.0V (optimal 3.3V)",
+    "logic_level": "Analog Voltage (0V - VCC)",
+    "current_draw_typical_ma": 0.3,
+    "interface": "OTA, OTB (Dual linear analog wiper outputs)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/OTA/OTB",
+        "type": "sig",
+        "desc": "Dual channel slider header"
+      }
+    ],
+    "dos": [
+      "Smooth 60mm stroke slider ideal for robotic throttle and audio mixers."
+    ],
+    "donts": [
+      "Do not power with 5V when connecting to ESP32 ADC."
+    ],
+    "esp32_notes": "Linear B10K resistance curve.",
+    "shopee_keywords": "module bien tro truot linear slide potentiometer 10k"
+  },
+  {
+    "id": "ec11_encoder_bare",
+    "name": "EC11 Incremental Rotary Encoder with Push Switch (Bare Component)",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "Passive mechanical contacts (up to 5V)",
+    "logic_level": "Depends on pull-up resistors",
+    "current_draw_typical_ma": 0.1,
+    "interface": "A, B (Quadrature), C (Common Ground), D, E (Switch)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "A & B",
+        "type": "sig",
+        "desc": "Quadrature outputs (need pullup resistors to 3.3V)"
+      },
+      {
+        "name": "C",
+        "type": "gnd",
+        "desc": "Common center pin tied to GND"
+      }
+    ],
+    "dos": [
+      "Add 100nF filtering capacitors on A and B lines to GND for hardware debouncing."
+    ],
+    "donts": [
+      "NEVER forget pull-up resistors (bare contacts only switch to GND)."
+    ],
+    "esp32_notes": "Industrial grade encoder with knurled D-shaft for metal volume knobs.",
+    "shopee_keywords": "chiet ap xoay ec11 rotary encoder 5 chan kem cong tac"
+  },
+  {
+    "id": "dip_switch_8p",
+    "name": "8-Position DIP Switch Module",
+    "category": "User Input & HMI Controls",
+    "operating_voltage": "Passive contacts",
+    "logic_level": "Depends on pull-up/pull-down",
+    "current_draw_typical_ma": 0,
+    "interface": "8 independent SPST switches",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "1-8 In/Out",
+        "type": "sig",
+        "desc": "8 switch positions"
+      }
+    ],
+    "dos": [
+      "Use for hardware mode selection, robot team ID, and WiFi channel configuration."
+    ],
+    "donts": [
+      "NEVER leave switches floating without pull-ups."
+    ],
+    "esp32_notes": "Connect to PCF8574 I2C expander to read all 8 switches over 2 I2C pins.",
+    "shopee_keywords": "cong tac gat dip switch 8 vi tri"
+  },
+  {
+    "id": "relay_1ch_5v_opto",
+    "name": "1-Channel 5V Relay Module with Optocoupler Isolation",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "VCC: 5.0V (Relay coil), IN: 3.3V - 5.0V trigger",
+    "logic_level": "Active LOW (usually) or selectable via jumper",
+    "current_draw_typical_ma": 70,
+    "interface": "IN (Digital trigger), COM, NO, NC screw terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "DC+",
+        "type": "pwr",
+        "desc": "+5V Power for relay coil"
+      },
+      {
+        "name": "DC-",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "IN",
+        "type": "sig",
+        "desc": "Trigger input (draws only ~3mA through optocoupler LED)"
+      },
+      {
+        "name": "COM",
+        "type": "pwr",
+        "desc": "Common switch terminal"
+      },
+      {
+        "name": "NO",
+        "type": "pwr",
+        "desc": "Normally Open terminal (closes when relay activates)"
+      },
+      {
+        "name": "NC",
+        "type": "pwr",
+        "desc": "Normally Closed terminal (opens when relay activates)"
+      }
+    ],
+    "dos": [
+      "Use optical isolation jumper (remove VCC-JDVCC jumper to completely isolate noisy coils from MCU power).",
+      "Switches AC 250V 10A or DC 30V 10A loads safely."
+    ],
+    "donts": [
+      "NEVER power relay coil (DC+) from ESP32 3.3V rail (5V relay coil will not trigger reliably and may brown out ESP32).",
+      "NEVER touch 220V AC screw terminals while plugged into mains power!"
+    ],
+    "esp32_notes": "Most 5V modules trigger reliably from ESP32 3.3V GPIO because the optocoupler LED threshold is ~1.8V.",
+    "shopee_keywords": "module relay 1 kenh 5v cach ly quang opto"
+  },
+  {
+    "id": "relay_2ch_5v_opto",
+    "name": "2-Channel 5V Relay Module with Optocoupler Isolation",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "5V DC coil power",
+    "logic_level": "3.3V / 5V trigger",
+    "current_draw_typical_ma": 140,
+    "interface": "IN1, IN2, Dual COM/NO/NC terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/IN1/IN2",
+        "type": "sig",
+        "desc": "4-pin input header"
+      }
+    ],
+    "dos": [
+      "Provide dedicated 5V power supply when triggering multiple coils simultaneously."
+    ],
+    "donts": [
+      "Coils draw ~70mA each (2 coils = 140mA). Do NOT power from USB-TTL converters."
+    ],
+    "esp32_notes": "Songle SRD-05VDC-SL-C relays onboard.",
+    "shopee_keywords": "module relay 2 kenh 5v opto cach ly"
+  },
+  {
+    "id": "relay_4ch_5v_opto",
+    "name": "4-Channel 5V Relay Module with Optocoupler Isolation",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "5V DC coil power",
+    "logic_level": "3.3V / 5V trigger",
+    "current_draw_typical_ma": 280,
+    "interface": "IN1 - IN4",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/IN1-IN4/JD-VCC",
+        "type": "sig",
+        "desc": "Multi-channel isolated header"
+      }
+    ],
+    "dos": [
+      "Remove JD-VCC jumper and feed independent 5V power directly to JD-VCC and GND."
+    ],
+    "donts": [
+      "NEVER leave relay coils unpowered."
+    ],
+    "esp32_notes": "Standard for smart home AC outlet automation (lights, fans, water pumps).",
+    "shopee_keywords": "module relay 4 kenh 5v opto songle"
+  },
+  {
+    "id": "irf520_mosfet",
+    "name": "IRF520 MOSFET Driver Module",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "VIN: 0 - 24V DC, Load current: max 5A (with heatsink)",
+    "logic_level": "3.3V - 5V PWM/Digital input",
+    "current_draw_typical_ma": 1,
+    "interface": "SIG, VCC, GND, VIN, VOUT terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "SIG",
+        "type": "sig",
+        "desc": "Gate trigger from ESP32 GPIO"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "Logic reference"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      }
+    ],
+    "dos": [
+      "Use for switching DC LED strips, high-power solenoids, and DC motors via PWM."
+    ],
+    "donts": [
+      "CAUTION: IRF520 is NOT a true logic-level MOSFET (Vgs threshold is 2V - 4V). At 3.3V gate drive, it does NOT turn fully ON and can overheat if driving >1.5A loads!"
+    ],
+    "esp32_notes": "For loads > 2A with 3.3V ESP32, use LR7843 or AO3400 logic-level MOSFET modules instead.",
+    "shopee_keywords": "module mosfet irf520 dieu khien pwm dc"
+  },
+  {
+    "id": "lr7843_mosfet_isolated",
+    "name": "LR7843 High-Current Isolated MOSFET Module (30V 161A, 3.3V Logic Trigger)",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "Load: 0V - 30V DC, max 30A continuous (with heatsink)",
+    "logic_level": "True 3.3V / 5.0V Logic level trigger with onboard optocoupler",
+    "current_draw_typical_ma": 5,
+    "interface": "PWM/Digital input, Heavy duty screw terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "PWM / SIG",
+        "type": "sig",
+        "desc": "Gate trigger from ESP32 (accepts 3.3V directly)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Signal ground"
+      },
+      {
+        "name": "+ / - (Load)",
+        "type": "pwr",
+        "desc": "Heavy current load screw terminals"
+      }
+    ],
+    "dos": [
+      "The BEST MOSFET module for ESP32: fully saturates at 3.3V gate drive with ultra-low Rdson (3.3 mOhm!).",
+      "Switches high-speed PWM (up to 20kHz) for silent motor and LED dimming."
+    ],
+    "donts": [
+      "NEVER switch AC loads (DC only!)."
+    ],
+    "esp32_notes": "Far superior to IRF520. Runs completely cold at 5A - 10A currents without heatsink.",
+    "shopee_keywords": "module mosfet lr7843 cach ly quang cong suat lon 30v"
+  },
+  {
+    "id": "ssr_40da_solid_state",
+    "name": "SSR-40DA 40A DC to AC Solid State Relay",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "Input: 3V - 32V DC, Output: 24V - 380V AC",
+    "logic_level": "3.3V - 32V DC trigger",
+    "current_draw_typical_ma": 15,
+    "interface": "Screw terminals (Input 3-4, Output 1-2)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "Terminal 3 (+)",
+        "type": "sig",
+        "desc": "Positive DC trigger from ESP32 GPIO"
+      },
+      {
+        "name": "Terminal 4 (-)",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "Terminal 1 & 2",
+        "type": "pwr",
+        "desc": "AC Mains load switch (in series with AC live wire)"
+      }
+    ],
+    "dos": [
+      "Completely silent operation (no mechanical clicking). No electrical contact arcing.",
+      "MUST mount on aluminum heatsink if switching loads > 5A (heats up due to 1.6V triac drop)."
+    ],
+    "donts": [
+      "NEVER use to switch DC loads (SCR/Triac only turns off when AC current crosses zero; stays stuck ON with DC!).",
+      "NEVER touch metal base plate without grounding heatsink."
+    ],
+    "esp32_notes": "Zero-crossing switching avoids EMI noise. Perfect for heating elements and coffee makers.",
+    "shopee_keywords": "ro le ban dan ssr-40da 40a fotek"
+  },
+  {
+    "id": "micro_limit_switch",
+    "name": "Micro Limit Switch / Roller Lever Endstop",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "Up to 250V AC / 30V DC",
+    "logic_level": "Passive mechanical contact",
+    "current_draw_typical_ma": 0,
+    "interface": "COM, NO, NC",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "COM",
+        "type": "gnd",
+        "desc": "Common terminal (connect to ESP32 GND)"
+      },
+      {
+        "name": "NO",
+        "type": "sig",
+        "desc": "Normally Open (connect to GPIO with INPUT_PULLUP)"
+      },
+      {
+        "name": "NC",
+        "type": "sig",
+        "desc": "Normally Closed"
+      }
+    ],
+    "dos": [
+      "Wire between GPIO and GND using internal INPUT_PULLUP for fail-safe collision detection."
+    ],
+    "donts": [
+      "Do not bend lever beyond mechanical spring limit."
+    ],
+    "esp32_notes": "Essential physical endstops for 3D printers, CNC axes, and robot bumpers.",
+    "shopee_keywords": "cong tac hanh trinh micro limit switch co banh xe"
+  },
+  {
+    "id": "slide_switch_spdt",
+    "name": "SS12D00 / SS12F15 SPDT Miniature Slide Switch",
+    "category": "Relays, MOSFETs & Power Switches",
+    "operating_voltage": "Up to 50V DC 0.5A",
+    "logic_level": "Power switch",
+    "current_draw_typical_ma": 0,
+    "interface": "3 pins (Common center, Left throw, Right throw)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "Pin 1",
+        "type": "pwr",
+        "desc": "Input from Battery OUT+"
+      },
+      {
+        "name": "Pin 2 (Center)",
+        "type": "pwr",
+        "desc": "Switched Output to Boost IN+"
+      },
+      {
+        "name": "Pin 3",
+        "type": "na",
+        "desc": "Off state / unconnected"
+      }
+    ],
+    "dos": [
+      "Install on battery OUT+ line to cleanly power off entire robot when not in use."
+    ],
+    "donts": [
+      "NEVER switch currents > 1A directly through tiny sub-miniature slide switches (use rocker switch for heavy bots)."
+    ],
+    "esp32_notes": "Standard power switch used on Otto DIY robot chassis.",
+    "shopee_keywords": "cong tac gat ss12d00 3 chan spdt"
+  },
+  {
+    "id": "buzzer_active_3v3",
+    "name": "Active Buzzer Module (3.3V - 5V)",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "3.3V - 5.0V DC",
+    "logic_level": "Digital HIGH turns tone ON, LOW turns tone OFF",
+    "current_draw_typical_ma": 30,
+    "interface": "Digital GPIO (on/off)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC / +",
+        "type": "pwr",
+        "desc": "3.3V Power"
+      },
+      {
+        "name": "GND / -",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "I/O / S",
+        "type": "sig",
+        "desc": "Control pin (HIGH = beep, LOW = silent)"
+      }
+    ],
+    "dos": [
+      "Identify active buzzer: has white protective sticker on top and green PCB base with built-in oscillator.",
+      "Drive directly with digitalWrite(pin, HIGH) to produce loud 2.5kHz alarm tone."
+    ],
+    "donts": [
+      "NEVER attempt to play musical melodies (active buzzer can only produce 1 fixed single pitch)."
+    ],
+    "esp32_notes": "Simplest audio feedback for robot startup, button clicks, and low battery alarms.",
+    "shopee_keywords": "coi chip active buzzer 3.3v 5v keu chu dong"
+  },
+  {
+    "id": "buzzer_passive_pwm",
+    "name": "Passive Buzzer Module (Requires PWM)",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "PWM frequency driven",
+    "current_draw_typical_ma": 25,
+    "interface": "PWM (ESP32 ledcWriteTone)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/S",
+        "type": "sig",
+        "desc": "PWM signal pin"
+      }
+    ],
+    "dos": [
+      "Identify passive buzzer: open black casing exposing internal green PCB and coil.",
+      "Use tone() or ledcWriteTone(channel, freq) to play full 8-octave musical notes, RTTTL ringtones, and Mario songs."
+    ],
+    "donts": [
+      "Applying constant DC HIGH will only produce a tiny click sound, NOT a continuous tone."
+    ],
+    "esp32_notes": "Allows Otto robot to make R2-D2 expressive bleeps, whirs, and sad sounds.",
+    "shopee_keywords": "coi chip bi dong passive buzzer phat nhac pwm"
+  },
+  {
+    "id": "max98357a_i2s_dac",
+    "name": "MAX98357A I2S 3.2W Class-D Mono Audio Amplifier",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "2.5V - 5.5V DC (optimal 5V for 3.2W output into 4 ohm speaker)",
+    "logic_level": "3.3V I2S digital audio bus",
+    "current_draw_typical_ma": 400,
+    "interface": "I2S (BCLK, LRC, DIN)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VIN",
+        "type": "pwr",
+        "desc": "5V Power supply"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "BCLK",
+        "type": "sig",
+        "desc": "Bit Clock (ESP32 I2S BCLK)"
+      },
+      {
+        "name": "LRC",
+        "type": "sig",
+        "desc": "Left/Right Word Select Clock (ESP32 I2S WS)"
+      },
+      {
+        "name": "DIN",
+        "type": "sig",
+        "desc": "Serial Audio Data (ESP32 I2S DOUT)"
+      },
+      {
+        "name": "GAIN",
+        "type": "sig",
+        "desc": "Gain select (floating = 9dB, tie to GND for 3dB, to VIN for 15dB)"
+      },
+      {
+        "name": "SD",
+        "type": "sig",
+        "desc": "Shutdown / Channel mix"
+      }
+    ],
+    "dos": [
+      "Use ESP32-audioI2S or Phil Schatzmann's arduino-audio-tools library for internet radio and MP3 playback.",
+      "Connect directly to 4 ohm or 8 ohm 3W speaker."
+    ],
+    "donts": [
+      "NEVER connect speaker - terminal to ground (Class-D bridge tied load output!)."
+    ],
+    "esp32_notes": "Pristine digital audio quality directly from ESP32 I2S DMA. No analog noise or hum.",
+    "shopee_keywords": "mach khuech dai am thanh i2s max98357a dac 3w"
+  },
+  {
+    "id": "inmp441_i2s_mic",
+    "name": "INMP441 Omnidirectional Digital I2S Microphone Module",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "1.8V - 3.3V strictly",
+    "logic_level": "3.3V I2S digital audio",
+    "current_draw_typical_ma": 1.4,
+    "interface": "I2S (SCK, WS, SD, L/R)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VDD",
+        "type": "pwr",
+        "desc": "3.3V Power strictly from ESP32 (NEVER 5V!)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "SD",
+        "type": "sig",
+        "desc": "Serial Data Output to ESP32 I2S DIN"
+      },
+      {
+        "name": "SCK",
+        "type": "sig",
+        "desc": "Serial Clock from ESP32 I2S BCLK"
+      },
+      {
+        "name": "WS",
+        "type": "sig",
+        "desc": "Word Select from ESP32 I2S WS"
+      },
+      {
+        "name": "L/R",
+        "type": "sig",
+        "desc": "Left/Right channel select (tie to GND for Left channel)"
+      }
+    ],
+    "dos": [
+      "Keep small sound port hole on bottom of module open to the air.",
+      "Use for on-device voice recognition (wake words) and AI speech recording streaming to OpenAI Whisper."
+    ],
+    "donts": [
+      "NEVER supply 5V to VDD (instantly burns MEMS microphone element)."
+    ],
+    "esp32_notes": "Studio grade 24-bit digital MEMS microphone. High 61dBA SNR. Zero analog ADC hiss.",
+    "shopee_keywords": "micro i2s inmp441 thu am mems esp32"
+  },
+  {
+    "id": "pam8403_amp",
+    "name": "PAM8403 2x3W Miniature Stereo Audio Amplifier (5V)",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "2.5V - 5.5V DC (optimal 5.0V)",
+    "logic_level": "Analog Audio In (L, R, GND)",
+    "current_draw_typical_ma": 600,
+    "interface": "L-In, Ground, R-In, L-Out (+/-), R-Out (+/-)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "+5V / GND",
+        "type": "pwr",
+        "desc": "5V Power"
+      },
+      {
+        "name": "L / G / R",
+        "type": "sig",
+        "desc": "Analog stereo audio input"
+      },
+      {
+        "name": "L+/L- and R+/R-",
+        "type": "pwr",
+        "desc": "Speaker outputs"
+      }
+    ],
+    "dos": [
+      "Install a 470uF filter capacitor near power terminals to eliminate hum."
+    ],
+    "donts": [
+      "NEVER connect L- and R- speaker grounds together (independent bridge tied outputs)."
+    ],
+    "esp32_notes": "Tiny size with integrated potentiometer volume knob and power switch.",
+    "shopee_keywords": "mach khuech dai pam8403 2x3w co chiet ap"
+  },
+  {
+    "id": "dfplayer_mini_mp3",
+    "name": "DFPlayer Mini MP3 Player Module",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "3.3V - 5.0V DC (optimal 4.2V - 5.0V for full speaker loudness)",
+    "logic_level": "UART Serial 9600 baud (RX requires 1k resistor from 3.3V ESP32 TX)",
+    "current_draw_typical_ma": 200,
+    "interface": "UART (9600 baud, 8-N-1)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "RX",
+        "type": "sig",
+        "desc": "UART Receive (put 1k resistor in series with ESP32 TX pin!)"
+      },
+      {
+        "name": "TX",
+        "type": "sig",
+        "desc": "UART Transmit to ESP32 RX"
+      },
+      {
+        "name": "SPK_1 / SPK_2",
+        "type": "pwr",
+        "desc": "Direct 3W speaker drive outputs"
+      },
+      {
+        "name": "BUSY",
+        "type": "sig",
+        "desc": "Active LOW while track is playing"
+      }
+    ],
+    "dos": [
+      "Format MicroSD card as FAT32, create a folder named 'mp3' and name files '0001.mp3', '0002.mp3'.",
+      "Put a 1k ohm resistor between ESP32 TX and DFPlayer RX to suppress serial noise/glitches."
+    ],
+    "donts": [
+      "NEVER connect directly without 1k series resistor on RX line (causes speaker popping/hum)."
+    ],
+    "esp32_notes": "Offloads MP3 decoding completely from ESP32. DFPlayerMini_Fast library recommended.",
+    "shopee_keywords": "module mp3 dfplayer mini kem khe the nho"
+  },
+  {
+    "id": "sound_sensor_lm393",
+    "name": "Sound Detection Sensor with Microphone & LM393",
+    "category": "Audio, Sound & Buzzer",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V DO and AO",
+    "current_draw_typical_ma": 5,
+    "interface": "DO (Digital Out), AO (Analog Out)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC/GND/DO/AO",
+        "type": "sig",
+        "desc": "4-pin sensor module header"
+      }
+    ],
+    "dos": [
+      "Detects clapping hands, loud bangs, whistles, and voice triggers."
+    ],
+    "donts": [
+      "Cannot record speech or audio waveforms (electret condenser + comparator only)."
+    ],
+    "esp32_notes": "Great for clap-activated lamps and acoustic disturbance triggers.",
+    "shopee_keywords": "cam bien am thanh microphone lm393"
+  },
+  {
+    "id": "level_shifter_4ch_bss138",
+    "name": "4-Channel Bi-Directional Logic Level Shifter (BSS138 Based)",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "LV: 1.8V - 3.3V, HV: 3.3V - 5.5V",
+    "logic_level": "Bi-directional level translation between LV and HV",
+    "current_draw_typical_ma": 0.5,
+    "interface": "LV1-LV4 (3.3V side), HV1-HV4 (5V side)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "LV",
+        "type": "pwr",
+        "desc": "Low Voltage reference: MUST connect to ESP32 3.3V"
+      },
+      {
+        "name": "HV",
+        "type": "pwr",
+        "desc": "High Voltage reference: MUST connect to 5V rail"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Common Ground: MUST connect to common system GND"
+      },
+      {
+        "name": "LV1 - LV4",
+        "type": "sig",
+        "desc": "3.3V signal channels to ESP32 GPIOs"
+      },
+      {
+        "name": "HV1 - HV4",
+        "type": "sig",
+        "desc": "5.0V signal channels to 5V sensors/actuators"
+      }
+    ],
+    "dos": [
+      "Always connect LV to 3.3V, HV to 5V, and GND to common GND.",
+      "Use for I2C, UART, SPI, and ultrasonic Trig/Echo bidirectional signals."
+    ],
+    "donts": [
+      "NEVER reverse LV and HV (HV must ALWAYS be at higher potential than LV).",
+      "NEVER leave LV or HV unpowered while passing signals through channels."
+    ],
+    "esp32_notes": "Essential bridge protecting delicate ESP32 3.3V inputs when interfacing with 5V Arduino sensors.",
+    "shopee_keywords": "mach chuyen doi muc logic 4 kenh 3.3v 5v level shifter"
+  },
+  {
+    "id": "txs0108e_level_shifter",
+    "name": "TXS0108E 8-Channel High Speed Bi-Directional Level Converter",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "VCCA: 1.2V - 3.6V, VCCB: 1.65V - 5.5V",
+    "logic_level": "Automatic direction sensing",
+    "current_draw_typical_ma": 1,
+    "interface": "A1 - A8 (LV), B1 - B8 (HV), OE (Output Enable)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCCA",
+        "type": "pwr",
+        "desc": "Connect to 3.3V"
+      },
+      {
+        "name": "VCCB",
+        "type": "pwr",
+        "desc": "Connect to 5.0V (VCCA <= VCCB!)"
+      },
+      {
+        "name": "OE",
+        "type": "sig",
+        "desc": "Output enable (pull HIGH to VCCA to enable)"
+      }
+    ],
+    "dos": [
+      "Pull OE HIGH to VCCA to activate channels.",
+      "Supports high-speed SPI up to 20Mbps."
+    ],
+    "donts": [
+      "Not recommended for very heavy capacitive loads or strong pull-up resistors (<4.7k)."
+    ],
+    "esp32_notes": "Translates 8 lines simultaneously. Perfect for 8-bit parallel TFT screens or SD cards.",
+    "shopee_keywords": "mach chuyen muc logic 8 kenh txs0108e"
+  },
+  {
+    "id": "pcf8574_io_expander",
+    "name": "PCF8574 8-Bit I2C I/O Expander Module",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "2.5V - 6.0V DC",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 2.5,
+    "interface": "I2C (100kHz Standard)",
+    "default_address": "0x20 to 0x27 (or 0x38 to 0x3F for PCF8574A)",
+    "pinout": [
+      {
+        "name": "VCC/GND/SDA/SCL",
+        "type": "sig",
+        "desc": "I2C bus"
+      },
+      {
+        "name": "P0 - P7",
+        "type": "sig",
+        "desc": "8 quasi-bidirectional I/O pins"
+      },
+      {
+        "name": "INT",
+        "type": "sig",
+        "desc": "Interrupt output pin (active LOW on any input change)"
+      }
+    ],
+    "dos": [
+      "Use INT pin connected to ESP32 GPIO interrupt to detect keypad presses instantly without polling."
+    ],
+    "donts": [
+      "Output drive capability: Strong sink (25mA to GND), but very weak source (100uA to VCC). Pull to GND to turn on LEDs!"
+    ],
+    "esp32_notes": "Saves pins: control 8 buttons, relays, or LEDs with only 2 I2C pins.",
+    "shopee_keywords": "module mo rong 8 chan i2c pcf8574"
+  },
+  {
+    "id": "mcp23017_io_expander",
+    "name": "MCP23017 16-Bit I2C I/O Expander with Interrupts",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "1.8V - 5.5V DC",
+    "logic_level": "3.3V / 5.0V I2C compliant",
+    "current_draw_typical_ma": 1,
+    "interface": "I2C (up to 1.7MHz High-Speed)",
+    "default_address": "0x20 to 0x27 (configured via A0, A1, A2 pins)",
+    "pinout": [
+      {
+        "name": "GPA0 - GPA7",
+        "type": "sig",
+        "desc": "Port A 8-bit I/O"
+      },
+      {
+        "name": "GPB0 - GPB7",
+        "type": "sig",
+        "desc": "Port B 8-bit I/O"
+      },
+      {
+        "name": "INTA / INTB",
+        "type": "sig",
+        "desc": "Dual configurable interrupt pins"
+      },
+      {
+        "name": "RESET",
+        "type": "sig",
+        "desc": "Active LOW reset (must tie to VCC for normal operation!)"
+      }
+    ],
+    "dos": [
+      "Tie RESET pin to VCC firmly (leaving it floating causes random chip resets).",
+      "Has true push-pull 25mA source and sink outputs, plus built-in 100k internal pullup resistors."
+    ],
+    "donts": [
+      "NEVER leave RESET pin floating."
+    ],
+    "esp32_notes": "The ultimate I/O expander for complex robots with dozens of limit switches, LEDs, and buttons. Adafruit_MCP23017 library.",
+    "shopee_keywords": "ic mo rong 16 chan i2c mcp23017"
+  },
+  {
+    "id": "ads1115_16bit_adc",
+    "name": "ADS1115 16-Bit 4-Channel Precision ADC with PGA (I2C)",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "2.0V - 5.5V DC",
+    "logic_level": "3.3V / 5.0V I2C",
+    "current_draw_typical_ma": 0.15,
+    "interface": "I2C (Fast Mode 400kHz)",
+    "default_address": "0x48 (ADDR pin to GND), 0x49 (to VDD), 0x4A (to SDA), 0x4B (to SCL)",
+    "pinout": [
+      {
+        "name": "VDD/GND/SCL/SDA",
+        "type": "sig",
+        "desc": "I2C power & bus"
+      },
+      {
+        "name": "ADDR",
+        "type": "sig",
+        "desc": "Address pin"
+      },
+      {
+        "name": "ALERT/RDY",
+        "type": "sig",
+        "desc": "Conversion ready interrupt"
+      },
+      {
+        "name": "A0 - A3",
+        "type": "sig",
+        "desc": "4 Single-Ended or 2 Differential Analog inputs"
+      }
+    ],
+    "dos": [
+      "Use ADS1115 whenever ESP32 internal ADC is too noisy, non-linear, or unavailable (e.g. ADC2 while WiFi is on).",
+      "Has internal programmable gain amplifier (PGA) measuring down to microvolts (±0.256V up to ±6.144V)."
+    ],
+    "donts": [
+      "NEVER feed analog voltage higher than VDD + 0.3V into any analog pin."
+    ],
+    "esp32_notes": "16-bit resolution (65536 steps) versus ESP32's noisy 12-bit ADC. Indispensable for precision load cells and current shunts.",
+    "shopee_keywords": "mach adc 16 bit 4 kenh ads1115 i2c"
+  },
+  {
+    "id": "voltage_divider_module",
+    "name": "0-25V Voltage Divider Sensor Module (5:1 Resistor Divider)",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "Input: 0V - 25V DC (when using 5V MCU) or 0V - 16.5V DC (with 3.3V ESP32)",
+    "logic_level": "Analog Output scaled by 1/5",
+    "current_draw_typical_ma": 0.8,
+    "interface": "VCC (+), GND (-) screw terminal; S (+), - (GND) pin header",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "Terminal VCC",
+        "type": "pwr",
+        "desc": "Positive battery/load voltage to measure (0 - 16.5V)"
+      },
+      {
+        "name": "Terminal GND",
+        "type": "gnd",
+        "desc": "Negative battery terminal / Ground"
+      },
+      {
+        "name": "Pin S",
+        "type": "sig",
+        "desc": "Scaled analog output (Vin / 5.0). Connect directly to ESP32 ADC pin"
+      },
+      {
+        "name": "Pin -",
+        "type": "gnd",
+        "desc": "Ground to ESP32 GND"
+      },
+      {
+        "name": "Pin +",
+        "type": "na",
+        "desc": "Not connected internally on most modules"
+      }
+    ],
+    "dos": [
+      "Use to measure 1S (3.7V - 4.2V), 2S (7.4V - 8.4V), or 3S (11.1V - 12.6V) battery packs safely on ESP32.",
+      "Software calculation: V_battery = V_adc_measured * 5.0 * calibration_factor."
+    ],
+    "donts": [
+      "NEVER measure input voltages exceeding 16.5V when connected to ESP32 3.3V ADC (3.3V * 5 = 16.5V max!)."
+    ],
+    "esp32_notes": "Contains precision 30k ohm and 7.5k ohm resistors. Connect to ADC1 pin (e.g. GPIO1 on S3).",
+    "shopee_keywords": "module do dien ap 0-25v mach chia ap 5 lan"
+  },
+  {
+    "id": "acs712_current_sensor",
+    "name": "ACS712 5A / 20A / 30A Hall Effect Current Sensor",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "5.0V strictly (VCC)",
+    "logic_level": "Analog output centered at VCC/2 (2.5V at 0A)",
+    "current_draw_typical_ma": 13,
+    "interface": "VIOUT (Analog), Heavy duty screw terminals",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power strictly"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "OUT",
+        "type": "sig",
+        "desc": "Analog Output (2.5V center. Scale via voltage divider to ESP32 ADC!)"
+      }
+    ],
+    "dos": [
+      "Use voltage divider on OUT pin to drop 0-5V down to 0-3.3V before connecting to ESP32 ADC.",
+      "Full galvanic isolation (2.1kV RMS) between high current line and MCU."
+    ],
+    "donts": [
+      "NEVER connect OUT pin directly to ESP32 without attenuation (can output up to 5V)."
+    ],
+    "esp32_notes": "Measures both AC and DC currents. Sensitivity: 185mV/A (5A model), 100mV/A (20A model), 66mV/A (30A model).",
+    "shopee_keywords": "cam bien dong acs712 5a 20a 30a hall effect"
+  },
+  {
+    "id": "ina219_power_monitor",
+    "name": "INA219 Bi-Directional High-Side DC Voltage & Current Monitor (I2C)",
+    "category": "Logic Converters, Bus & Protection",
+    "operating_voltage": "3.0V - 5.5V (Logic), Bus Voltage: 0V - 26V DC",
+    "logic_level": "3.3V / 5.0V I2C compliant",
+    "current_draw_typical_ma": 1,
+    "interface": "I2C (400kHz)",
+    "default_address": "0x40 (default) up to 0x4F (via A0, A1 solder pads)",
+    "pinout": [
+      {
+        "name": "VCC/GND/SCL/SDA",
+        "type": "sig",
+        "desc": "I2C interface"
+      },
+      {
+        "name": "Vin+",
+        "type": "pwr",
+        "desc": "High side power positive in (from power supply)"
+      },
+      {
+        "name": "Vin-",
+        "type": "pwr",
+        "desc": "High side power load out (to robot/motor load)"
+      }
+    ],
+    "dos": [
+      "FAR superior to ACS712: measures bus voltage (0-26V), shunt current (up to ±3.2A), and power (Watts) digitally over I2C!",
+      "1% precision 0.1 ohm shunt resistor onboard."
+    ],
+    "donts": [
+      "NEVER exceed 26V bus voltage limit on Vin+/Vin-."
+    ],
+    "esp32_notes": "Must-have telemetry tool for robotics: logs real-time battery drain, motor stall currents, and power consumption. Adafruit_INA219 library.",
+    "shopee_keywords": "module do dong ap i2c ina219 26v 3.2a"
+  },
+  {
+    "id": "rc522_rfid_reader",
+    "name": "RC522 13.56MHz RFID Reader/Writer Module",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "2.5V - 3.3V strictly (VCC)",
+    "logic_level": "3.3V SPI strictly (NOT 5V tolerant!)",
+    "current_draw_typical_ma": 26,
+    "interface": "SPI (up to 10MHz)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "3.3V",
+        "type": "pwr",
+        "desc": "3.3V Power from ESP32 strictly (NEVER 5V!)"
+      },
+      {
+        "name": "RST",
+        "type": "sig",
+        "desc": "Reset pin"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "IRQ",
+        "type": "sig",
+        "desc": "Interrupt pin (leave floating or connect to GPIO)"
+      },
+      {
+        "name": "MISO",
+        "type": "sig",
+        "desc": "SPI MISO"
+      },
+      {
+        "name": "MOSI",
+        "type": "sig",
+        "desc": "SPI MOSI"
+      },
+      {
+        "name": "SCK",
+        "type": "sig",
+        "desc": "SPI Clock"
+      },
+      {
+        "name": "SDA / NSS",
+        "type": "sig",
+        "desc": "SPI Chip Select (CS)"
+      }
+    ],
+    "dos": [
+      "Always power strictly from 3.3V rail.",
+      "Reads Mifare Classic 1K cards, S50 key fobs, and NFC Type 2 tags."
+    ],
+    "donts": [
+      "NEVER connect 5V to VCC pin (instantly destroys MFRC522 silicon)."
+    ],
+    "esp32_notes": "Popular choice for smart door locks, robot game tokens, and attendance systems. MFRC522 library.",
+    "shopee_keywords": "module doc the rfid rc522 13.56mhz kem the tu"
+  },
+  {
+    "id": "pn532_nfc_module",
+    "name": "PN532 NFC RFID Module (I2C / SPI / HSU UART Selectable)",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "3.3V - 5.0V",
+    "logic_level": "3.3V / 5.0V compliant",
+    "current_draw_typical_ma": 50,
+    "interface": "I2C, SPI, or High Speed UART (configured via dual onboard DIP switches)",
+    "default_address": "0x24 (I2C mode)",
+    "pinout": [
+      {
+        "name": "VCC/GND/SDA(TX)/SCL(RX)/RSTOUT/IRQ",
+        "type": "sig",
+        "desc": "Multi-mode pinout"
+      }
+    ],
+    "dos": [
+      "Set DIP switches: [0, 1] for I2C, [1, 0] for SPI, [0, 0] for HSU UART.",
+      "Can emulate NFC tags and read Apple/Google Pay NFC UID."
+    ],
+    "donts": [
+      "NEVER flip DIP switches while power is connected."
+    ],
+    "esp32_notes": "Much more powerful than RC522. Supports peer-to-peer NFC phone communication. Adafruit_PN532 library.",
+    "shopee_keywords": "module nfc pn532 v3 doc the tu dien thoai"
+  },
+  {
+    "id": "neo6m_gps_module",
+    "name": "NEO-6M / NEO-8M GPS Satellite Receiver Module",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "3.0V - 5.0V (VCC has onboard 3.3V LDO)",
+    "logic_level": "UART 3.3V strictly (TX and RX)",
+    "current_draw_typical_ma": 50,
+    "interface": "UART (Default 9600 baud, 8-N-1, NMEA sentences)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V or 5V Power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "TX",
+        "type": "sig",
+        "desc": "UART TX out (connect to ESP32 HardwareSerial RX pin)"
+      },
+      {
+        "name": "RX",
+        "type": "sig",
+        "desc": "UART RX in (connect to ESP32 HardwareSerial TX pin)"
+      },
+      {
+        "name": "PPS",
+        "type": "sig",
+        "desc": "Pulse Per Second time synchronization pin (blinks when GPS locks)"
+      }
+    ],
+    "dos": [
+      "Test outdoors with clear line of sight to open sky (first satellite fix takes 1 - 3 minutes).",
+      "Use TinyGPSPlus library to easily parse Latitude, Longitude, Altitude, Speed, and Atomic Time."
+    ],
+    "donts": [
+      "NEVER expect satellite lock indoors inside dense reinforced concrete buildings."
+    ],
+    "esp32_notes": "Blinking PPS LED indicates valid satellite fix. Ceramic patch antenna must face upward toward sky.",
+    "shopee_keywords": "module dinh vi gps neo-6m neo-8m kem anten gom"
+  },
+  {
+    "id": "nrf24l01_wireless",
+    "name": "NRF24L01+ 2.4GHz Wireless Transceiver Module",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "1.9V - 3.6V strictly (VCC MUST NEVER EXCEED 3.6V!)",
+    "logic_level": "SPI pins are 5V tolerant, but VCC IS NOT!",
+    "current_draw_typical_ma": 115,
+    "interface": "SPI (up to 10Mbps)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground (Pin 1 top left looking at back)"
+      },
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V Power STRICTLY! (Add 10uF - 47uF capacitor across GND/VCC!)"
+      },
+      {
+        "name": "CE",
+        "type": "sig",
+        "desc": "Chip Enable (RX/TX mode control)"
+      },
+      {
+        "name": "CSN",
+        "type": "sig",
+        "desc": "SPI Chip Select"
+      },
+      {
+        "name": "SCK",
+        "type": "sig",
+        "desc": "SPI Clock"
+      },
+      {
+        "name": "MOSI",
+        "type": "sig",
+        "desc": "SPI MOSI"
+      },
+      {
+        "name": "MISO",
+        "type": "sig",
+        "desc": "SPI MISO"
+      },
+      {
+        "name": "IRQ",
+        "type": "sig",
+        "desc": "Interrupt pin (optional)"
+      }
+    ],
+    "dos": [
+      "CRITICAL: Solder a 10uF - 47uF electrolytic or tantalum capacitor directly across VCC and GND pins on the module!",
+      "Power from a dedicated 3.3V LDO or adapter board with onboard AMS1117 (ESP32 3.3V pin often has power spikes that reset NRF24)."
+    ],
+    "donts": [
+      "NEVER connect VCC to 5V (instantly destroys NRF24L01 chip!).",
+      "NEVER attempt reliable transmission without decoupling capacitor across power pins."
+    ],
+    "esp32_notes": "Low cost long-range remote control (PA/LNA version reaches >1km). RF24 library by TMRh20.",
+    "shopee_keywords": "module nrf24l01 2.4ghz truyen nhan khong day kem de nguon"
+  },
+  {
+    "id": "hc05_bluetooth",
+    "name": "HC-05 / HC-06 Bluetooth Classic Serial SPP Module",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "3.6V - 6.0V (VCC has onboard 3.3V regulator)",
+    "logic_level": "RX pin is 3.3V strictly (needs voltage divider from 5V MCU, safe with 3.3V ESP32)",
+    "current_draw_typical_ma": 40,
+    "interface": "UART (Default 9600 or 38400 baud in AT command mode)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power from ESP32"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "TXD",
+        "type": "sig",
+        "desc": "UART TX (3.3V level to ESP32 RX)"
+      },
+      {
+        "name": "RXD",
+        "type": "sig",
+        "desc": "UART RX (3.3V from ESP32 TX)"
+      },
+      {
+        "name": "STATE",
+        "type": "sig",
+        "desc": "Connection status output (HIGH when paired)"
+      },
+      {
+        "name": "EN / KEY",
+        "type": "sig",
+        "desc": "AT Command mode trigger (hold HIGH on power-up for 38400 baud AT mode)"
+      }
+    ],
+    "dos": [
+      "HC-05 can be configured as Master or Slave; HC-06 is factory fixed as Slave only."
+    ],
+    "donts": [
+      "Remember ESP32 already has built-in Bluetooth/BLE! Only use HC-05 if offloading stack or interfacing legacy devices."
+    ],
+    "esp32_notes": "Bluetooth 2.0 + EDR SPP. Easy serial terminal communication with Android smartphones.",
+    "shopee_keywords": "module bluetooth hc-05 hc-06 truyen thong noi tiep"
+  },
+  {
+    "id": "max485_rs485",
+    "name": "MAX485 RS-485 Half-Duplex Transceiver Module",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "4.75V - 5.25V DC (optimal 5.0V)",
+    "logic_level": "5V logic (accepts 3.3V TX/RX on most modern clones)",
+    "current_draw_typical_ma": 30,
+    "interface": "UART (RO, DI) + Direction control (DE, RE) + Differential A/B bus",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "RO",
+        "type": "sig",
+        "desc": "Receiver Output to ESP32 RX"
+      },
+      {
+        "name": "DI",
+        "type": "sig",
+        "desc": "Driver Input from ESP32 TX"
+      },
+      {
+        "name": "DE / RE",
+        "type": "sig",
+        "desc": "Driver / Receiver Enable (tie together to 1 ESP32 GPIO: HIGH to send, LOW to receive)"
+      },
+      {
+        "name": "A / B",
+        "type": "sig",
+        "desc": "RS-485 Differential twisted pair bus"
+      }
+    ],
+    "dos": [
+      "Use twisted pair cable with 120 ohm termination resistors at both ends of long cable runs (>1000m).",
+      "Tie DE and RE together to a single direction GPIO on ESP32."
+    ],
+    "donts": [
+      "NEVER leave bus unterminated over long cable distances (causes signal reflections)."
+    ],
+    "esp32_notes": "Standard physical layer for industrial Modbus RTU PLC communication and solar inverters.",
+    "shopee_keywords": "module max485 rs485 modbus rtu"
+  },
+  {
+    "id": "mcp2515_can_bus",
+    "name": "MCP2515 CAN Bus Controller with TJA1050 Transceiver (SPI)",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "5.0V strictly (TJA1050 CAN transceiver requires 5.0V for CANH/CANL differential voltages)",
+    "logic_level": "SPI inputs are 3.3V/5V compatible, VCC must be 5V",
+    "current_draw_typical_ma": 20,
+    "interface": "SPI (up to 10MHz)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "5V Power strictly (TJA1050 will not transmit on 3.3V!)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "CS/SO/SI/SCK/INT",
+        "type": "sig",
+        "desc": "SPI bus pins to ESP32"
+      },
+      {
+        "name": "CANH / CANL",
+        "type": "sig",
+        "desc": "Differential CAN Bus lines (connect to automotive OBD-II / robot bus)"
+      }
+    ],
+    "dos": [
+      "Supply 5V to VCC (the TJA1050 transceiver chip REQUIRES 5V to generate the ISO 11898 CAN bus differential voltage).",
+      "Enable 120 ohm termination resistor jumper (J2) if this is an endpoint device."
+    ],
+    "donts": [
+      "NEVER power solely from 3.3V (SPI will respond, but CAN transceiver CANNOT transmit packets!)."
+    ],
+    "esp32_notes": "Notice ESP32 has built-in TWAI (Two-Wire Automotive Interface / CAN). Alternatively, just use SN65HVD230 3.3V transceiver directly with ESP32 TWAI.",
+    "shopee_keywords": "module can bus mcp2515 tja1050 spi giao tiep o to"
+  },
+  {
+    "id": "lora_ra02_sx1278",
+    "name": "SX1278 Ra-02 433MHz LoRa Long Range Wireless Module",
+    "category": "Wireless, RFID, GPS & Communication",
+    "operating_voltage": "2.5V - 3.7V (optimal 3.3V strictly)",
+    "logic_level": "3.3V SPI strictly (NOT 5V tolerant!)",
+    "current_draw_typical_ma": 120,
+    "interface": "SPI (NSS, MOSI, MISO, SCK, DIO0)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "3.3V",
+        "type": "pwr",
+        "desc": "3.3V Power from ESP32 strictly"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground"
+      },
+      {
+        "name": "NSS",
+        "type": "sig",
+        "desc": "SPI Chip Select"
+      },
+      {
+        "name": "MOSI/MISO/SCK",
+        "type": "sig",
+        "desc": "SPI bus"
+      },
+      {
+        "name": "DIO0",
+        "type": "sig",
+        "desc": "Packet Rx/Tx interrupt pin (connect to ESP32 GPIO)"
+      },
+      {
+        "name": "RESET",
+        "type": "sig",
+        "desc": "Reset pin"
+      }
+    ],
+    "dos": [
+      "MUST ALWAYS connect external 433MHz spring or SMA whip antenna BEFORE powering on (transmitting without antenna damages RF power amplifier!).",
+      "Extreme range: up to 3km - 10km in rural line-of-sight environments."
+    ],
+    "donts": [
+      "NEVER power on or transmit without antenna attached!",
+      "NEVER connect 5V to power or signal lines."
+    ],
+    "esp32_notes": "Chirp Spread Spectrum (CSS) modulation. Sandeep Mistry's LoRa library or RadioLib standard.",
+    "shopee_keywords": "module lora ra-02 sx1278 433mhz kem anten"
+  }
+]
