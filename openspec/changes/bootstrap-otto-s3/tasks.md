@@ -1,8 +1,8 @@
 ## 1. Repo & build (agent, không cần board)
-- [ ] 1.1 Tạo cấu trúc repo, platformio.ini, pins.h, pytest.ini
-- [ ] 1.2 Viết lib/otto_calib theo design §4; `pio test -e native` PASS
-- [ ] 1.3 Viết firmware theo design §1–§6; `pio run -e otto` không warning nghiêm trọng
-- [ ] 1.4 Tạo tools/tach_disc.svg (Ø30mm, 4 đen/4 trắng, tâm có lỗ Ø6mm)
+- [x] 1.1 Tạo cấu trúc repo, platformio.ini, pins.h, pytest.ini
+- [x] 1.2 Viết lib/otto_calib theo design §4; `pio test -e native` PASS
+- [x] 1.3 Viết firmware theo design §1–§6; `pio run -e otto` không warning nghiêm trọng
+- [x] 1.4 Tạo tools/tach_disc.svg (Ø30mm, 4 đen/4 trắng, tâm có lỗ Ø6mm)
 
 ## GATE G0 – người đi dây + checklist M1–M8 trong WIRING.md
 
