@@ -516,6 +516,82 @@
     .bom-table tr:hover td {
       background: color-mix(in srgb, var(--fg) 4%, transparent);
     }
+
+    /* Floating Viewport Zoom Widget (Bottom-Left) */
+    #zoom-widget {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: color-mix(in srgb, var(--surface-deep) 94%, transparent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      z-index: 1000;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .zoom-btn {
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .zoom-btn:hover {
+      background: color-mix(in srgb, var(--fg) 10%, transparent);
+      color: var(--fg);
+    }
+    .zoom-btn:active {
+      transform: scale(0.92);
+    }
+    #zoom-level {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Mono", monospace;
+      color: var(--fg);
+      padding: 0 8px;
+      cursor: pointer;
+      user-select: none;
+      min-width: 44px;
+      text-align: center;
+    }
+    #zoom-level:hover {
+      color: var(--accent);
+    }
+    .zoom-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border-light);
+      margin: 0 3px;
+    }
+    #trackpad-hint {
+      position: fixed;
+      bottom: 66px;
+      left: 20px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-light);
+      color: var(--fg-muted);
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -577,6 +653,27 @@
         </defs>
       </svg>
     </div>
+  </div>
+
+  <!-- Mac Trackpad Helper Hint (Bottom Left) -->
+  <div id="trackpad-hint">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="3"/><line x1="12" y1="14" x2="12" y2="22"/></svg>
+    <span><b>Trackpad Mac:</b> Vuốt 2 ngón để cuộn • Nhúm 2 ngón phóng to/thu nhỏ • Giữ Space + kéo</span>
+  </div>
+
+  <!-- Floating Viewport Zoom Controls (Bottom Left) -->
+  <div id="zoom-widget">
+    <button class="zoom-btn" onclick="zoomDelta(-0.15)" title="Thu nhỏ (Pinch in)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <span id="zoom-level" onclick="resetZoom100()" title="Bấm để đưa về 100%">90%</span>
+    <button class="zoom-btn" onclick="zoomDelta(0.15)" title="Phóng to (Pinch out)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button class="zoom-btn" onclick="fitToScreen()" title="Căn toàn bộ linh kiện vừa màn hình (Fit to Screen)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
   </div>
 
   <!-- Filter Bar (Bottom Center) -->
@@ -1733,30 +1830,115 @@
       });
     }
 
-    // --- Viewport Pan & Zoom ---
-    let scale = 0.90;
+    // --- Enhanced Viewport Pan & Zoom Engine (macOS Trackpad & Gesture Optimized) ---
+    let scale = 0.85;
     let panX = 40;
     let panY = 20;
     let isPanning = false;
+    let isSpacePressed = false;
     let panStartX, panStartY;
 
     const viewport = document.getElementById('viewport');
     const container = document.getElementById('canvas-container');
+    const zoomLevelEl = document.getElementById('zoom-level');
 
     function updateTransform() {
       container.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      if (zoomLevelEl) {
+        zoomLevelEl.innerText = `${Math.round(scale * 100)}%`;
+      }
     }
 
+    // Zoom centered at cursor coordinate (cx, cy)
+    function zoomAt(cx, cy, newScale) {
+      const clampedScale = Math.min(Math.max(newScale, 0.25), 3.0);
+      if (Math.abs(clampedScale - scale) < 0.001) return;
+
+      const rect = viewport.getBoundingClientRect();
+      const mouseX = cx - rect.left;
+      const mouseY = cy - rect.top;
+
+      // Coordinate on canvas under mouse before zoom
+      const canvasX = (mouseX - panX) / scale;
+      const canvasY = (mouseY - panY) / scale;
+
+      scale = clampedScale;
+
+      // Adjust pan so the point under mouse remains anchored
+      panX = mouseX - canvasX * scale;
+      panY = mouseY - canvasY * scale;
+
+      updateTransform();
+    }
+
+    // Two-Finger Pan & Pinch-to-Zoom on macOS Trackpad
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      if (e.ctrlKey || e.metaKey) {
+        // macOS Trackpad Pinch gesture (or Ctrl + mouse wheel)
+        const zoomSensitivity = 0.015;
+        const zoomDelta = -e.deltaY * zoomSensitivity;
+        const newScale = scale * Math.pow(Math.E, zoomDelta);
+        zoomAt(e.clientX, e.clientY, newScale);
+      } else {
+        // macOS Trackpad 2-finger swipe: pan in all directions (left, right, up, down)
+        panX -= e.deltaX;
+        panY -= e.deltaY;
+        updateTransform();
+      }
+    }, { passive: false });
+
+    // Native Safari Gesture Events for 120Hz smooth trackpad pinch
+    let gestureStartScale = 1;
+    window.addEventListener('gesturestart', (e) => {
+      e.preventDefault();
+      gestureStartScale = scale;
+    });
+    window.addEventListener('gesturechange', (e) => {
+      e.preventDefault();
+      const newScale = gestureStartScale * e.scale;
+      zoomAt(e.clientX, e.clientY, newScale);
+    });
+    window.addEventListener('gestureend', (e) => {
+      e.preventDefault();
+    });
+
+    // Spacebar Drag (Figma / Photoshop style)
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !e.target.matches('input, textarea')) {
+        if (!isSpacePressed) {
+          isSpacePressed = true;
+          viewport.style.cursor = 'grab';
+        }
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') {
+        isSpacePressed = false;
+        viewport.style.cursor = '';
+      }
+    });
+
+    // Click-and-Drag Panning on Empty Canvas or with Spacebar / Middle Click
     viewport.addEventListener('pointerdown', (e) => {
-      if (e.target === viewport || e.target.id === 'wire-canvas') {
+      const isMiddleButton = (e.button === 1);
+      const isLeftOnCanvas = (e.button === 0 && (e.target === viewport || e.target.id === 'wire-canvas' || isSpacePressed));
+
+      if (isLeftOnCanvas || isMiddleButton) {
         isPanning = true;
         panStartX = e.clientX - panX;
         panStartY = e.clientY - panY;
+        viewport.style.cursor = 'grabbing';
         viewport.setPointerCapture(e.pointerId);
-        selectedWireId = null;
-        selectedCompId = null;
-        document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
-        renderWires();
+
+        if (!isSpacePressed) {
+          selectedWireId = null;
+          selectedCompId = null;
+          document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
+          renderWires();
+        }
       }
     });
 
@@ -1770,25 +1952,54 @@
     viewport.addEventListener('pointerup', (e) => {
       if (!isPanning) return;
       isPanning = false;
+      viewport.style.cursor = isSpacePressed ? 'grab' : '';
       viewport.releasePointerCapture(e.pointerId);
     });
 
-    viewport.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoomFactor = 1.1;
-      if (e.deltaY < 0) {
-        scale = Math.min(scale * zoomFactor, 2.5);
-      } else {
-        scale = Math.max(scale / zoomFactor, 0.45);
-      }
+    // Manual Zoom Controls (+ / - / 100% / Fit to Screen)
+    function zoomDelta(delta) {
+      const rect = viewport.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      zoomAt(cx, cy, scale * (1 + delta));
+    }
+
+    function resetZoom100() {
+      const rect = viewport.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      zoomAt(cx, cy, 1.0);
+    }
+
+    function fitToScreen() {
+      const comps = Object.values(components);
+      if (comps.length === 0) return;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      comps.forEach(c => {
+        if (c.x < minX) minX = c.x;
+        if (c.y < minY) minY = c.y;
+        if (c.x + c.w > maxX) maxX = c.x + c.w;
+        if (c.y + c.h > maxY) maxY = c.y + c.h;
+      });
+
+      const boxW = maxX - minX;
+      const boxH = maxY - minY;
+      const rect = viewport.getBoundingClientRect();
+      const pad = 80;
+
+      const scaleX = (rect.width - pad * 2) / boxW;
+      const scaleY = (rect.height - pad * 2) / boxH;
+      scale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.35), 1.2);
+
+      panX = rect.width / 2 - (minX + boxW / 2) * scale;
+      panY = rect.height / 2 - (minY + boxH / 2) * scale;
+
       updateTransform();
-    }, { passive: false });
+    }
 
     function resetLayout() {
-      scale = 0.90;
-      panX = 40;
-      panY = 20;
-      updateTransform();
+      fitToScreen();
     }
 
     function toggleInspector() {
@@ -1804,6 +2015,14 @@
         document.getElementById('checklist-modal').style.display = 'none';
       }
     }
+
+    // Auto-fade trackpad helper hint after 7 seconds
+    setTimeout(() => {
+      const hint = document.getElementById('trackpad-hint');
+      if (hint) {
+        hint.style.opacity = '0.35';
+      }
+    }, 7000);
 
     // --- Initialization ---
     window.addEventListener('DOMContentLoaded', () => {
