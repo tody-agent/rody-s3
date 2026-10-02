@@ -1,0 +1,22 @@
+schema: spec-driven
+
+context: |
+  Remix robot HP Robots Otto Starter (2 bánh servo quay liên tục, siêu âm, 2 IR dò line,
+  pin Li-ion 1 cell) dùng mạch ESP32-S3 N16R8 40 pin và linh kiện rời.
+  Tham khảo API chuyển động/cảm xúc kiểu OttoDIYLib (github.com/OttoDIY).
+  Hardware:
+  - MCU: ESP32-S3 N16R8 (Flash 16MB quad, PSRAM 8MB octal) -> GPIO35-37 KHÔNG dùng được.
+  - Driver: PCA9685 @0x40 (I2C). Kênh 0 = bánh trái, 1 = bánh phải.
+  - Servo: 2x MG90S quay 360 (4.8-6V), không encoder.
+  - Cảm biến: HC-SR05 (5V, qua module chuyển mức), 2x module IR (DO số).
+  - Nguồn: Li-ion 3.7V 700mAh -> TP4056 bảo vệ -> công tắc -> boost 5V >=2A.
+  - Đo pin: module 0-25V (chia 5) -> GPIO1 (ADC1, dùng được khi bật WiFi).
+  Tech stack:
+  PlatformIO + Arduino-ESP32; Adafruit PWM Servo Driver, Adafruit NeoPixel;
+  Unity (test native); Python 3 + pyserial + pytest (HIL).
+  Conventions:
+  - Toàn bộ chân khai báo DUY NHẤT trong include/pins.h.
+  - Logic tính toán thuần (không Arduino) đặt trong lib/otto_calib để test trên PC.
+  - Giao tiếp máy tính: serial 115200, 1 lệnh/dòng, trả về 1 dòng JSON có khóa "cmd". Dòng log bắt đầu bằng "#".
+  - Hiệu chỉnh lưu NVS (Preferences, namespace "otto", key "cal", có version + crc).
+  - Mọi chuyển động có thời hạn; mặc định khi boot: không xuất xung servo.

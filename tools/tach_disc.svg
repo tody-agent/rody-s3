@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30mm" height="30mm" viewBox="0 0 30 30">
+  <!-- Outer boundary for cutting guide: Ø30mm -->
+  <circle cx="15" cy="15" r="15" fill="#ffffff" stroke="#666666" stroke-width="0.2" />
+
+  <!-- 4 Black alternating sectors (45 deg each) -->
+  <!-- Sector 1: 0° to 45° -->
+  <path d="M 15 15 L 30 15 A 15 15 0 0 1 25.6066 25.6066 Z" fill="#000000" />
+  <!-- Sector 2: 90° to 135° -->
+  <path d="M 15 15 L 15 30 A 15 15 0 0 1 4.3934 25.6066 Z" fill="#000000" />
+  <!-- Sector 3: 180° to 225° -->
+  <path d="M 15 15 L 0 15 A 15 15 0 0 1 4.3934 4.3934 Z" fill="#000000" />
+  <!-- Sector 4: 270° to 315° -->
+  <path d="M 15 15 L 15 0 A 15 15 0 0 1 25.6066 4.3934 Z" fill="#000000" />
+
+  <!-- Center mounting hole: Ø6mm (r=3mm) with cut mark -->
+  <circle cx="15" cy="15" r="3" fill="#ffffff" stroke="#ff0000" stroke-width="0.25" stroke-dasharray="0.8,0.5" />
+  <circle cx="15" cy="15" r="0.5" fill="#ff0000" />
+</svg>
