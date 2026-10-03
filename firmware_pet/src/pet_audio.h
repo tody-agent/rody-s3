@@ -18,7 +18,13 @@ enum class PetSound {
   TICKLE_GIGGLE,       // Tiếng cười khúc khích khi bị cù lét
   VICTORY_FANFARE,     // Khúc khải hoàn đập tay chiến thắng
   CUDDLE_NUDGE,        // Tiếng kêu nũng nịu đòi xoa đầu
-  THUG_LIFE            // Giai điệu kính đen ngầu Thug Life
+  THUG_LIFE,           // Giai điệu kính đen ngầu Thug Life
+  HAPPY_CHIRP,         // Tiếng kêu vui vẻ ríu rít arpeggio
+  LISTENING_PING,      // Tiếng ping radar lắng nghe
+  THINKING_TINKLE,     // Âm thanh tò mò suy nghĩ
+  SPEAKING_BABBLE,     // Âm thanh bập bẹ đang nói
+  OBSTACLE_ALERT,      // Tiếng cảnh báo vật cản đụng phải
+  SLEEPY_SNORE         // Tiếng ngáy ngủ / hát ru êm dịu
 };
 
 // Khởi tạo I2S1 cho Loa MAX98357A

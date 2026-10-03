@@ -85,6 +85,22 @@ static void drawHeart(int cx, int cy, int size, uint16_t color) {
   sprite.fillTriangle(cx - size / 2, cy - r / 4, cx + size / 2, cy - r / 4, cx, cy + size / 2, color);
 }
 
+// Vẽ mắt Mochi AI squircle với điểm sáng phản quang
+static void drawEye(int cx, int cy, int w, int h, int r, uint16_t color) {
+  if (h <= 4) {
+    sprite.fillRoundRect(cx - w / 2, cy - 2, w, 4, 2, color);
+    return;
+  }
+  sprite.fillRoundRect(cx - w / 2, cy - h / 2, w, h, r, color);
+
+  if (h > 24) {
+    int hx = cx + w / 4;
+    int hy = cy - h / 4;
+    sprite.fillCircle(hx, hy, 6, COLOR_WHITE);
+    sprite.fillCircle(hx - 10, hy + 12, 3, COLOR_WHITE);
+  }
+}
+
 bool init() {
   lcd.init();
   lcd.setRotation(0);
@@ -114,15 +130,27 @@ PetMood getMood() {
 
 const char* getMoodStr(PetMood mood) {
   switch (mood) {
+    // 12 Biểu cảm Chuẩn Mochi (Classic)
     case PetMood::IDLE:         return "idle";
+    case PetMood::HAPPY:        return "happy";
+    case PetMood::LISTENING:    return "listening";
+    case PetMood::THINKING:     return "thinking";
+    case PetMood::SPEAKING:     return "speaking";
+    case PetMood::DRIVE_FWD:    return "drive_fwd";
+    case PetMood::DRIVE_REV:    return "drive_rev";
+    case PetMood::TURN_LEFT:    return "turn_left";
+    case PetMood::TURN_RIGHT:   return "turn_right";
+    case PetMood::SHAKEN_DIZZY: return "shaken_dizzy";
+    case PetMood::OBSTACLE:     return "obstacle";
+    case PetMood::SLEEPY:       return "sleepy";
+
+    // Phản xạ Thú cưng Độc quyền (Pet Edition)
     case PetMood::PURRING:      return "purring";
     case PetMood::HURT:         return "hurt";
     case PetMood::BELLY_UP:     return "belly_up";
-    case PetMood::SHAKEN_DIZZY: return "shaken_dizzy";
     case PetMood::ANGRY:        return "angry";
     case PetMood::STARTLED:     return "startled";
     case PetMood::ANNOYED:      return "annoyed";
-    case PetMood::SLEEPY:       return "sleepy";
     case PetMood::DISCO:        return "disco";
     case PetMood::SNEEZE:       return "sneeze";
     case PetMood::AIRPLANE:     return "airplane";
@@ -132,6 +160,40 @@ const char* getMoodStr(PetMood mood) {
     case PetMood::COOL_GLASSES: return "cool_glasses";
     default:                    return "unknown";
   }
+}
+
+bool setMoodByName(const char* name) {
+  if (!name) return false;
+  // 12 Cảm xúc Chuẩn Mochi (Classic)
+  if (strcmp(name, "idle") == 0)                                      { setMood(PetMood::IDLE); return true; }
+  if (strcmp(name, "happy") == 0)                                     { setMood(PetMood::HAPPY); return true; }
+  if (strcmp(name, "listen") == 0 || strcmp(name, "listening") == 0)  { setMood(PetMood::LISTENING); return true; }
+  if (strcmp(name, "think") == 0 || strcmp(name, "thinking") == 0)    { setMood(PetMood::THINKING); return true; }
+  if (strcmp(name, "speak") == 0 || strcmp(name, "speaking") == 0)    { setMood(PetMood::SPEAKING); return true; }
+  if (strcmp(name, "fwd") == 0 || strcmp(name, "forward") == 0 || strcmp(name, "drive_fwd") == 0) { setMood(PetMood::DRIVE_FWD); return true; }
+  if (strcmp(name, "rev") == 0 || strcmp(name, "backward") == 0 || strcmp(name, "drive_rev") == 0) { setMood(PetMood::DRIVE_REV); return true; }
+  if (strcmp(name, "left") == 0 || strcmp(name, "turn_left") == 0)   { setMood(PetMood::TURN_LEFT); return true; }
+  if (strcmp(name, "right") == 0 || strcmp(name, "turn_right") == 0) { setMood(PetMood::TURN_RIGHT); return true; }
+  if (strcmp(name, "dizzy") == 0 || strcmp(name, "shaken_dizzy") == 0 || strcmp(name, "shake") == 0) { setMood(PetMood::SHAKEN_DIZZY); return true; }
+  if (strcmp(name, "obstacle") == 0)                                  { setMood(PetMood::OBSTACLE); return true; }
+  if (strcmp(name, "sleep") == 0 || strcmp(name, "sleepy") == 0)     { setMood(PetMood::SLEEPY); return true; }
+
+  // Phản xạ Thú cưng Độc quyền (Pet Edition)
+  if (strcmp(name, "purr") == 0 || strcmp(name, "purring") == 0 || strcmp(name, "pet") == 0) { setMood(PetMood::PURRING); return true; }
+  if (strcmp(name, "hurt") == 0 || strcmp(name, "fall") == 0)        { setMood(PetMood::HURT); return true; }
+  if (strcmp(name, "belly_up") == 0)                                  { setMood(PetMood::BELLY_UP); return true; }
+  if (strcmp(name, "angry") == 0)                                     { setMood(PetMood::ANGRY); return true; }
+  if (strcmp(name, "startled") == 0 || strcmp(name, "knock") == 0)    { setMood(PetMood::STARTLED); return true; }
+  if (strcmp(name, "annoyed") == 0 || strcmp(name, "noise") == 0)    { setMood(PetMood::ANNOYED); return true; }
+  if (strcmp(name, "disco") == 0)                                     { setMood(PetMood::DISCO); return true; }
+  if (strcmp(name, "sneeze") == 0 || strcmp(name, "achoo") == 0)     { setMood(PetMood::SNEEZE); return true; }
+  if (strcmp(name, "airplane") == 0 || strcmp(name, "fly") == 0)      { setMood(PetMood::AIRPLANE); return true; }
+  if (strcmp(name, "tickle") == 0)                                    { setMood(PetMood::TICKLE); return true; }
+  if (strcmp(name, "high_five") == 0 || strcmp(name, "highfive") == 0) { setMood(PetMood::HIGH_FIVE); return true; }
+  if (strcmp(name, "nudge") == 0)                                     { setMood(PetMood::NUDGE); return true; }
+  if (strcmp(name, "cool") == 0 || strcmp(name, "cool_glasses") == 0) { setMood(PetMood::COOL_GLASSES); return true; }
+
+  return false;
 }
 
 void update() {
@@ -172,6 +234,110 @@ void update() {
         sprite.fillCircle(rightEyeX + 10, eyeY - 25, 9, COLOR_WHITE);
         sprite.fillCircle(rightEyeX - 5, eyeY + 15, 5, COLOR_WHITE);
       }
+      break;
+    }
+
+    case PetMood::HAPPY: {
+      // Crescent happy eyes: ^ _ ^
+      uint16_t eyeColor = sprite.color565(0x34, 0xd3, 0x99); // Mint green
+      int bounce = (animFrame % 10 < 5) ? 4 : 0;
+      sprite.fillRoundRect(leftEyeX - 30, eyeY - 24 + bounce, 60, 48, 22, eyeColor);
+      sprite.fillCircle(leftEyeX, eyeY + 12 + bounce, 24, COLOR_BG);
+
+      sprite.fillRoundRect(rightEyeX - 30, eyeY - 24 + bounce, 60, 48, 22, eyeColor);
+      sprite.fillCircle(rightEyeX, eyeY + 12 + bounce, 24, COLOR_BG);
+
+      // Cute blush circles
+      sprite.fillCircle(leftEyeX - 18, eyeY + 44, 9, COLOR_PINK);
+      sprite.fillCircle(rightEyeX + 18, eyeY + 44, 9, COLOR_PINK);
+      break;
+    }
+
+    case PetMood::LISTENING: {
+      // Big attentive eyes + Audio Wave pulse at bottom
+      uint16_t eyeColor = sprite.color565(0x60, 0xa5, 0xfa); // Sky blue
+      drawEye(leftEyeX, eyeY - 12, 62, 82, 30, eyeColor);
+      drawEye(rightEyeX, eyeY - 12, 62, 82, 30, eyeColor);
+
+      // Listening audio wave bars at bottom
+      for (int i = 0; i < 7; i++) {
+        int barH = 6 + (int)(18 * sinf(((float)animFrame * 0.4f) + (float)i * 0.8f));
+        if (barH < 4) barH = 4;
+        sprite.fillRoundRect(78 + i * 12, 195 - barH / 2, 6, barH, 3, sprite.color565(0x38, 0xbd, 0xf8));
+      }
+      break;
+    }
+
+    case PetMood::THINKING: {
+      // Eyes looking up-right + Rotating thinking dot
+      uint16_t eyeColor = COLOR_YELLOW;
+      drawEye(leftEyeX + 12, eyeY - 14, 52, 68, 24, eyeColor);
+      drawEye(rightEyeX + 12, eyeY - 14, 52, 68, 24, eyeColor);
+
+      // Rotating orbital dots
+      float angle = ((float)animFrame * 0.2f);
+      int dotX = 120 + (int)(22 * cosf(angle));
+      int dotY = 190 + (int)(8 * sinf(angle));
+      sprite.fillCircle(dotX, dotY, 4, COLOR_WHITE);
+      sprite.fillCircle(120, 190, 2, sprite.color565(0x64, 0x74, 0x8b));
+      break;
+    }
+
+    case PetMood::SPEAKING: {
+      // Bouncing mouth animation
+      uint16_t eyeColor = sprite.color565(0xa7, 0x8b, 0xfa); // Soft purple
+      drawEye(leftEyeX, eyeY - 10, 54, 74, 26, eyeColor);
+      drawEye(rightEyeX, eyeY - 10, 54, 74, 26, eyeColor);
+
+      int mouthH = 6 + (animFrame % 6) * 4;
+      sprite.fillRoundRect(120 - 20, 182 - mouthH / 2, 40, mouthH, 6, COLOR_PINK);
+      break;
+    }
+
+    case PetMood::DRIVE_FWD: {
+      // Dynamic forward slant eyes
+      uint16_t eyeColor = COLOR_CYAN;
+      drawEye(leftEyeX, eyeY, 56, 70, 20, eyeColor);
+      drawEye(rightEyeX, eyeY, 56, 70, 20, eyeColor);
+      int dashOffset = (animFrame * 3) % 20;
+      sprite.drawFastHLine(110, 185 + dashOffset, 20, eyeColor);
+      break;
+    }
+
+    case PetMood::DRIVE_REV: {
+      // Cautious glance backward
+      uint16_t eyeColor = sprite.color565(0xfb, 0x92, 0x3c); // Orange
+      drawEye(leftEyeX - 12, eyeY + 8, 50, 64, 20, eyeColor);
+      drawEye(rightEyeX - 12, eyeY + 8, 50, 64, 20, eyeColor);
+      break;
+    }
+
+    case PetMood::TURN_LEFT: {
+      uint16_t eyeColor = COLOR_CYAN;
+      drawEye(leftEyeX - 20, eyeY, 54, 74, 24, eyeColor);
+      drawEye(rightEyeX - 20, eyeY, 54, 74, 24, eyeColor);
+      break;
+    }
+
+    case PetMood::TURN_RIGHT: {
+      uint16_t eyeColor = COLOR_CYAN;
+      drawEye(leftEyeX + 20, eyeY, 54, 74, 24, eyeColor);
+      drawEye(rightEyeX + 20, eyeY, 54, 74, 24, eyeColor);
+      break;
+    }
+
+    case PetMood::OBSTACLE: {
+      // Cross eyes: X _ X
+      uint16_t eyeColor = COLOR_RED;
+      sprite.drawLine(48, 96, 96, 144, eyeColor);
+      sprite.drawLine(48, 97, 96, 145, eyeColor);
+      sprite.drawLine(48, 144, 96, 96, eyeColor);
+      sprite.drawLine(48, 145, 96, 97, eyeColor);
+
+      sprite.drawLine(144, 96, 192, 144, eyeColor);
+      sprite.drawLine(144, 97, 192, 145, eyeColor);
+      sprite.drawLine(144, 144, 192, 96, eyeColor);
+      sprite.drawLine(144, 145, 192, 97, eyeColor);
       break;
     }
 
@@ -261,13 +427,19 @@ void update() {
     }
 
     case PetMood::SLEEPY: {
-      // Mắt lim dim ngủ say
-      sprite.drawArc(leftEyeX, eyeY, 26, 20, 20, 160, COLOR_BLUE);
-      sprite.drawArc(rightEyeX, eyeY, 26, 20, 20, 160, COLOR_BLUE);
+      // Mắt lim dim ngủ say + chữ Zzz bay bổng
+      uint16_t eyeColor = sprite.color565(0x94, 0xa3, 0xb8); // Dim blue gray
+      sprite.fillRoundRect(leftEyeX - 25, eyeY + 5, 50, 14, 6, eyeColor);
+      sprite.fillRoundRect(rightEyeX - 25, eyeY + 5, 50, 14, 6, eyeColor);
+
       // Chữ Zzz bay lên
-      int zY = 70 - (int)((animFrame % 80) * 0.6f);
-      sprite.drawString("Z", 150, zY, &fonts::Font2);
-      sprite.drawString("z", 165, zY - 15, &fonts::Font0);
+      int zY = 80 - ((animFrame * 2) % 40);
+      sprite.setTextColor(sprite.color565(0x38, 0xbd, 0xf8));
+      sprite.setTextSize(2);
+      sprite.drawString("z", 160, zY + 20);
+      sprite.drawString("Z", 175, zY + 8);
+      sprite.setTextSize(3);
+      sprite.drawString("Z", 192, zY - 8);
       break;
     }
 

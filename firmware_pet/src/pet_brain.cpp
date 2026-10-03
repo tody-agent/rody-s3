@@ -85,6 +85,25 @@ void update() {
     lastDecayTime = now;
     if (stats.stress > 0) stats.stress -= 1;
     if (stats.affection > 20 && !petting) stats.affection -= 1;
+    if (stats.energy > 0 && stats.currentMood != pet_emotions::PetMood::SLEEPY) {
+      if ((now / 1000) % 2 == 0) stats.energy -= 1;
+    }
+
+    // Tự động ngáp ngủ nếu bị bỏ rơi lâu và năng lượng thấp
+    if (stats.energy <= 20 && stats.currentMood == pet_emotions::PetMood::IDLE && (now - stateEnterTime > 25000)) {
+      transitionTo(pet_emotions::PetMood::SLEEPY);
+      pet_audio::play(pet_audio::PetSound::SLEEPY_SNORE);
+    }
+  }
+
+  // Tỉnh giấc khi đang ngủ nếu được xoa đầu hoặc có tiếng động/rung lắc
+  if (stats.currentMood == pet_emotions::PetMood::SLEEPY) {
+    if (petting || audioSpike || imu.isKnocked || imu.isShaking) {
+      stats.energy = 85;
+      transitionTo(pet_emotions::PetMood::HAPPY);
+      pet_audio::play(pet_audio::PetSound::HAPPY_CHIRP);
+      return;
+    }
   }
 
   // =========================================================================
@@ -267,7 +286,16 @@ void update() {
               stats.currentMood == pet_emotions::PetMood::TICKLE ||
               stats.currentMood == pet_emotions::PetMood::HIGH_FIVE ||
               stats.currentMood == pet_emotions::PetMood::NUDGE ||
-              stats.currentMood == pet_emotions::PetMood::COOL_GLASSES) &&
+              stats.currentMood == pet_emotions::PetMood::COOL_GLASSES ||
+              stats.currentMood == pet_emotions::PetMood::HAPPY ||
+              stats.currentMood == pet_emotions::PetMood::LISTENING ||
+              stats.currentMood == pet_emotions::PetMood::THINKING ||
+              stats.currentMood == pet_emotions::PetMood::SPEAKING ||
+              stats.currentMood == pet_emotions::PetMood::DRIVE_FWD ||
+              stats.currentMood == pet_emotions::PetMood::DRIVE_REV ||
+              stats.currentMood == pet_emotions::PetMood::TURN_LEFT ||
+              stats.currentMood == pet_emotions::PetMood::TURN_RIGHT ||
+              stats.currentMood == pet_emotions::PetMood::OBSTACLE) &&
              (now - stateEnterTime > 2600)) {
     transitionTo(pet_emotions::PetMood::IDLE);
   }
@@ -287,10 +315,47 @@ const PetStats& getStats() {
 }
 
 void simulateEvent(const char* eventName) {
-  if (strcmp(eventName, "pet") == 0) {
+  // 12 Biểu cảm Chuẩn Mochi (Classic)
+  if (strcmp(eventName, "happy") == 0) {
+    transitionTo(pet_emotions::PetMood::HAPPY);
+    pet_audio::play(pet_audio::PetSound::HAPPY_CHIRP);
+  } else if (strcmp(eventName, "listen") == 0 || strcmp(eventName, "listening") == 0) {
+    transitionTo(pet_emotions::PetMood::LISTENING);
+    pet_audio::play(pet_audio::PetSound::LISTENING_PING);
+  } else if (strcmp(eventName, "think") == 0 || strcmp(eventName, "thinking") == 0) {
+    transitionTo(pet_emotions::PetMood::THINKING);
+    pet_audio::play(pet_audio::PetSound::THINKING_TINKLE);
+  } else if (strcmp(eventName, "speak") == 0 || strcmp(eventName, "speaking") == 0) {
+    transitionTo(pet_emotions::PetMood::SPEAKING);
+    pet_audio::play(pet_audio::PetSound::SPEAKING_BABBLE);
+  } else if (strcmp(eventName, "fwd") == 0 || strcmp(eventName, "forward") == 0 || strcmp(eventName, "drive_fwd") == 0) {
+    transitionTo(pet_emotions::PetMood::DRIVE_FWD);
+    setMotors(35.0f, 35.0f); delay(200); stopMotors();
+  } else if (strcmp(eventName, "rev") == 0 || strcmp(eventName, "backward") == 0 || strcmp(eventName, "drive_rev") == 0) {
+    transitionTo(pet_emotions::PetMood::DRIVE_REV);
+    setMotors(-30.0f, -30.0f); delay(200); stopMotors();
+  } else if (strcmp(eventName, "left") == 0 || strcmp(eventName, "turn_left") == 0) {
+    transitionTo(pet_emotions::PetMood::TURN_LEFT);
+    setMotors(-30.0f, 30.0f); delay(180); stopMotors();
+  } else if (strcmp(eventName, "right") == 0 || strcmp(eventName, "turn_right") == 0) {
+    transitionTo(pet_emotions::PetMood::TURN_RIGHT);
+    setMotors(30.0f, -30.0f); delay(180); stopMotors();
+  } else if (strcmp(eventName, "obstacle") == 0) {
+    transitionTo(pet_emotions::PetMood::OBSTACLE);
+    pet_audio::play(pet_audio::PetSound::OBSTACLE_ALERT);
+    setMotors(-35.0f, -35.0f); delay(150); stopMotors();
+  } else if (strcmp(eventName, "sleep") == 0 || strcmp(eventName, "sleepy") == 0) {
+    transitionTo(pet_emotions::PetMood::SLEEPY);
+    pet_audio::play(pet_audio::PetSound::SLEEPY_SNORE);
+  } else if (strcmp(eventName, "dizzy") == 0) {
+    transitionTo(pet_emotions::PetMood::SHAKEN_DIZZY);
+    pet_audio::play(pet_audio::PetSound::DIZZY_CHIRP);
+
+  // Phản xạ Thú cưng Độc quyền (Pet Edition)
+  } else if (strcmp(eventName, "pet") == 0 || strcmp(eventName, "purr") == 0) {
     transitionTo(pet_emotions::PetMood::PURRING);
     pet_audio::play(pet_audio::PetSound::PURR_CONTENT);
-  } else if (strcmp(eventName, "fall") == 0) {
+  } else if (strcmp(eventName, "fall") == 0 || strcmp(eventName, "hurt") == 0) {
     transitionTo(pet_emotions::PetMood::HURT);
     pet_audio::play(pet_audio::PetSound::CRY_HURT);
   } else if (strcmp(eventName, "belly_up") == 0) {
@@ -318,13 +383,13 @@ void simulateEvent(const char* eventName) {
   } else if (strcmp(eventName, "tickle") == 0) {
     transitionTo(pet_emotions::PetMood::TICKLE);
     pet_audio::play(pet_audio::PetSound::TICKLE_GIGGLE);
-  } else if (strcmp(eventName, "highfive") == 0) {
+  } else if (strcmp(eventName, "highfive") == 0 || strcmp(eventName, "high_five") == 0) {
     transitionTo(pet_emotions::PetMood::HIGH_FIVE);
   } else if (strcmp(eventName, "nudge") == 0) {
     transitionTo(pet_emotions::PetMood::NUDGE);
     pet_audio::play(pet_audio::PetSound::CUDDLE_NUDGE);
     setMotors(25.0f, 25.0f); delay(180); stopMotors();
-  } else if (strcmp(eventName, "cool") == 0) {
+  } else if (strcmp(eventName, "cool") == 0 || strcmp(eventName, "cool_glasses") == 0) {
     transitionTo(pet_emotions::PetMood::COOL_GLASSES);
     pet_audio::play(pet_audio::PetSound::THUG_LIFE);
   } else if (strcmp(eventName, "cat") == 0) {

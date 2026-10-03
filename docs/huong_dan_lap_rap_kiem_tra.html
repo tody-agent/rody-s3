@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sổ Tay Lắp Ráp & Đo Kiểm An Toàn — Robot Rody S3 Pet Edition</title>
+  <meta name="description" content="Hướng dẫn chi tiết từng bước đấu nối linh kiện, sơ đồ dây màu chuẩn, quy trình đo kiểm an toàn Gate G0 và test phản xạ thời gian thực cho Robot Rody S3 Pet Edition (ESP32-S3 N16R8).">
+  
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #111827;
+      --surface-elevated: #1f293d;
+      --surface-hover: #27354f;
+      --border: #1e293b;
+      --border-strong: #334155;
+      --border-accent: #38bdf8;
+      
+      --fg: #f8fafc;
+      --fg-muted: #94a3b8;
+      --fg-subtle: #64748b;
+      
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-glow: rgba(2, 132, 199, 0.25);
+      
+      --accent: #38bdf8;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.2);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.25);
+      --purple: #a855f7;
+      --pink: #ec4899;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      max-width: 100vw;
+      width: 100%;
+      padding-bottom: 80px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 20px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Top Sticky Navigation */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--fg);
+    }
+    .nav-logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 18px;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+    }
+    .nav-title-block h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .nav-title-block p {
+      font-size: 11px;
+      color: var(--fg-muted);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      min-height: 44px;
+      min-width: 44px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #0284c7);
+      color: #fff;
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--fg);
+      border-color: var(--border-strong);
+    }
+    .btn-secondary:hover {
+      background: var(--surface-elevated);
+      border-color: var(--accent);
+    }
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover {
+      background: var(--surface);
+      color: var(--fg);
+    }
+
+    /* Badges & Pills */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+    .badge-blue { background: rgba(2, 132, 199, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-pink { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    /* Progress Tracker Bar */
+    .progress-tracker {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 0;
+    }
+    .progress-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .progress-text {
+      font-size: 12.5px;
+      color: var(--fg-muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .progress-bar-wrap {
+      flex: 1;
+      max-width: 320px;
+      height: 8px;
+      background: var(--surface-deep);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0284c7, #10b981);
+      transition: width 0.3s ease;
+    }
+    .progress-percent {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* Hero Header */
+    .hero-banner {
+      padding: 44px 0 32px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.12) 0%, transparent 70%);
+    }
+    .hero-tagline {
+      font-size: clamp(22px, 4.5vw, 40px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
+      margin: 14px auto 12px;
+      max-width: 860px;
+      text-wrap: balance;
+      word-break: break-word;
+    }
+    .hero-tagline span {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--fg-muted);
+      max-width: 720px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+    .quick-nav-pills {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .quick-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quick-pill:hover {
+      background: var(--surface-elevated);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Danger / Critical Callout */
+    .danger-pitstop {
+      margin: 32px 0;
+      background: rgba(239, 68, 68, 0.08);
+      border: 2px solid rgba(239, 68, 68, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 4px 20px var(--danger-glow);
+    }
+    .danger-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #f87171;
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+    .danger-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .danger-card {
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+    .danger-card h4 {
+      font-size: 13.5px;
+      color: #fca5a5;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .danger-card p {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    /* Steps Architecture */
+    .step-section {
+      padding: 40px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .step-badge-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    }
+    .step-title-wrap h2 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+    .step-title-wrap p {
+      font-size: 13.5px;
+      color: var(--fg-muted);
+    }
+
+    /* Cards & Containers */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      transition: border-color 0.2s ease;
+    }
+    .card:hover {
+      border-color: var(--border-strong);
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--fg);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* BOM Checklist Table */
+    .bom-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface-deep);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--surface);
+      font-weight: 700;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .checkbox-col {
+      width: 44px;
+      text-align: center;
+    }
+    .custom-check {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .table-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+    }
+
+    /* Subsystem Tabs */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    .tab-nav::-webkit-scrollbar {
+      display: none;
+    }
+    .tab-btn {
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      color: var(--fg);
+      background: var(--surface-elevated);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Wire Color Indicator */
+    .wire-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 11.5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 1px solid rgba(0, 0, 0, 0.3);
+    }
+
+    /* Pinout ASCII / Visual Matrix */
+    .pinout-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+    .pin-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      transition: background 0.15s ease;
+    }
+    .pin-row:hover {
+      background: var(--surface);
+    }
+    .pin-forbidden {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      font-weight: 700;
+    }
+    .pin-safe {
+      color: #7dd3fc;
+    }
+    .pin-pwr {
+      color: #f87171;
+      font-weight: 700;
+    }
+    .pin-gnd {
+      color: #94a3b8;
+    }
+
+    /* Safety Measurement Gate Cards (M1-M8) */
+    .gate-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .gate-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .gate-card.passed {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.04);
+    }
+    .gate-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .gate-id {
+      font-size: 12px;
+      font-weight: 900;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      color: var(--accent);
+    }
+    .gate-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 4px;
+    }
+    .gate-text p {
+      font-size: 12px;
+      color: var(--fg-muted);
+      line-height: 1.4;
+    }
+    .gate-target {
+      font-size: 12px;
+      font-weight: 700;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .gate-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      font-size: 12px;
+    }
+    .gate-check-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    /* CLI Command Snip */
+    .cli-box {
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .cli-code {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 13.5px;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+    .copy-btn {
+      min-height: 36px;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .copy-btn:hover {
+      background: var(--surface-elevated);
+      color: var(--fg);
+      border-color: var(--accent);
+    }
+
+    /* Architecture Diagram Box */
+    .diagram-wrap {
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+    .power-flow-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 640px;
+      padding: 10px 0;
+    }
+    .power-node {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 1;
+    }
+    .power-node.pwr { border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+    .power-node.sw  { border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; }
+    .power-node.mcu { border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; }
+    .power-node.pet { border-color: rgba(236, 72, 153, 0.4); color: #f472b6; }
+    .arrow {
+      color: var(--fg-subtle);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        padding-bottom: 0;
+      }
+      nav, .progress-tracker, .hero-cta-group, .btn, .copy-btn {
+        display: none !important;
+      }
+      .card, .danger-pitstop, .gate-card, .bom-table-wrap {
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+      }
+      .tab-panel {
+        display: block !important;
+        margin-bottom: 24px;
+        page-break-after: auto;
+      }
+      .tab-nav {
+        display: none !important;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 12px;
+      }
+      .card {
+        padding: 16px 12px;
+      }
+      .pinout-grid {
+        grid-template-columns: 1fr;
+        font-size: 11px;
+        padding: 10px;
+      }
+      .pin-row {
+        font-size: 11px;
+      }
+      .nav-inner {
+        height: auto;
+        padding: 8px 0;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .nav-actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .nav-actions .btn {
+        padding: 6px 10px;
+        font-size: 11.5px;
+        min-height: 36px;
+        flex-shrink: 0;
+      }
+      .progress-inner {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .progress-text {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        font-size: 11.5px;
+      }
+      .progress-bar-wrap {
+        max-width: 100%;
+        width: 100%;
+      }
+      .progress-percent {
+        display: none;
+      }
+      .hero-tagline {
+        font-size: 18px;
+        line-height: 1.35;
+        padding: 0;
+      }
+      .hero-desc {
+        font-size: 13px;
+      }
+      .quick-nav-pills {
+        gap: 6px;
+      }
+      .quick-pill {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .danger-pitstop {
+        padding: 14px;
+        margin: 16px 0;
+      }
+      .danger-header {
+        font-size: 15px;
+      }
+      .danger-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .gate-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="./index.html" class="nav-brand">
+        <div class="nav-logo-icon">🐾</div>
+        <div class="nav-title-block">
+          <h1>Rody S3 &bull; Lắp Ráp & Đo Kiểm</h1>
+          <p>Phiên bản Firmware v0.3.0-pet (Mochi AI Edition)</p>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <button class="btn btn-secondary" onclick="window.print()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          <span>In Sổ Tay</span>
+        </button>
+        <a href="./hardware/wiring_pet_interactive.html" target="_blank" class="btn btn-ghost">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+          <span>Smart CAD 2D</span>
+        </a>
+        <a href="./pet_simulator.html" target="_blank" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>Giả Lập Web</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Progress Tracker Bar -->
+  <aside class="progress-tracker" aria-label="Tiến độ hoàn thành">
+    <div class="container progress-inner">
+      <div class="progress-text">
+        <span>Tiến Độ Lắp Ráp & Đo Kiểm:</span>
+        <span class="badge badge-blue whitespace-nowrap shrink-0" id="progressStatusBadge">0/25 Mục Đạt</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+      </div>
+      <div class="progress-percent" id="progressPercentText">0%</div>
+    </div>
+  </aside>
+
+  <!-- Hero Header -->
+  <header class="hero-banner">
+    <div class="container">
+      <div class="badge badge-pink" style="max-width:100%; text-wrap:balance; line-height:1.4; text-align:center;">
+        <span>⚡</span> Chuẩn An Toàn Gate G0 &bull; Chống Cháy ESP32-S3
+      </div>
+      <h1 class="hero-tagline text-balance">
+        Quy Trình Đấu Nối & Đo Kiểm<br>
+        <span>Chuẩn Phòng Lab</span> Cho Robot Rody S3.
+      </h1>
+      <p class="hero-desc text-balance">
+        Firmware <b>v0.3.0-pet</b> đã được nạp thành công vào ESP32-S3! Hãy thực hiện theo thứ tự 4 giai đoạn chuẩn bị, đấu nối từng phân hệ, đo kiểm VOM Gate G0 và test phản xạ thời gian thực dưới đây.
+      </p>
+
+      <div class="quick-nav-pills">
+        <a href="#pitstops" class="quick-pill" style="color:#f87171; border-color:rgba(239,68,68,0.4);">⛔ Vùng Nguy Hiểm</a>
+        <a href="#step1" class="quick-pill">📦 1. Chuẩn Bị Linh Kiện</a>
+        <a href="#step2" class="quick-pill">🔌 2. Đấu Dây Phân Hệ</a>
+        <a href="#step3" class="quick-pill">⚡ 3. Đo Kiểm Gate G0</a>
+        <a href="#step4" class="quick-pill">🚀 4. Bật Nguồn & Live Test</a>
+        <a href="#troubleshoot" class="quick-pill">🛠️ 5. Khắc Phục Sự Cố</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- DANGER PITSTOPS CALLOUT -->
+    <section class="danger-pitstop" id="pitstops">
+      <div class="danger-header">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <span>4 ĐIỀU TUYỆT ĐỐI CẤM (ĐỌC KỸ ĐỂ KHÔNG CHÁY CHIP)</span>
+      </div>
+      <p style="font-size: 13px; color: #fca5a5;">
+        Bất kỳ sai phạm nào trong 4 điều dưới đây đều có thể làm hỏng vĩnh viễn chip ESP32-S3 DevKit N16R8 hoặc màng rung Micro MEMS:
+      </p>
+
+      <div class="danger-grid">
+        <div class="danger-card">
+          <h4>🚫 CẤM CẮM GPIO 26 ĐẾN 37</h4>
+          <p>Đây là bus Octal SPI tốc độ cao kết nối Flash 16MB & PSRAM 8MB nội bộ. Cắm bất kỳ dây nào vào đây robot sẽ lập tức Crash bootloader vĩnh viễn.</p>
+        </div>
+        <div class="danger-card">
+          <h4>🚫 CẤM KÉO CAO GPIO 45</h4>
+          <p>GPIO 45 là chân Strapping điện áp VDD_SPI. Nếu bị kéo lên mức HIGH khi bật nguồn, nguồn Flash bị nhảy sang 1.8V gây <b>CHÁY BOOTLOADER</b> ngay lập tức.</p>
+        </div>
+        <div class="danger-card">
+          <h4>🚫 CẤM NỐI SPK- VÀO GND</h4>
+          <p>Amply MAX98357A dùng kiến trúc cầu vi sai BTL Class-D. Hai dây ra loa (SPK+ và SPK-) đều mang điện áp dao động, <b>nối SPK- vào GND sẽ chập cháy IC amply</b>.</p>
+        </div>
+        <div class="danger-card">
+          <h4>🚫 CẤM CẤP 5V VÀO MIC INMP441</h4>
+          <p>Micro kỹ thuật số INMP441 chỉ chịu được tối đa 3.3V. Cấp 5V sẽ nổ màng rung mỏng MEMS 24-bit. Luôn lấy 3.3V từ chân 3V3 của ESP32.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 1: BOM & TOOLS PREPARATION -->
+    <section class="step-section" id="step1">
+      <div class="step-header">
+        <div class="step-badge-num">1</div>
+        <div class="step-title-wrap">
+          <h2>Giai Đoạn 1: Chuẩn Bị Linh Kiện & Dụng Cụ Đo</h2>
+          <p>Kiểm tra số lượng và đánh dấu các linh kiện bạn đã có sẵn trên bàn làm việc.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          <span>Danh Sách Linh Kiện (BOM Rody S3 Pet Edition)</span>
+        </div>
+
+        <div class="bom-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="checkbox-col">Chọn</th>
+                <th>Tên Linh Kiện</th>
+                <th>Thông Số Kỹ Thuật</th>
+                <th>SL</th>
+                <th>Vai Trò Trong Robot</th>
+              </tr>
+            </thead>
+            <tbody id="bomTableBody">
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_esp32"></td>
+                <td><b>ESP32-S3 DevKitC-1 N16R8</b></td>
+                <td><span class="table-badge badge-blue">40-Pin 16MB/8MB</span></td>
+                <td>1</td>
+                <td>Bộ não AI xử lý đa giác quan (Thị giác, Âm thanh, Chạm, IMU)</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_mpu"></td>
+                <td><b>Gia Tốc Kế 6 Trục MPU6050 (GY-521)</b></td>
+                <td><span class="table-badge badge-pink">I2C 0x68 / ±8g</span></td>
+                <td>1</td>
+                <td>Cảm giác thăng bằng: rơi tự do, lật ngửa bụng, lắc chóng mặt</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_touch"></td>
+                <td><b>Cảm Biến Chạm Điện Dung TTP223</b></td>
+                <td><span class="table-badge badge-pink">Digital HIGH / Lá nhôm</span></td>
+                <td>1</td>
+                <td>Xúc giác đỉnh đầu: nhận biết xoa đầu, vuốt ve, cù lét nhột</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_tft"></td>
+                <td><b>Màn Hình IPS 1.54" ST7789 SPI</b></td>
+                <td><span class="table-badge badge-blue">240x240 px 60FPS</span></td>
+                <td>1</td>
+                <td>Đôi mắt Mochi 12 cảm xúc sống động không nhấp nháy</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_mic"></td>
+                <td><b>Microphone I2S INMP441</b></td>
+                <td><span class="table-badge badge-green">24-bit MEMS 3.3V</span></td>
+                <td>1</td>
+                <td>Thính giác: thu âm tiếng Việt, nhận diện nhịp vỗ tay</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_amp"></td>
+                <td><b>Amply I2S MAX98357A + Loa 4Ω 3W</b></td>
+                <td><span class="table-badge badge-amber">Class-D DAC 3.2W</span></td>
+                <td>1+1</td>
+                <td>Giọng nói robot, tiếng rừ rừ purr, tiếng ngáy ngủ 8-bit</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_pca"></td>
+                <td><b>Mạch PWM PCA9685 16-Channel</b></td>
+                <td><span class="table-badge badge-blue">I2C 0x40 5V Servo</span></td>
+                <td>1</td>
+                <td>Bộ điều khiển xung cho 2 động cơ servo bánh xe</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_servo"></td>
+                <td><b>2x Động Cơ Servo MG90S 360°</b></td>
+                <td><span class="table-badge badge-amber">Metal Gear Quay 360</span></td>
+                <td>2</td>
+                <td>Dẫn động bánh xe di chuyển, lắc mông, khiêu vũ Moonwalk</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_ir"></td>
+                <td><b>2x Cảm Biến Hồng Ngoại IR (TCRT5000)</b></td>
+                <td><span class="table-badge badge-green">DO Digital ISR</span></td>
+                <td>2</td>
+                <td>Đo tốc độ bánh xe (Tachometer) và dò vạch mép bàn</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_pwr"></td>
+                <td><b>Cụm Nguồn: Pin 1S + TP4056 + MT3608</b></td>
+                <td><span class="table-badge badge-red">Type-C &bull; Boost 5.10V</span></td>
+                <td>1 bộ</td>
+                <td>Nguồn điện di động không sụt áp khi khởi động động cơ</td>
+              </tr>
+              <tr>
+                <td class="checkbox-col"><input type="checkbox" class="custom-check track-item" data-id="bom_diode"></td>
+                <td><b>Diode Schottky 1N5819 + Tụ 1000µF</b></td>
+                <td><span class="table-badge badge-red">Chống ngược &bull; Ổn áp</span></td>
+                <td>1+1</td>
+                <td>Bảo vệ cổng USB máy tính và dập sụt áp tức thời</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: SUBSYSTEM WIRING -->
+    <section class="step-section" id="step2">
+      <div class="step-header">
+        <div class="step-badge-num">2</div>
+        <div class="step-title-wrap">
+          <h2>Giai Đoạn 2: Đấu Nối Từng Phân Hệ Theo Thứ Tự</h2>
+          <p>Tuân thủ chuẩn màu dây để không bao giờ cắm nhầm và dễ dàng sửa lỗi.</p>
+        </div>
+      </div>
+
+      <!-- Color Coding Bar -->
+      <div class="card" style="padding: 16px 20px;">
+        <span style="font-size:12.5px; font-weight:700; color:var(--fg-muted); margin-right:12px;">Quy Ước Màu Dây:</span>
+        <div style="display:inline-flex; flex-wrap:wrap; gap:8px;">
+          <span class="wire-badge"><span class="color-dot" style="background:#ef4444;"></span> Đỏ (5V Boost)</span>
+          <span class="wire-badge"><span class="color-dot" style="background:#f97316;"></span> Cam (5V ESP32)</span>
+          <span class="wire-badge"><span class="color-dot" style="background:#ffffff;"></span> Trắng (3.3V Logic)</span>
+          <span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen (GND Mass Chung)</span>
+          <span class="wire-badge"><span class="color-dot" style="background:#eab308;"></span> Vàng (I2C SDA)</span>
+          <span class="wire-badge"><span class="color-dot" style="background:#8b5cf6;"></span> Tím (I2C SCL)</span>
+          <span class="wire-badge"><span class="color-dot" style="background:#ec4899;"></span> Hồng (Touch GPIO 2)</span>
+        </div>
+      </div>
+
+      <!-- Interactive Tab Nav -->
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('sub_power', this)">1. Nguồn & Sạc</button>
+        <button class="tab-btn" onclick="switchTab('sub_pet', this)">2. Xúc Giác & Thăng Bằng</button>
+        <button class="tab-btn" onclick="switchTab('sub_tft', this)">3. Mắt ST7789</button>
+        <button class="tab-btn" onclick="switchTab('sub_audio', this)">4. Mic & Loa I2S</button>
+        <button class="tab-btn" onclick="switchTab('sub_motor', this)">5. Động Cơ & IR</button>
+        <button class="tab-btn" onclick="switchTab('sub_esp', this)">6. Sơ Đồ Chân ESP32</button>
+      </div>
+
+      <!-- TAB 1: POWER -->
+      <div class="tab-panel active" id="sub_power">
+        <div class="card">
+          <div class="card-title">
+            <span style="color:#ef4444;">⚡</span> Phân Hệ Nguồn Kép An Toàn (Pin ➔ TP4056 ➔ MT3608 ➔ Diode)
+          </div>
+          <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+            Mạch nguồn kép tách biệt giữa <b>Dòng động cơ 5.1V</b> và <b>Dòng logic ESP32</b>, ngăn chặn hoàn toàn hiện tượng robot sụt nguồn (Brownout Reset) khi bánh xe đề-pa.
+          </p>
+
+          <div class="diagram-wrap">
+            <div class="power-flow-bar">
+              <div class="power-node pwr">Pin Li-ion 3.7V<br><span style="font-size:11px; opacity:0.8;">Cực (+) và (-)</span></div>
+              <span class="arrow">&rarr;</span>
+              <div class="power-node pwr">TP4056 Type-C<br><span style="font-size:11px; opacity:0.8;">B+ / B- &bull; OUT+</span></div>
+              <span class="arrow">&rarr;</span>
+              <div class="power-node sw">Công Tắc Gạt<br><span style="font-size:11px; opacity:0.8;">Bật / Tắt máy</span></div>
+              <span class="arrow">&rarr;</span>
+              <div class="power-node pwr">MT3608 Boost<br><span style="font-size:11px; opacity:0.8;">Vặn chỉnh 5.10V</span></div>
+              <span class="arrow">&rarr;</span>
+              <div class="power-node mcu">Diode 1N5819<br><span style="font-size:11px; opacity:0.8;">Vạch bạc ➔ 5V ESP</span></div>
+            </div>
+          </div>
+
+          <div class="bom-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thứ Tự Nối</th>
+                  <th>Điểm Xuất Phát</th>
+                  <th>Điểm Đến</th>
+                  <th>Màu Dây</th>
+                  <th>Lưu Ý Kỹ Thuật</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>1.1</b></td>
+                  <td>Cực (+) Pin Li-ion</td>
+                  <td>Chân <code>B+</code> TP4056</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ef4444;"></span> Đỏ</span></td>
+                  <td>Hàn chắc chắn, bọc co nhiệt chống chập</td>
+                </tr>
+                <tr>
+                  <td><b>1.2</b></td>
+                  <td>Cực (-) Pin Li-ion</td>
+                  <td>Chân <code>B-</code> TP4056</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Nối cực âm của pin vào mạch bảo vệ TP4056</td>
+                </tr>
+                <tr>
+                  <td><b>1.3</b></td>
+                  <td>Chân <code>OUT+</code> TP4056</td>
+                  <td>Cực 1 Công Tắc Gạt</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ef4444;"></span> Đỏ</span></td>
+                  <td>Công tắc ngắt cực dương trước khi vào Boost</td>
+                </tr>
+                <tr>
+                  <td><b>1.4</b></td>
+                  <td>Cực 2 Công Tắc Gạt</td>
+                  <td>Chân <code>IN+</code> MT3608</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#f97316;"></span> Cam</span></td>
+                  <td>Đường nguồn sau công tắc (VBAT_SW)</td>
+                </tr>
+                <tr>
+                  <td><b>1.5</b></td>
+                  <td>Chân <code>OUT-</code> TP4056</td>
+                  <td>Chân <code>IN-</code> MT3608</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Mass GND chính của nguồn</td>
+                </tr>
+                <tr>
+                  <td><b>1.6</b></td>
+                  <td>Chân <code>OUT+</code> MT3608</td>
+                  <td>Anode Diode 1N5819</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ef4444;"></span> Đỏ</span></td>
+                  <td>Nối vào đầu thân đen trơn của Diode</td>
+                </tr>
+                <tr>
+                  <td><b>1.7</b></td>
+                  <td>Cathode Diode (vạch bạc)</td>
+                  <td>Chân <code>5V</code> ESP32-S3 (Pin 19)</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#f97316;"></span> Cam</span></td>
+                  <td>Chống dòng 5V từ cổng USB chạy ngược vào Pin</td>
+                </tr>
+                <tr>
+                  <td><b>1.8</b></td>
+                  <td>Chân <code>OUT+</code> MT3608</td>
+                  <td>Cọc vít <code>V+</code> PCA9685 & <code>VIN</code> Amply</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ef4444;"></span> Đỏ</span></td>
+                  <td>Cấp 5.1V công suất cho Động cơ và Loa</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: PET SENSORY -->
+      <div class="tab-panel" id="sub_pet">
+        <div class="card">
+          <div class="card-title">
+            <span style="color:#ec4899;">🐾</span> Phân Hệ Xúc Giác & Thăng Bằng (MPU6050 & TTP223 Touch)
+          </div>
+          <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+            Đây là giác quan linh hồn giúp Rody S3 biến thành một chú thú cưng thực thụ: nhận biết được xoa đầu, cù lét, lật ngửa bụng, lắc chóng mặt và rơi tự do.
+          </p>
+
+          <div class="bom-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Linh Kiện</th>
+                  <th>Chân Module</th>
+                  <th>Chân ESP32-S3</th>
+                  <th>Màu Dây</th>
+                  <th>Ghi Chú Kỹ Thuật</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan="5"><b>MPU6050 (GY-521)<br><span style="font-size:11px; color:#f472b6;">Gia Tốc Kế 6 Trục</span></b></td>
+                  <td><code>VCC</code></td>
+                  <td><b>Chân 1 (3V3)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ffffff;"></span> Trắng</span></td>
+                  <td>Lấy nguồn sạch 3.3V từ LDO ESP32</td>
+                </tr>
+                <tr>
+                  <td><code>GND</code></td>
+                  <td><b>Chân 20 (GND)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Mass GND chung</td>
+                </tr>
+                <tr>
+                  <td><code>SCL</code></td>
+                  <td><b>Chân 14 (IO9)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#8b5cf6;"></span> Tím</span></td>
+                  <td>Bus I2C Clock (chung với PCA9685)</td>
+                </tr>
+                <tr>
+                  <td><code>SDA</code></td>
+                  <td><b>Chân 11 (IO8)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#eab308;"></span> Vàng</span></td>
+                  <td>Bus I2C Data (chung với PCA9685)</td>
+                </tr>
+                <tr>
+                  <td><code>AD0</code></td>
+                  <td><b>Nối Mass (GND)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen ngắn</span></td>
+                  <td>Kéo xuống đất cố định địa chỉ I2C <code>0x68</code></td>
+                </tr>
+
+                <tr>
+                  <td rowspan="3"><b>TTP223 Touch Pad<br><span style="font-size:11px; color:#ec4899;">Xúc Giác Đỉnh Đầu</span></b></td>
+                  <td><code>VCC</code></td>
+                  <td><b>Chân 1 (3V3)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ffffff;"></span> Trắng</span></td>
+                  <td>Dòng tiêu thụ siêu nhỏ ~1.5µA</td>
+                </tr>
+                <tr>
+                  <td><code>GND</code></td>
+                  <td><b>Chân 21 (GND)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Mass GND chung</td>
+                </tr>
+                <tr>
+                  <td><code>I/O (SIG)</code></td>
+                  <td><b>Chân 25 (IO2)</b></td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ec4899;"></span> Hồng</span></td>
+                  <td>Xuất mức HIGH khi chạm/vuốt đỉnh đầu</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:14px; padding:12px; background:rgba(236,72,153,0.08); border-radius:var(--radius-sm); border:1px solid rgba(236,72,153,0.3); font-size:12.5px;">
+            💡 <b>Mẹo Hay Không Cần Mua Module TTP223:</b> Bạn chỉ cần nối 1 sợi dây điện từ chân <b>GPIO 2</b> ra một miếng <b>băng dính nhôm / lá đồng mỏng</b> (khoảng 2x2 cm) dán bên trong đỉnh vỏ robot. Firmware có sẵn hàm <code>touchRead(2)</code> tự động nhận diện điện dung khi vuốt ve!
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: TFT DISPLAY -->
+      <div class="tab-panel" id="sub_tft">
+        <div class="card">
+          <div class="card-title">
+            <span style="color:#38bdf8;">👀</span> Màn Hình Biểu Cảm 1.54" IPS ST7789 SPI (60 FPS Mochi Eyes)
+          </div>
+          <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+            Giao tiếp SPI DMA phần cứng tốc độ cao 40MHz–80MHz kết hợp bộ đệm kép LovyanGFX, hiển thị 12 cảm xúc đôi mắt Mochi mượt mà tuyệt đối.
+          </p>
+
+          <div class="bom-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Chân Màn Hình</th>
+                  <th>Chân ESP32-S3</th>
+                  <th>Chức Năng SPI</th>
+                  <th>Màu Dây Khuyên Dùng</th>
+                  <th>Lưu Ý</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>VCC</code></td>
+                  <td><b>Chân 1 (3V3)</b></td>
+                  <td>Nguồn 3.3V Logic</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ffffff;"></span> Trắng</span></td>
+                  <td>Cấp từ rail 3.3V ESP32 (~50mA)</td>
+                </tr>
+                <tr>
+                  <td><code>GND</code></td>
+                  <td><b>Chân 21 (GND)</b></td>
+                  <td>Mass GND</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Nối mass chung</td>
+                </tr>
+                <tr>
+                  <td><code>SCL</code></td>
+                  <td><b>Chân 26 (IO42)</b></td>
+                  <td>SPI Clock (SCK)</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#38bdf8;"></span> Xanh dương</span></td>
+                  <td>Xung nhịp truyền dữ liệu đồ họa</td>
+                </tr>
+                <tr>
+                  <td><code>SDA</code></td>
+                  <td><b>Chân 27 (IO41)</b></td>
+                  <td>SPI MOSI</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#34d399;"></span> Xanh lá</span></td>
+                  <td>Đường dữ liệu điểm ảnh (Master Out Slave In)</td>
+                </tr>
+                <tr>
+                  <td><code>DC</code></td>
+                  <td><b>Chân 28 (IO40)</b></td>
+                  <td>Data / Command</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#fbbf24;"></span> Vàng cam</span></td>
+                  <td>Chọn thanh ghi lệnh hoặc điểm ảnh đồ họa</td>
+                </tr>
+                <tr>
+                  <td><code>RES</code></td>
+                  <td><b>Chân 29 (IO39)</b></td>
+                  <td>Hardware Reset</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#f97316;"></span> Cam</span></td>
+                  <td>Reset phần cứng màn hình khi khởi động</td>
+                </tr>
+                <tr>
+                  <td><code>CS</code></td>
+                  <td><b>Chân 30 (IO38)</b></td>
+                  <td>Chip Select</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#c084fc;"></span> Tím</span></td>
+                  <td>Chọn chip TFT (mức LOW kích hoạt)</td>
+                </tr>
+                <tr>
+                  <td><code>BLK</code></td>
+                  <td><b>Chân 38 (IO21)</b></td>
+                  <td>Backlight PWM</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#f43f5e;"></span> Đỏ hồng</span></td>
+                  <td>Điều chỉnh độ sáng mắt Mochi qua PWM</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: AUDIO I2S -->
+      <div class="tab-panel" id="sub_audio">
+        <div class="card">
+          <div class="card-title">
+            <span style="color:#10b981;">🎙️</span> Phân Hệ Âm Thanh Số I2S (Mic INMP441 & Amply MAX98357A)
+          </div>
+          <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+            Hệ thống âm thanh Hi-Fi hai chiều hoàn toàn bằng kỹ thuật số (không bị nhiễu ù xì như analog). ESP32-S3 sử dụng đồng thời 2 kênh I2S độc lập: I2S0 thu âm và I2S1 phát thanh.
+          </p>
+
+          <div class="bom-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Thiết Bị</th>
+                  <th>Chân Module</th>
+                  <th>Chân ESP32-S3</th>
+                  <th>Tín Hiệu</th>
+                  <th>Cảnh Báo Quan Trọng</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan="5"><b>INMP441<br><span style="font-size:11px; color:#34d399;">Mic I2S0 24-bit</span></b></td>
+                  <td><code>VDD</code></td>
+                  <td><b>Chân 1 (3V3)</b></td>
+                  <td>Nguồn 3.3V</td>
+                  <td><b style="color:#f87171;">CẤM CẤP 5V</b> (cháy màng rung MEMS)</td>
+                </tr>
+                <tr>
+                  <td><code>GND</code> & <code>L/R</code></td>
+                  <td><b>Chân 20 (GND)</b></td>
+                  <td>Mass</td>
+                  <td>Nối chân L/R xuống GND để chọn kênh Left</td>
+                </tr>
+                <tr>
+                  <td><code>SCK</code></td>
+                  <td><b>Chân 3 (IO4)</b></td>
+                  <td>I2S0 BCLK</td>
+                  <td>Xung đồng hồ bit thu âm</td>
+                </tr>
+                <tr>
+                  <td><code>WS</code></td>
+                  <td><b>Chân 4 (IO5)</b></td>
+                  <td>I2S0 Word Select</td>
+                  <td>Xung chọn từ khung âm thanh</td>
+                </tr>
+                <tr>
+                  <td><code>SD</code></td>
+                  <td><b>Chân 5 (IO6)</b></td>
+                  <td>I2S0 Data In</td>
+                  <td>Luồng dữ liệu PCM 24-bit về ESP32</td>
+                </tr>
+
+                <tr>
+                  <td rowspan="6"><b>MAX98357A<br><span style="font-size:11px; color:#fbbf24;">Amply I2S1 3.2W</span></b></td>
+                  <td><code>VIN</code></td>
+                  <td><b>Đường 5.1V Boost</b></td>
+                  <td>Nguồn 5V</td>
+                  <td>Lấy từ 5V Boost để âm thanh to rõ, không vỡ</td>
+                </tr>
+                <tr>
+                  <td><code>GND</code></td>
+                  <td><b>GND Chung</b></td>
+                  <td>Mass</td>
+                  <td>Nối vào Star Ground</td>
+                </tr>
+                <tr>
+                  <td><code>DIN</code></td>
+                  <td><b>Chân 6 (IO7)</b></td>
+                  <td>I2S1 Data Out</td>
+                  <td>Dữ liệu âm thanh phát từ ESP32</td>
+                </tr>
+                <tr>
+                  <td><code>LRC</code></td>
+                  <td><b>Chân 7 (IO15)</b></td>
+                  <td>I2S1 Word Select</td>
+                  <td>Xung chọn kênh phát</td>
+                </tr>
+                <tr>
+                  <td><code>BCLK</code></td>
+                  <td><b>Chân 8 (IO16)</b></td>
+                  <td>I2S1 Bit Clock</td>
+                  <td>Xung nhịp bit I2S1</td>
+                </tr>
+                <tr>
+                  <td><code>SPK+ / SPK-</code></td>
+                  <td><b>2 Cực Loa 4Ω 3W</b></td>
+                  <td>Cầu Vi Sai</td>
+                  <td><b style="color:#f87171;">CẤM NỐI SPK- VÀO GND!</b></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: MOTOR & IR -->
+      <div class="tab-panel" id="sub_motor">
+        <div class="card">
+          <div class="card-title">
+            <span style="color:#f59e0b;">⚙️</span> Phân Hệ Động Cơ PCA9685 & Cảm Biến Bánh Xe IR
+          </div>
+          <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+            Mạch PCA9685 nhận lệnh qua I2C và điều khiển 2 Servo MG90S 360° với tần số 50Hz mượt mà. Cụm IR đo vòng quay bánh xe (Tachometer) giúp robot chạy thẳng băng không lệch hướng.
+          </p>
+
+          <div class="bom-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vị Trí Cắm</th>
+                  <th>Chân Module</th>
+                  <th>Nối Tới Đâu</th>
+                  <th>Màu Dây</th>
+                  <th>Lưu Ý Lắp Đặt</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan="4"><b>Hàng 6 Chân Tín Hiệu PCA9685</b></td>
+                  <td><code>VCC</code></td>
+                  <td><b>Chân 1 (3V3)</b> ESP32</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ffffff;"></span> Trắng</span></td>
+                  <td>Chỉ nuôi chip PCA9685, không nuôi servo</td>
+                </tr>
+                <tr>
+                  <td><code>GND</code></td>
+                  <td><b>Chân 20 (GND)</b> ESP32</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Mass logic</td>
+                </tr>
+                <tr>
+                  <td><code>SDA</code></td>
+                  <td><b>Chân 11 (IO8)</b> ESP32</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#eab308;"></span> Vàng</span></td>
+                  <td>Chung bus I2C với MPU6050</td>
+                </tr>
+                <tr>
+                  <td><code>SCL</code></td>
+                  <td><b>Chân 14 (IO9)</b> ESP32</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#8b5cf6;"></span> Tím</span></td>
+                  <td>Chung bus I2C với MPU6050</td>
+                </tr>
+                <tr>
+                  <td rowspan="2"><b>Cọc Vít Nguồn Xanh Dương PCA9685</b></td>
+                  <td><code>V+</code></td>
+                  <td>Ngõ <code>OUT+</code> Boost 5.10V</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#ef4444;"></span> Đỏ</span></td>
+                  <td>Cắm thêm cực (+) của <b>Tụ hóa 1000µF</b></td>
+                </tr>
+                <tr>
+                  <td><code>GND</code></td>
+                  <td>Mass GND Chung</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#0f172a; border-color:#94a3b8;"></span> Đen</span></td>
+                  <td>Cắm thêm cực (-) sọc trắng của <b>Tụ hóa 1000µF</b></td>
+                </tr>
+                <tr>
+                  <td><b>Servo Bánh Trái</b></td>
+                  <td>Giắc 3 chân</td>
+                  <td><b>Kênh 0 (Ch0) PCA9685</b></td>
+                  <td>Cam - Đỏ - Nâu</td>
+                  <td>Dây Cam (PWM) quay lên trên</td>
+                </tr>
+                <tr>
+                  <td><b>Servo Bánh Phải</b></td>
+                  <td>Giắc 3 chân</td>
+                  <td><b>Kênh 1 (Ch1) PCA9685</b></td>
+                  <td>Cam - Đỏ - Nâu</td>
+                  <td>Dây Cam (PWM) quay lên trên</td>
+                </tr>
+                <tr>
+                  <td><b>IR Bánh Trái</b></td>
+                  <td>Chân <code>DO</code></td>
+                  <td><b>Chân 15 (IO10)</b> ESP32</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#22c55e;"></span> Xanh lá</span></td>
+                  <td>Ngắt đếm xung tachometer bánh trái</td>
+                </tr>
+                <tr>
+                  <td><b>IR Bánh Phải</b></td>
+                  <td>Chân <code>DO</code></td>
+                  <td><b>Chân 16 (IO11)</b> ESP32</td>
+                  <td><span class="wire-badge"><span class="color-dot" style="background:#14b8a6;"></span> Xanh lơ</span></td>
+                  <td>Ngắt đếm xung tachometer bánh phải</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: PINOUT MATRIX -->
+      <div class="tab-panel" id="sub_esp">
+        <div class="card">
+          <div class="card-title">
+            <span style="color:#0284c7;">🗺️</span> Bản Đồ 40 Chân ESP32-S3 DevKitC-1 N16R8
+          </div>
+          <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+            Màu đỏ sẫm là <b>VÙNG CẤM CẮM DÂY</b> (Flash Octal, PSRAM và Strapping boot). Màu xanh ngọc là các chân ngoại vi an toàn đã được cấu hình trong firmware.
+          </p>
+
+          <div class="pinout-grid">
+            <!-- Cột Trái -->
+            <div>
+              <div style="font-weight:700; color:#cbd5e1; margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:4px;">HÀNG CHÂN TRÁI (PIN 1 – 20)</div>
+              <div class="pin-row pin-pwr"><span>[ 1] 3V3</span> <span>Rail 3.3V Logic Chung</span></div>
+              <div class="pin-row"><span>[ 2] EN</span> <span>Nút Reset Cứng</span></div>
+              <div class="pin-row pin-safe"><span>[ 3] IO4</span> <span>Mic INMP441 (SCK)</span></div>
+              <div class="pin-row pin-safe"><span>[ 4] IO5</span> <span>Mic INMP441 (WS)</span></div>
+              <div class="pin-row pin-safe"><span>[ 5] IO6</span> <span>Mic INMP441 (SD In)</span></div>
+              <div class="pin-row pin-safe"><span>[ 6] IO7</span> <span>Amply MAX98357A (DIN)</span></div>
+              <div class="pin-row pin-safe"><span>[ 7] IO15</span> <span>Amply MAX98357A (LRC)</span></div>
+              <div class="pin-row pin-safe"><span>[ 8] IO16</span> <span>Amply MAX98357A (BCLK)</span></div>
+              <div class="pin-row"><span>[ 9] IO17</span> <span>Dự phòng GPIO</span></div>
+              <div class="pin-row"><span>[10] IO18</span> <span>Dự phòng GPIO</span></div>
+              <div class="pin-row pin-safe"><span>[11] IO8</span> <span>I2C SDA (MPU + PCA)</span></div>
+              <div class="pin-row pin-forbidden"><span>[12] IO3</span> <span>⛔ Strapping (Không Cắm)</span></div>
+              <div class="pin-row pin-forbidden"><span>[13] IO46</span> <span>⛔ Strapping (Không Cắm)</span></div>
+              <div class="pin-row pin-safe"><span>[14] IO9</span> <span>I2C SCL (MPU + PCA)</span></div>
+              <div class="pin-row pin-safe"><span>[15] IO10</span> <span>IR Tachometer Trái</span></div>
+              <div class="pin-row pin-safe"><span>[16] IO11</span> <span>IR Tachometer Phải</span></div>
+              <div class="pin-row"><span>[17] IO12</span> <span>Dự phòng Cảm biến</span></div>
+              <div class="pin-row"><span>[18] IO13</span> <span>Dự phòng Cảm biến</span></div>
+              <div class="pin-row pin-pwr"><span>[19] 5V</span> <span>Nguồn 5V (sau Diode 1N5819)</span></div>
+              <div class="pin-row pin-gnd"><span>[20] GND</span> <span>Star Ground Chung</span></div>
+            </div>
+
+            <!-- Cột Phải -->
+            <div>
+              <div style="font-weight:700; color:#cbd5e1; margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:4px;">HÀNG CHÂN PHẢI (PIN 21 – 40)</div>
+              <div class="pin-row pin-gnd"><span>[21] GND</span> <span>Star Ground Chung</span></div>
+              <div class="pin-row"><span>[22] TX</span> <span>GPIO43 (UART0 Debug)</span></div>
+              <div class="pin-row"><span>[23] RX</span> <span>GPIO44 (UART0 Debug)</span></div>
+              <div class="pin-row"><span>[24] IO1</span> <span>ADC Pin Li-ion (Dự phòng)</span></div>
+              <div class="pin-row pin-safe" style="color:#f472b6; font-weight:700;"><span>[25] IO2</span> <span>🐾 TTP223 TOUCH SENSOR</span></div>
+              <div class="pin-row pin-safe"><span>[26] IO42</span> <span>TFT ST7789 SCL (SCK)</span></div>
+              <div class="pin-row pin-safe"><span>[27] IO41</span> <span>TFT ST7789 SDA (MOSI)</span></div>
+              <div class="pin-row pin-safe"><span>[28] IO40</span> <span>TFT ST7789 DC</span></div>
+              <div class="pin-row pin-safe"><span>[29] IO39</span> <span>TFT ST7789 RES</span></div>
+              <div class="pin-row pin-safe"><span>[30] IO38</span> <span>TFT ST7789 CS</span></div>
+              <div class="pin-row pin-forbidden"><span>[31] IO37</span> <span>⛔ PSRAM Octal 8MB</span></div>
+              <div class="pin-row pin-forbidden"><span>[32] IO36</span> <span>⛔ PSRAM Octal 8MB</span></div>
+              <div class="pin-row pin-forbidden"><span>[33] IO35</span> <span>⛔ PSRAM Octal 8MB</span></div>
+              <div class="pin-row pin-forbidden"><span>[34] IO0</span> <span>Nút BOOT ESP32</span></div>
+              <div class="pin-row pin-forbidden"><span>[35] IO45</span> <span>⛔ CẤM: VDD_SPI Flash</span></div>
+              <div class="pin-row pin-safe"><span>[36] IO48</span> <span>WS2812 RGB Onboard</span></div>
+              <div class="pin-row pin-forbidden"><span>[37] IO47</span> <span>⛔ SPI Flash Clock</span></div>
+              <div class="pin-row pin-safe"><span>[38] IO21</span> <span>TFT BLK (Đèn nền PWM)</span></div>
+              <div class="pin-row pin-forbidden"><span>[39] IO20</span> <span>⛔ USB Native D+</span></div>
+              <div class="pin-row pin-forbidden"><span>[40] IO19</span> <span>⛔ USB Native D-</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: GATE G0 MEASUREMENT CHECKLIST -->
+    <section class="step-section" id="step3">
+      <div class="step-header">
+        <div class="step-badge-num">3</div>
+        <div class="step-title-wrap">
+          <h2>Giai Đoạn 3: Đo Kiểm An Toàn Gate G0 (VOM Checklist)</h2>
+          <p>Dùng đồng hồ vạn năng VOM đo 8 phép thử bắt buộc TRƯỚC KHI bật công tắc nguồn.</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(16,185,129,0.4); background:rgba(16,185,129,0.02);">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 style="font-size:16px; font-weight:800; color:#34d399;">Checklist 8 Điểm Đo Kiểm M1 – M8</h3>
+            <p style="font-size:12.5px; color:var(--fg-muted);">Chỉ được phép bật nguồn khi đã vượt qua 100% các phép đo bên dưới.</p>
+          </div>
+          <button class="btn btn-secondary" onclick="resetAllGates()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+            <span>Đặt Lại Kết Quả Đo</span>
+          </button>
+        </div>
+
+        <div class="gate-grid" id="gateGrid">
+          <!-- M1 -->
+          <div class="gate-card" id="card_m1">
+            <div class="gate-card-top">
+              <span class="gate-id">M1</span>
+              <div class="gate-text">
+                <h4>Trở Kháng Đường 5V Boost</h4>
+                <p>Đo thang đo Ohm (&Omega;) giữa cọc <code>V+</code> PCA9685 và <code>GND</code> (Công tắc TẮT).</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: &gt; 1.000 &Omega; (Không Chập)</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m1" onchange="toggleGate('m1', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m1">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M2 -->
+          <div class="gate-card" id="card_m2">
+            <div class="gate-card-top">
+              <span class="gate-id">M2</span>
+              <div class="gate-text">
+                <h4>Trở Kháng Rail 3.3V Logic</h4>
+                <p>Đo thang đo Ohm giữa chân <code>3V3</code> và <code>GND</code> của ESP32.</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: &gt; 500 &Omega; (Không Chập)</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m2" onchange="toggleGate('m2', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m2">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M3 -->
+          <div class="gate-card" id="card_m3">
+            <div class="gate-card-top">
+              <span class="gate-id">M3</span>
+              <div class="gate-text">
+                <h4>Điện Áp Cực Pin Li-ion</h4>
+                <p>Đo thang DCV giữa 2 chân <code>B+</code> và <code>B-</code> trên mạch sạc TP4056.</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: 3.60V – 4.20V</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m3" onchange="toggleGate('m3', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m3">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M4 -->
+          <div class="gate-card" id="card_m4">
+            <div class="gate-card-top">
+              <span class="gate-id">M4</span>
+              <div class="gate-text">
+                <h4>Điện Áp Tăng Áp MT3608</h4>
+                <p>Bật công tắc, dùng tua vít dẹt chỉnh biến trở ngõ <code>OUT+</code> Boost đạt chuẩn.</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: 5.05V – 5.15V</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m4" onchange="toggleGate('m4', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m4">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M5 -->
+          <div class="gate-card" id="card_m5">
+            <div class="gate-card-top">
+              <span class="gate-id">M5</span>
+              <div class="gate-text">
+                <h4>Điện Áp Chân 5V ESP32</h4>
+                <p>Đo tại chân <code>5V</code> ESP32 (sau khi qua Diode 1N5819 vạch bạc).</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: 4.75V – 4.95V</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m5" onchange="toggleGate('m5', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m5">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M6 -->
+          <div class="gate-card" id="card_m6">
+            <div class="gate-card-top">
+              <span class="gate-id">M6</span>
+              <div class="gate-text">
+                <h4>Điện Áp LDO 3.3V ESP32</h4>
+                <p>Đo tại chân <code>3V3</code> ESP32 khi đã bật công tắc nguồn.</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: 3.25V – 3.35V</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m6" onchange="toggleGate('m6', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m6">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M7 -->
+          <div class="gate-card" id="card_m7">
+            <div class="gate-card-top">
+              <span class="gate-id">M7</span>
+              <div class="gate-text">
+                <h4>Cách Ly Cực Âm Loa SPK-</h4>
+                <p>Đo thang đo Ohm giữa cực <code>SPK-</code> MAX98357A và <code>GND</code> mass chung.</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: Vô Cùng &infin; (Hở Hoàn Toàn)</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m7" onchange="toggleGate('m7', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m7">Chưa đo</span>
+            </div>
+          </div>
+
+          <!-- M8 -->
+          <div class="gate-card" id="card_m8">
+            <div class="gate-card-top">
+              <span class="gate-id">M8</span>
+              <div class="gate-text">
+                <h4>Thông Mạch Đường Bus I2C</h4>
+                <p>Đo thông mạch SDA/SCL giữa chân ESP32 với PCA9685 và MPU6050.</p>
+              </div>
+            </div>
+            <div>
+              <span class="gate-target">Chuẩn: 0 &Omega; (Tiếng Bíp Kêu)</span>
+            </div>
+            <div class="gate-action">
+              <label class="gate-check-label">
+                <input type="checkbox" class="custom-check track-item gate-chk" data-id="gate_m8" onchange="toggleGate('m8', this)">
+                <span>Đã đo đạt chuẩn</span>
+              </label>
+              <span class="badge badge-amber" id="badge_m8">Chưa đo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: LIVE SMOKE TEST & CLI COMMANDS -->
+    <section class="step-section" id="step4">
+      <div class="step-header">
+        <div class="step-badge-num">4</div>
+        <div class="step-title-wrap">
+          <h2>Giai Đoạn 4: Bật Nguồn & Kiểm Tra Phản Xạ Live Test</h2>
+          <p>Kê robot lên khỏi mặt bàn (bánh hổng trên không), kết nối Serial 115200 và test phản xạ.</p>
+        </div>
+      </div>
+
+      <!-- Live Test Instructions -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          <span>1. Kiểm Tra Qua Cổng Serial Monitor (115200 Baud)</span>
+        </div>
+        <p style="font-size:13px; color:var(--fg-muted); margin-bottom:14px;">
+          Mở công cụ Serial (VSCode PlatformIO, Arduino IDE hoặc Terminal) ở tốc độ <b>115200</b>. Nhấp nút "Sao Chép" và dán lệnh vào:
+        </p>
+
+        <div class="cli-box">
+          <div>
+            <div class="cli-code">stats</div>
+            <div style="font-size:12px; color:var(--fg-muted); margin-top:2px;">Xem trạng thái phần cứng: MPU6050, PCA9685, Điện áp pin, Free Heap</div>
+          </div>
+          <button class="copy-btn" onclick="copyText('stats', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Sao chép</span>
+          </button>
+        </div>
+
+        <div class="cli-box">
+          <div>
+            <div class="cli-code">happy</div>
+            <div style="font-size:12px; color:var(--fg-muted); margin-top:2px;">Mắt Mochi cười tít híp, loa phát tiếng kêu tíu tít, 2 bánh xe lắc hông vui sướng</div>
+          </div>
+          <button class="copy-btn" onclick="copyText('happy', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Sao chép</span>
+          </button>
+        </div>
+
+        <div class="cli-box">
+          <div>
+            <div class="cli-code">belly_up</div>
+            <div style="font-size:12px; color:var(--fg-muted); margin-top:2px;">Thử nghiệm trạng thái lật ngửa bụng: loa réo cấp cứu, 2 bánh quẫy đạp giãy giụa</div>
+          </div>
+          <button class="copy-btn" onclick="copyText('belly_up', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Sao chép</span>
+          </button>
+        </div>
+
+        <div class="cli-box">
+          <div>
+            <div class="cli-code">sleepy</div>
+            <div style="font-size:12px; color:var(--fg-muted); margin-top:2px;">Mắt lim dim ngáp ngủ, thở phập phồng chậm rãi và loa phát tiếng ngáy ngủ 8-bit</div>
+          </div>
+          <button class="copy-btn" onclick="copyText('sleepy', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span>Sao chép</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Real World Pet Gestures Test -->
+      <div class="card">
+        <div class="card-title">
+          <span style="color:#ec4899;">🐾</span> 2. Thử Nghiệm 4 Cử Chỉ Thú Cưng Ngoài Đời Thật
+        </div>
+        <p style="font-size:13px; color:var(--fg-muted); margin-bottom:16px;">
+          Sau khi đã cắm đủ linh kiện, bạn không cần dùng máy tính nữa mà có thể tương tác trực tiếp với robot bằng các cử chỉ:
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+          <div style="background:var(--surface-deep); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+            <div style="font-size:24px; margin-bottom:8px;">✋</div>
+            <h4 style="font-size:14px; font-weight:700; color:var(--fg); margin-bottom:4px;">1. Xoa / Vuốt Ve Đỉnh Đầu</h4>
+            <p style="font-size:12px; color:var(--fg-muted); line-height:1.5;">
+              Dùng ngón tay vuốt nhẹ lên vùng cảm biến chạm đỉnh đầu (GPIO 2): Đôi mắt Rody chuyển sang <b>Trái Tim ửng hồng</b>, loa phát tiếng mèo rừ rừ purr êm tai.
+            </p>
+          </div>
+
+          <div style="background:var(--surface-deep); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+            <div style="font-size:24px; margin-bottom:8px;">🐢</div>
+            <h4 style="font-size:14px; font-weight:700; color:var(--fg); margin-bottom:4px;">2. Lật Ngửa Bụng Robot</h4>
+            <p style="font-size:12px; color:var(--fg-muted); line-height:1.5;">
+              Cầm robot lật ngửa 4 bánh lên trời: Cảm biến MPU6050 phát hiện trục Z trọng trường đảo ngược, robot <b>giãy giụa đạp bánh</b> và hú còi xin cứu!
+            </p>
+          </div>
+
+          <div style="background:var(--surface-deep); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+            <div style="font-size:24px; margin-bottom:8px;">👏</div>
+            <h4 style="font-size:14px; font-weight:700; color:var(--fg); margin-bottom:4px;">3. Vỗ Tay Đôi (Clap-Clap)</h4>
+            <p style="font-size:12px; color:var(--fg-muted); line-height:1.5;">
+              Vỗ tay 2 cái liên tiếp cách nhau ~0.3s gần microphone: Rody tự động bật kính râm Thug Life, phát beat disco funky và <b>khiêu vũ Moonwalk</b> lùi bánh!
+            </p>
+          </div>
+
+          <div style="background:var(--surface-deep); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+            <div style="font-size:24px; margin-bottom:8px;">🌀</div>
+            <h4 style="font-size:14px; font-weight:700; color:var(--fg); margin-bottom:4px;">4. Lắc Nhẹ Thân Robot</h4>
+            <p style="font-size:12px; color:var(--fg-muted); line-height:1.5;">
+              Cầm thân robot lắc qua lại liên tục: Con quay hồi chuyển kích hoạt trạng thái <b>Chóng Mặt hoa mắt xoắn ốc</b>, hai bánh đứng loạng choạng.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: TROUBLESHOOTING MATRIX -->
+    <section class="step-section" id="troubleshoot">
+      <div class="step-header">
+        <div class="step-badge-num">5</div>
+        <div class="step-title-wrap">
+          <h2>Giai Đoạn 5: Cẩm Nang Khắc Phục Sự Cố Nhanh</h2>
+          <p>Các hiện tượng phổ biến và giải pháp xử lý triệt để trong vài giây.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="bom-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Hiện Tượng Lỗi</th>
+                <th>Nguyên Nhân Khả Dĩ</th>
+                <th>Cách Khắc Phục Ngay Lập Tức</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:#f87171; font-weight:700;">Màn hình ST7789 đen xì hoặc trắng phớ</td>
+                <td>Dây SPI bị cắm lỏng hoặc cắm nhầm giữa SCL (IO42) và SDA (IO41).</td>
+                <td>Kiểm tra lại thứ tự chân SPI: SCK=IO42, MOSI=IO41, DC=IO40, RES=IO39, CS=IO38, BLK=IO21. Đảm bảo chân BLK đã cấp mức HIGH.</td>
+              </tr>
+              <tr>
+                <td style="color:#f87171; font-weight:700;">Báo lỗi "MPU6050 not detected" trên Serial</td>
+                <td>Chân AD0 để hở làm địa chỉ I2C nhảy sang <code>0x69</code> hoặc cắm chéo SDA/SCL.</td>
+                <td>Nối chân AD0 của MPU6050 xuống GND để cố định địa chỉ <code>0x68</code>. Kiểm tra thông mạch chân SDA (IO8) và SCL (IO9).</td>
+              </tr>
+              <tr>
+                <td style="color:#f87171; font-weight:700;">Xoa đầu không có phản ứng trái tim</td>
+                <td>Dây tín hiệu chạm cắm sai hoặc lá nhôm cảm ứng tiếp xúc kém.</td>
+                <td>Cắm đúng vào chân <b>GPIO 2</b>. Nếu dùng lá nhôm không có module, mở Serial kiểm tra giá trị <code>touchRead(2)</code> khi có tay và khi không có tay.</td>
+              </tr>
+              <tr>
+                <td style="color:#f87171; font-weight:700;">Loa bị xì rè hoặc sụt nguồn ESP32 khi động cơ quay</td>
+                <td>Chưa gắn tụ hóa 1000µF lọc nguồn hoặc áp Boost MT3608 bị tụt dưới 4.8V.</td>
+                <td>Gắn tụ 1000µF vào 2 cọc vít PCA9685. Vặn biến trở MT3608 tăng nhẹ lên <b>5.15V</b>. Kiểm tra cực SPK- không chạm GND.</td>
+              </tr>
+              <tr>
+                <td style="color:#f87171; font-weight:700;">Bánh xe tự xoay chậm khi robot đứng yên</td>
+                <td>Điểm trung tính (Neutral 1500µs) của Servo 360° bị lệch nhẹ.</td>
+                <td>Dùng tua vít chỉnh biến trở tinh chỉnh dưới đáy servo MG90S, hoặc gửi lệnh trim bù tốc độ trong giao diện Web Diagnostic Center.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Interactive JavaScript Engine -->
+  <script>
+    // Storage Key
+    const STORAGE_KEY = 'rody_s3_assembly_checklist_v1';
+
+    // Tabs Switcher
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+      if (btnElement) btnElement.classList.add('active');
+    }
+
+    // Gate Toggle
+    function toggleGate(gateId, chk) {
+      const card = document.getElementById('card_' + gateId);
+      const badge = document.getElementById('badge_' + gateId);
+      if (chk.checked) {
+        if (card) card.classList.add('passed');
+        if (badge) {
+          badge.className = 'badge badge-green';
+          badge.textContent = 'Đạt Chuẩn ✓';
+        }
+      } else {
+        if (card) card.classList.remove('passed');
+        if (badge) {
+          badge.className = 'badge badge-amber';
+          badge.textContent = 'Chưa đo';
+        }
+      }
+      updateProgress();
+    }
+
+    // Reset All Gates
+    function resetAllGates() {
+      if (confirm('Bạn có chắc muốn đặt lại toàn bộ kết quả đo kiểm Gate G0?')) {
+        document.querySelectorAll('.gate-chk').forEach(chk => {
+          chk.checked = false;
+          const gateId = chk.getAttribute('data-id').replace('gate_', '');
+          toggleGate(gateId, chk);
+        });
+        saveProgress();
+      }
+    }
+
+    // Copy Text to Clipboard
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<span>Đã chép! ✓</span>';
+        btn.style.color = '#34d399';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.style.color = '';
+        }, 1500);
+      });
+    }
+
+    // Progress Engine
+    function updateProgress() {
+      const allCheckboxes = document.querySelectorAll('.track-item');
+      let checkedCount = 0;
+      const state = {};
+
+      allCheckboxes.forEach(cb => {
+        const id = cb.getAttribute('data-id');
+        if (cb.checked) {
+          checkedCount++;
+          state[id] = true;
+        } else {
+          state[id] = false;
+        }
+      });
+
+      const total = allCheckboxes.length;
+      const percent = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+      const fill = document.getElementById('progressBarFill');
+      const text = document.getElementById('progressPercentText');
+      const badge = document.getElementById('progressStatusBadge');
+
+      if (fill) fill.style.width = percent + '%';
+      if (text) text.textContent = percent + '%';
+      if (badge) {
+        badge.textContent = `${checkedCount}/${total} Mục Đạt`;
+        if (percent === 100) {
+          badge.className = 'badge badge-green whitespace-nowrap shrink-0';
+          badge.textContent = 'Đạt 100% Sẵn Sàng Bật Máy! 🎉';
+        } else {
+          badge.className = 'badge badge-blue whitespace-nowrap shrink-0';
+        }
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    // Load Saved Progress
+    function loadProgress() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const state = JSON.parse(saved);
+          document.querySelectorAll('.track-item').forEach(cb => {
+            const id = cb.getAttribute('data-id');
+            if (state[id]) {
+              cb.checked = true;
+              if (cb.classList.contains('gate-chk')) {
+                const gateId = id.replace('gate_', '');
+                toggleGate(gateId, cb);
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error loading checklist state', e);
+      }
+      updateProgress();
+    }
+
+    // Attach Change Listeners
+    document.querySelectorAll('.track-item').forEach(cb => {
+      cb.addEventListener('change', updateProgress);
+    });
+
+    // Init on DOM ready
+    window.addEventListener('DOMContentLoaded', loadProgress);
+  </script>
+</body>
+</html>

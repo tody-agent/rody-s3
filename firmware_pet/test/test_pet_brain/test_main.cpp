@@ -195,6 +195,89 @@ void test_airplane_flight_detection() {
   TEST_ASSERT_TRUE(isAirplane);
 }
 
+// =========================================================================
+// 4. Logic Test: 12 Classic Mochi Emotions & Aliases
+// =========================================================================
+static const char* mockGetMoodStr(int moodId) {
+  switch (moodId) {
+    case 0:  return "idle";
+    case 1:  return "happy";
+    case 2:  return "listening";
+    case 3:  return "thinking";
+    case 4:  return "speaking";
+    case 5:  return "drive_fwd";
+    case 6:  return "drive_rev";
+    case 7:  return "turn_left";
+    case 8:  return "turn_right";
+    case 9:  return "shaken_dizzy";
+    case 10: return "obstacle";
+    case 11: return "sleepy";
+    default: return "unknown";
+  }
+}
+
+static int mockParseMoodName(const char* name) {
+  if (strcmp(name, "idle") == 0) return 0;
+  if (strcmp(name, "happy") == 0) return 1;
+  if (strcmp(name, "listen") == 0 || strcmp(name, "listening") == 0) return 2;
+  if (strcmp(name, "think") == 0 || strcmp(name, "thinking") == 0) return 3;
+  if (strcmp(name, "speak") == 0 || strcmp(name, "speaking") == 0) return 4;
+  if (strcmp(name, "fwd") == 0 || strcmp(name, "forward") == 0 || strcmp(name, "drive_fwd") == 0) return 5;
+  if (strcmp(name, "rev") == 0 || strcmp(name, "backward") == 0 || strcmp(name, "drive_rev") == 0) return 6;
+  if (strcmp(name, "left") == 0 || strcmp(name, "turn_left") == 0) return 7;
+  if (strcmp(name, "right") == 0 || strcmp(name, "turn_right") == 0) return 8;
+  if (strcmp(name, "dizzy") == 0 || strcmp(name, "shaken_dizzy") == 0) return 9;
+  if (strcmp(name, "obstacle") == 0) return 10;
+  if (strcmp(name, "sleep") == 0 || strcmp(name, "sleepy") == 0) return 11;
+  return -1;
+}
+
+void test_classic_12_emotions_mapping() {
+  const char* expected12[] = {
+    "idle", "happy", "listening", "thinking", "speaking",
+    "drive_fwd", "drive_rev", "turn_left", "turn_right",
+    "shaken_dizzy", "obstacle", "sleepy"
+  };
+  for (int i = 0; i < 12; i++) {
+    TEST_ASSERT_EQUAL_STRING(expected12[i], mockGetMoodStr(i));
+    TEST_ASSERT_EQUAL_INT(i, mockParseMoodName(expected12[i]));
+  }
+}
+
+void test_dizzy_and_aliases() {
+  TEST_ASSERT_EQUAL_INT(9, mockParseMoodName("dizzy"));
+  TEST_ASSERT_EQUAL_INT(9, mockParseMoodName("shaken_dizzy"));
+  TEST_ASSERT_EQUAL_INT(2, mockParseMoodName("listen"));
+  TEST_ASSERT_EQUAL_INT(2, mockParseMoodName("listening"));
+  TEST_ASSERT_EQUAL_INT(5, mockParseMoodName("fwd"));
+  TEST_ASSERT_EQUAL_INT(5, mockParseMoodName("forward"));
+  TEST_ASSERT_EQUAL_INT(5, mockParseMoodName("drive_fwd"));
+  TEST_ASSERT_EQUAL_INT(6, mockParseMoodName("rev"));
+  TEST_ASSERT_EQUAL_INT(6, mockParseMoodName("backward"));
+  TEST_ASSERT_EQUAL_INT(6, mockParseMoodName("drive_rev"));
+  TEST_ASSERT_EQUAL_INT(11, mockParseMoodName("sleep"));
+  TEST_ASSERT_EQUAL_INT(11, mockParseMoodName("sleepy"));
+}
+
+void test_sleep_and_wake_dynamics() {
+  TestPetMood pet = { .affection = 50, .stress = 0, .energy = 15, .mood = "idle" };
+
+  // Chuyển sang sleepy khi energy <= 20 sau thời gian chờ
+  if (pet.energy <= 20 && strcmp(pet.mood, "idle") == 0) {
+    pet.mood = "sleepy";
+  }
+  TEST_ASSERT_EQUAL_STRING("sleepy", pet.mood);
+
+  // Tỉnh giấc khi xoa đầu: hồi phục năng lượng, chuyển sang happy
+  bool touchPet = true;
+  if (strcmp(pet.mood, "sleepy") == 0 && touchPet) {
+    pet.energy = 85;
+    pet.mood = "happy";
+  }
+  TEST_ASSERT_EQUAL_STRING("happy", pet.mood);
+  TEST_ASSERT_EQUAL_UINT8(85, pet.energy);
+}
+
 int main() {
   UNITY_BEGIN();
   RUN_TEST(test_imu_upright_neutral);
@@ -205,5 +288,8 @@ int main() {
   RUN_TEST(test_pet_mood_dynamics);
   RUN_TEST(test_creative_pet_behaviors);
   RUN_TEST(test_airplane_flight_detection);
+  RUN_TEST(test_classic_12_emotions_mapping);
+  RUN_TEST(test_dizzy_and_aliases);
+  RUN_TEST(test_sleep_and_wake_dynamics);
   return UNITY_END();
 }

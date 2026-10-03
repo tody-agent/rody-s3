@@ -57,18 +57,17 @@ void loop() {
   if (Serial.available()) {
     String cmd = Serial.readStringUntil('\n');
     cmd.trim();
-    if (cmd == "pet" || cmd == "fall" || cmd == "belly_up" || cmd == "shake" || 
-        cmd == "knock" || cmd == "noise" || cmd == "idle" || cmd == "disco" || 
-        cmd == "achoo" || cmd == "fly" || cmd == "tickle" || cmd == "highfive" || 
-        cmd == "nudge" || cmd == "cool" || cmd == "cat" || cmd == "dog" || cmd == "mecha") {
-      pet_brain::simulateEvent(cmd.c_str());
-      Serial.printf("{\"cmd\":\"sim\",\"event\":\"%s\",\"ok\":true}\n", cmd.c_str());
-    } else if (cmd == "stats") {
+    if (cmd == "stats") {
       const auto& st = pet_brain::getStats();
       Serial.printf("{\"cmd\":\"stats\",\"ok\":true,\"mood\":\"%s\",\"affection\":%d,\"stress\":%d,\"energy\":%d}\n",
                     pet_emotions::getMoodStr(st.currentMood), st.affection, st.stress, st.energy);
     } else if (cmd == "ping") {
       Serial.println("{\"cmd\":\"ping\",\"ok\":true,\"fw\":\"0.3.0-pet\"}");
+    } else if (cmd.length() > 0) {
+      pet_brain::simulateEvent(cmd.c_str());
+      const auto& st = pet_brain::getStats();
+      Serial.printf("{\"cmd\":\"sim\",\"event\":\"%s\",\"mood\":\"%s\",\"ok\":true}\n",
+                    cmd.c_str(), pet_emotions::getMoodStr(st.currentMood));
     }
   }
 }

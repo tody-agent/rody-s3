@@ -237,6 +237,46 @@ void play(PetSound sound) {
       playToneInternal(466, 140, 0.55f, 2);
       playToneInternal(392, 220, 0.65f, 2);
       break;
+
+    case PetSound::HAPPY_CHIRP:
+      // Hợp âm vui vẻ ríu rít arpeggio
+      playToneInternal(523, 70, 0.45f, 0);
+      playToneInternal(659, 70, 0.5f, 0);
+      playToneInternal(784, 80, 0.55f, 0);
+      playToneInternal(1046, 160, 0.6f, 0);
+      break;
+
+    case PetSound::LISTENING_PING:
+      // Tiếng ping sonar lắng nghe
+      playToneInternal(1760, 60, 0.4f, 0);
+      break;
+
+    case PetSound::THINKING_TINKLE:
+      // Âm thanh tò mò suy nghĩ
+      playToneInternal(880, 80, 0.35f, 0);
+      playToneInternal(1175, 120, 0.4f, 0);
+      break;
+
+    case PetSound::SPEAKING_BABBLE:
+      // Âm thanh bập bẹ đang nói
+      for (int i = 0; i < 3; i++) {
+        playToneInternal(600 + (i % 2) * 200, 50, 0.4f, 1);
+        delay(20);
+      }
+      break;
+
+    case PetSound::OBSTACLE_ALERT:
+      // Tiếng cảnh báo vật cản đụng phải (âm kép trầm giật mình)
+      playToneInternal(220, 80, 0.6f, 2);
+      playToneInternal(180, 140, 0.65f, 2);
+      break;
+
+    case PetSound::SLEEPY_SNORE:
+      // Khúc hát ru đi xuống êm dịu
+      playToneInternal(392, 140, 0.35f, 0);
+      playToneInternal(330, 160, 0.3f, 0);
+      playToneInternal(262, 240, 0.25f, 0);
+      break;
   }
 }
 
