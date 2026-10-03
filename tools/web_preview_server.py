@@ -20,8 +20,20 @@ try:
 except ImportError:
     serial = None
 
-HTML_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs", "rody_debug_center.html"))
+DOCS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs"))
 PORT = 8080
+
+MIME_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon"
+}
 
 class SerialBridge:
     def __init__(self):
@@ -90,11 +102,20 @@ class RodyHandler(BaseHTTPRequestHandler):
         path = parsed.path
         params = urllib.parse.parse_qs(parsed.query)
 
-        if path == "/" or path == "/index.html":
+        # Serve static docs files
+        rel_path = path.lstrip("/")
+        if rel_path == "" or rel_path == "index.html":
+            rel_path = "index.html"
+        
+        file_path = os.path.abspath(os.path.join(DOCS_DIR, rel_path))
+        if file_path.startswith(DOCS_DIR) and os.path.isfile(file_path):
+            ext = os.path.splitext(file_path)[1].lower()
+            content_type = MIME_TYPES.get(ext, "application/octet-stream")
             self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Type", content_type)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            with open(HTML_FILE, "rb") as f:
+            with open(file_path, "rb") as f:
                 self.wfile.write(f.read())
             return
 

@@ -2,8 +2,9 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-  <title>Rody S3 — Master Showcase & Hardware Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Robot Rody S3 — Robot Để Bàn Biểu Cảm AI & Đấu Trường 3D</title>
+  <meta name="description" content="Khám phá Rody S3: Robot để bàn thông minh với đôi mắt cảm xúc Mochi AI, tự hành né vật cản, phản xạ vuốt ve thú cưng, và trải nghiệm game 3D trực tuyến.">
   <style>
     :root {
       --bg: #f8fafc;
@@ -13,7 +14,7 @@
       --border: #e2e8f0;
       --border-strong: #cbd5e1;
       --fg: #0f172a;
-      --fg-muted: #64748b;
+      --fg-muted: #475569;
       --fg-subtle: #94a3b8;
 
       --primary: #0284c7;
@@ -25,19 +26,25 @@
       --success-subtle: #dcfce7;
       --success-text: #15803d;
 
-      --teal: #0d9488;
-      --teal-subtle: #ccfbf1;
-      --teal-text: #0f766e;
-
       --amber: #d97706;
       --amber-subtle: #fef3c7;
       --amber-text: #b45309;
 
+      --teal: #0d9488;
+      --teal-subtle: #ccfbf1;
+      --teal-text: #0f766e;
+
+      --rose: #e11d48;
+      --rose-subtle: #ffe4e6;
+      --rose-text: #be123c;
+
       --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+
       --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
     }
 
     * {
@@ -47,182 +54,463 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    html, body {
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
       max-width: 100%;
       overflow-x: hidden;
       background: var(--bg);
       color: var(--fg);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
       -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
     }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 40px;
-    }
-
+    /* Container */
     .container {
-      max-width: 800px;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 24px 16px;
+      padding: 0 20px;
       width: 100%;
     }
 
-    /* Hero Banner */
-    .hero {
-      text-align: center;
-      margin-bottom: 28px;
+    /* Sticky Navigation */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--fg);
+    }
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-brand-text {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-link {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .nav-link:hover { color: var(--primary); }
+
+    /* Action Buttons */
+    .btn {
+      min-height: 44px;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--surface);
+      border: 1px solid var(--primary);
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+    }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--fg);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-secondary:hover {
+      background: var(--surface-subtle);
     }
 
-    .hero-badge {
+    /* Badges & Pills */
+    .pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--primary-subtle);
-      color: var(--primary-text);
       font-size: 11.5px;
       font-weight: 700;
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 999px;
-      margin-bottom: 12px;
       letter-spacing: 0.02em;
     }
+    .pill-blue { background: var(--primary-subtle); color: var(--primary-text); }
+    .pill-rose { background: var(--rose-subtle); color: var(--rose-text); }
+    .pill-teal { background: var(--teal-subtle); color: var(--teal-text); }
+    .pill-green { background: var(--success-subtle); color: var(--success-text); }
 
+    /* Hero Section */
+    .hero {
+      padding: 56px 0 40px;
+      text-align: center;
+    }
     .hero-title {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
+      font-size: clamp(32px, 5.5vw, 54px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      margin: 16px auto 14px;
+      max-width: 820px;
       color: var(--fg);
-      margin-bottom: 8px;
-      text-wrap: balance;
+    }
+    .hero-title span {
+      color: var(--primary);
+    }
+    .hero-sub {
+      font-size: clamp(15px, 2.2vw, 18px);
+      color: var(--fg-muted);
+      max-width: 680px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
     }
 
-    .hero-desc {
-      font-size: 14px;
-      color: var(--fg-muted);
-      line-height: 1.5;
-      max-width: 580px;
-      margin: 0 auto;
-      text-wrap: balance;
+    /* Hero Media Showcase */
+    .hero-visual {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      background: var(--surface);
+      margin-bottom: 50px;
+    }
+    .hero-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .hero-badge-overlay {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-md);
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 3px var(--success-subtle);
     }
 
     /* Section Headers */
-    .section-title {
-      font-size: 13px;
-      font-weight: 700;
+    .section-wrap {
+      padding: 60px 0;
+      border-top: 1px solid var(--border);
+    }
+    .section-tag {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .section-heading {
+      font-size: clamp(24px, 3.8vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-align: center;
+      margin-bottom: 14px;
+      color: var(--fg);
+    }
+    .section-desc {
+      font-size: 15px;
       color: var(--fg-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin: 24px 0 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
     }
 
-    .section-title::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* Cards Grid */
-    .grid-2 {
+    /* Dual Split Feature Block */
+    .split-feature {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 14px;
+      gap: 32px;
+      align-items: center;
+      margin-bottom: 48px;
+    }
+    .split-media {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      background: var(--surface);
+    }
+    .split-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .split-text h3 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      color: var(--fg);
+    }
+    .split-text p {
+      font-size: 15px;
+      color: var(--fg-muted);
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--fg);
+      font-weight: 600;
+    }
+    .feature-item svg {
+      color: var(--primary);
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
     }
 
-    .app-card {
+    /* 6 Emotions Grid */
+    .emotions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .emotion-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+    .emotion-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .emotion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .emotion-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .emotion-desc {
+      font-size: 13px;
+      color: var(--fg-muted);
+      line-height: 1.5;
+    }
+
+    /* Interactive Hub Grid (5 Portals) */
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .portal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
       text-decoration: none;
       color: inherit;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.15s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .app-card:hover {
-      border-color: var(--border-strong);
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
-    }
-
-    .card-top {
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      position: relative;
     }
-
-    .icon-box {
-      width: 40px;
-      height: 40px;
+    .portal-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .portal-icon-wrap {
+      width: 42px;
+      height: 42px;
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      margin-bottom: 14px;
     }
-    .icon-box.blue { background: var(--primary-subtle); color: var(--primary); }
-    .icon-box.green { background: var(--success-subtle); color: var(--success); }
-    .icon-box.teal { background: var(--teal-subtle); color: var(--teal); }
-    .icon-box.amber { background: var(--amber-subtle); color: var(--amber); }
-
-    .card-content h3 {
-      font-size: 15px;
+    .portal-card h4 {
+      font-size: 16px;
       font-weight: 700;
+      margin-bottom: 6px;
       color: var(--fg);
-      margin-bottom: 4px;
-      letter-spacing: -0.01em;
     }
-
-    .card-content p {
-      font-size: 12.5px;
+    .portal-card p {
+      font-size: 13px;
       color: var(--fg-muted);
-      line-height: 1.45;
+      line-height: 1.5;
+      margin-bottom: 14px;
     }
-
-    .card-footer {
+    .portal-link {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--primary);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--primary);
+      gap: 4px;
     }
 
-    .tag-pill {
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 999px;
-      white-space: nowrap;
-      flex-shrink: 0;
+    /* Comparison Table */
+    .compare-table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      box-shadow: var(--shadow-sm);
     }
-    .tag-blue { background: var(--primary-subtle); color: var(--primary-text); }
-    .tag-green { background: var(--success-subtle); color: var(--success-text); }
-    .tag-teal { background: var(--teal-subtle); color: var(--teal-text); }
-    .tag-amber { background: var(--amber-subtle); color: var(--amber-text); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+    th, td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--surface-subtle);
+      font-weight: 700;
+      color: var(--fg);
+    }
+    tr:last-child td { border-bottom: none; }
+    .col-highlight {
+      background: rgba(2, 132, 199, 0.03);
+      font-weight: 700;
+      color: var(--primary-text);
+    }
+
+    /* Bottom CTA Banner */
+    .cta-banner {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-radius: var(--radius-lg);
+      padding: 48px 24px;
+      text-align: center;
+      color: #ffffff;
+      box-shadow: var(--shadow-lg);
+      margin: 40px 0 60px;
+    }
+    .cta-banner h2 {
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+    .cta-banner p {
+      font-size: 16px;
+      max-width: 600px;
+      margin: 0 auto 28px;
+      opacity: 0.92;
+      line-height: 1.6;
+    }
+    .cta-white-btn {
+      background: #ffffff;
+      color: #0369a1;
+      border: none;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 12px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      transition: transform 0.15s ease;
+    }
+    .cta-white-btn:hover { transform: scale(1.02); }
 
     /* Footer */
     footer {
-      text-align: center;
-      margin-top: 36px;
-      padding-top: 20px;
       border-top: 1px solid var(--border);
-      font-size: 12px;
+      padding: 28px 0;
+      text-align: center;
+      font-size: 12.5px;
       color: var(--fg-subtle);
     }
     footer a {
@@ -230,197 +518,479 @@
       text-decoration: none;
       font-weight: 600;
     }
-    footer a:hover {
-      color: var(--primary);
+    footer a:hover { color: var(--primary); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero { padding: 36px 0 24px; }
+      .split-feature { gap: 20px; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-cta-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      .hero-cta-group .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .hero-badge-overlay {
+        position: static;
+        margin: 12px;
+        display: inline-flex;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <!-- Hero Header -->
-    <header class="hero">
-      <div class="hero-badge whitespace-nowrap shrink-0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-        ESP32-S3 DevKit N16R8 Platform
+  <!-- Navigation -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="#" class="nav-brand">
+        <div class="nav-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+            <rect x="9" y="9" width="6" height="6"></rect>
+            <line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line>
+            <line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line>
+          </svg>
+        </div>
+        <span class="nav-brand-text">Rody S3</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#emotions" class="nav-link">Cảm Xúc Thú Cưng</a>
+        <a href="#game" class="nav-link">Đấu Trường 3D</a>
+        <a href="#capabilities" class="nav-link">Siêu Năng Lực</a>
+        <a href="#schematics" class="nav-link">Smart CAD</a>
+        <a href="https://github.com/tody-agent/rody-s3" target="_blank" class="nav-link">GitHub</a>
       </div>
-      <h1 class="hero-title text-balance">Rody S3 & Otto Robot Portal</h1>
-      <p class="hero-desc">
-        Hệ sinh thái robot thông minh, trung tâm chẩn đoán phần cứng, game 3D WebGL và sơ đồ mạch tương tác Smart CAD chạy trực tiếp trên trình duyệt.
+
+      <a href="./rody_3d_game.html" class="btn btn-primary">
+        <span>Chơi Game 3D</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="container hero" data-od-id="hero-section">
+    <div class="pill pill-blue whitespace-nowrap shrink-0">
+      <span>✨</span> ESP32-S3 Dual-Core &bull; Mochi AI Sensory Edition
+    </div>
+
+    <h1 class="hero-title text-balance">
+      Chú Robot Để Bàn <span>Có Tâm Hồn</span> & Trí Tuệ Nhân Tạo Đầu Tiên Của Bạn.
+    </h1>
+
+    <p class="hero-desc text-balance">
+      Không chỉ là xe tự hành né vật cản thông thường. Rody S3 biết lắng nghe giọng nói tiếng Việt, biểu cảm 12 trạng thái đôi mắt Mochi sống động, cảm nhận vuốt ve như thú cưng và sẵn sàng so tài cùng bạn trong đấu trường 3D Cyber Arena.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="./rody_3d_game.html" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line><rect x="2" y="6" width="20" height="12" rx="6"></rect></svg>
+        <span>Chơi Game 3D Trực Tuyến</span>
+      </a>
+      <a href="./rody_debug_center.html" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        <span>Mở Trung Tâm Chẩn Đoán</span>
+      </a>
+      <a href="./hardware/wiring_interactive.html" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+        <span>Sơ Đồ Mạch Smart CAD</span>
+      </a>
+    </div>
+
+    <!-- Hero Showcase Image -->
+    <div class="hero-visual">
+      <img src="./images/rody_hero.jpg" alt="Robot Rody S3 trên bàn làm việc hiện đại" class="hero-img">
+      <div class="hero-badge-overlay whitespace-nowrap shrink-0">
+        <div class="live-dot"></div>
+        <span>Màn Hình ST7789 IPS 60 FPS &bull; Phản Xạ Động Học Thời Gian Thực</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section 1: Live Interactive Portals Hub -->
+  <section class="section-wrap" data-od-id="interactive-hub">
+    <div class="container">
+      <div class="section-tag">
+        <span class="pill pill-teal whitespace-nowrap shrink-0">Trải Nghiệm Web Trực Tiếp</span>
+      </div>
+      <h2 class="section-heading text-balance">Hệ Sinh Thái Web Apps Toàn Diện Của Rody S3</h2>
+      <p class="section-desc text-balance">
+        Không cần cài đặt, không cần phần mềm phức tạp. Mọi tiện ích từ chơi game 3D, điều khiển qua Wi-Fi/USB đến bản vẽ sơ đồ mạch đều chạy mượt mà ngay trên trình duyệt của bạn.
       </p>
-    </header>
 
-    <!-- Interactive Showcase Section -->
-    <section data-od-id="interactive-apps">
-      <div class="section-title">Trải Nghiệm Trực Tiếp (Interactive Web Apps)</div>
-      <div class="grid-2">
+      <div class="portal-grid">
 
-        <!-- 3D Game Arena Card -->
-        <a href="./rody_3d_game.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box teal">
-              <!-- Gamepad icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <line x1="6" y1="12" x2="10" y2="12"></line>
-                <line x1="8" y1="10" x2="8" y2="14"></line>
-                <line x1="15" y1="13" x2="15.01" y2="13"></line>
-                <line x1="18" y1="11" x2="18.01" y2="11"></line>
-                <rect x="2" y="6" width="20" height="12" rx="6"></rect>
-              </svg>
+        <a href="./rody_3d_game.html" class="portal-card">
+          <div>
+            <div class="portal-icon-wrap" style="background:var(--primary-subtle); color:var(--primary);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line><rect x="2" y="6" width="20" height="12" rx="6"></rect></svg>
             </div>
-            <div class="card-content">
-              <h3>Rody 3D Cyber Arena Game</h3>
-              <p>Chơi game 3D WebGL sa bàn đấu trường, điều khiển robot né vật cản, tính điểm và âm thanh procedural sinh động.</p>
-            </div>
+            <h4>Rody 3D Cyber Arena Game</h4>
+            <p>Trải nghiệm game lái robot 3D WebGL trên sa bàn neon cyberpunk, né vật cản, tính điểm combo và âm thanh procedural sống động.</p>
           </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-teal whitespace-nowrap shrink-0">Three.js 3D Game</span>
-            <span>Vào chơi game &rarr;</span>
-          </div>
+          <span class="portal-link">Vào chơi game &rarr;</span>
         </a>
 
-        <!-- Hardware Diagnostic Center Card -->
-        <a href="./rody_debug_center.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box blue">
-              <!-- Activity icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-              </svg>
+        <a href="./rody_debug_center.html" class="portal-card">
+          <div>
+            <div class="portal-icon-wrap" style="background:var(--teal-subtle); color:var(--teal);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
             </div>
-            <div class="card-content">
-              <h3>Hardware Diagnostic & Bench Center</h3>
-              <p>Trung tâm kiểm thử phần cứng Light Mode: đo nhiệt độ CPU, quét bus I2C, nhích servo và chạy kịch bản self-test 5s.</p>
-            </div>
+            <h4>Hardware Diagnostic Center</h4>
+            <p>Giao diện Light Mode OpenDesign: theo dõi nhiệt độ chip ESP32, rủi ro Brownout, quét bus I2C, nhích servo và chạy Self-Test 5s.</p>
           </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-blue whitespace-nowrap shrink-0">OpenDesign Light Mode</span>
-            <span>Mở chẩn đoán &rarr;</span>
-          </div>
+          <span class="portal-link">Mở chẩn đoán &rarr;</span>
         </a>
 
-        <!-- Pet Sensory Simulator Card -->
-        <a href="./pet_simulator.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box green">
-              <!-- Heart/Mood icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
+        <a href="./pet_simulator.html" class="portal-card">
+          <div>
+            <div class="portal-icon-wrap" style="background:var(--rose-subtle); color:var(--rose);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             </div>
-            <div class="card-content">
-              <h3>Pet Robot Sensory Simulator</h3>
-              <p>Mô phỏng cảm xúc thú cưng AI: vuốt ve đầu, lật ngửa bụng, lắc chóng mặt, âm thanh kêu meo meo sống động.</p>
-            </div>
+            <h4>Pet Sensory Simulator</h4>
+            <p>Mô phỏng phản xạ thú cưng: vuốt ve đầu, lật ngửa bụng, lắc chóng mặt, cù lét nhột và phát tiếng kêu meo meo nũng nịu.</p>
           </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-green whitespace-nowrap shrink-0">Cảm Biến Thú Cưng</span>
-            <span>Trải nghiệm &rarr;</span>
-          </div>
+          <span class="portal-link">Mở giả lập pet &rarr;</span>
         </a>
 
-        <!-- Autonomous Drive Simulator Card -->
-        <a href="./robot_simulator.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box amber">
-              <!-- Navigation icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-              </svg>
+        <a href="./hardware/wiring_interactive.html" class="portal-card">
+          <div>
+            <div class="portal-icon-wrap" style="background:var(--amber-subtle); color:var(--amber);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
             </div>
-            <div class="card-content">
-              <h3>2D Autonomous Drive Simulator</h3>
-              <p>Mô phỏng xe tự hành sa bàn 2D, điều khiển gamepad ảo, 12 biểu cảm mắt màn hình ST7789 và nhận diện giọng nói.</p>
+            <h4>Sơ Đồ Mạch Smart CAD 2D</h4>
+            <p>Bản vẽ thông minh chống cắm nhầm: hover dây dẫn hiện tên pin 2 đầu, thuật toán né đè linh kiện, tra cứu linh kiện BOM chi tiết.</p>
+          </div>
+          <span class="portal-link">Xem sơ đồ mạch &rarr;</span>
+        </a>
+
+        <a href="./robot_simulator.html" class="portal-card">
+          <div>
+            <div class="portal-icon-wrap" style="background:var(--primary-subtle); color:var(--primary);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
             </div>
+            <h4>2D Autonomous Drive Simulator</h4>
+            <p>Mô phỏng xe tự hành sa bàn 2D trên mobile: điều khiển gamepad ảo, 12 biểu cảm mắt ST7789 60FPS và nhận diện giọng nói.</p>
           </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-amber whitespace-nowrap shrink-0">Sa Bàn 2D</span>
-            <span>Mở giả lập &rarr;</span>
-          </div>
+          <span class="portal-link">Mở sa bàn 2D &rarr;</span>
         </a>
 
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Smart CAD Schematics Section -->
-    <section data-od-id="smart-cad-schematics">
-      <div class="section-title">Sơ Đồ Mạch Tương Tác Smart CAD (Interactive Schematics)</div>
-      <div class="grid-2">
-
-        <!-- Standard Wiring Canvas -->
-        <a href="./hardware/wiring_interactive.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box blue">
-              <!-- Cpu icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
-                <rect x="9" y="9" width="6" height="6"></rect>
-                <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"></path>
-              </svg>
-            </div>
-            <div class="card-content">
-              <h3>Sơ Đồ Mạch Rody S3 Chuẩn</h3>
-              <p>Bản vẽ đấu dây vi điều khiển ESP32-S3, PCA9685, 2x Servo MG90S, cảm biến siêu âm và mắt hồng ngoại IR.</p>
-            </div>
-          </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-blue whitespace-nowrap shrink-0">Smart CAD 2D</span>
-            <span>Xem sơ đồ mạch &rarr;</span>
-          </div>
-        </a>
-
-        <!-- Pet Sensory Wiring Canvas -->
-        <a href="./hardware/wiring_pet_interactive.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box green">
-              <!-- Layers icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-              </svg>
-            </div>
-            <div class="card-content">
-              <h3>Sơ Đồ Mạch Rody Pet (Sensory Edition)</h3>
-              <p>Bản vẽ tích hợp cảm biến gia tốc MPU6050 (I2C) và cảm biến chạm điện dung TTP223 vuốt ve đầu thú cưng.</p>
-            </div>
-          </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-green whitespace-nowrap shrink-0">Bản Pet AI</span>
-            <span>Xem sơ đồ &rarr;</span>
-          </div>
-        </a>
-
-        <!-- Xiaozhi Voice TFT Wiring Canvas -->
-        <a href="./hardware/wiring_xiaozhi_interactive.html" class="app-card">
-          <div class="card-top">
-            <div class="icon-box teal">
-              <!-- Monitor icon -->
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-            </div>
-            <div class="card-content">
-              <h3>Sơ Đồ Mạch Xiaozhi Voice & TFT 1.54"</h3>
-              <p>Bản vẽ phối ghép màn hình ST7789 SPI DMA, Microphone I2S INMP441 và Loa khuếch đại I2S MAX98357A.</p>
-            </div>
-          </div>
-          <div class="card-footer">
-            <span class="tag-pill tag-teal whitespace-nowrap shrink-0">Voice & Display</span>
-            <span>Xem sơ đồ &rarr;</span>
-          </div>
-        </a>
-
+  <!-- Section 2: Emotional Scenarios & Pet Behaviors -->
+  <section class="section-wrap" id="emotions" data-od-id="emotional-scenarios">
+    <div class="container">
+      <div class="section-tag">
+        <span class="pill pill-rose whitespace-nowrap shrink-0">Trí Tuệ Cảm Xúc & Phản Xạ Xúc Giác</span>
       </div>
-    </section>
+      <h2 class="section-heading text-balance">Một Chú Robot Có Tâm Hồn, Biết Vui, Buồn & Nũng Nịu</h2>
+      <p class="section-desc text-balance">
+        Nhờ tích hợp cảm biến chạm điện dung TTP223 và cảm biến quán tính IMU 6 trục MPU6050, Rody S3 phản hồi tức thì với từng cử chỉ âu yếm hay tinh nghịch của bạn.
+      </p>
 
-    <!-- Footer -->
-    <footer>
-      <p>Dự án Robot Rody S3 &bull; Mã nguồn mở hoàn toàn &bull; Được thiết kế với OpenDesign</p>
-    </footer>
+      <!-- Feature 1: Petted / Affection -->
+      <div class="split-feature">
+        <div class="split-media">
+          <img src="./images/rody_pet_touch.jpg" alt="Rody S3 được vuốt ve đầu đầy hạnh phúc">
+        </div>
+        <div class="split-text">
+          <span class="pill pill-rose whitespace-nowrap shrink-0">Vuốt Ve Đầu (Petted)</span>
+          <h3 style="margin-top:10px;">Khi Được Xoa Đầu, Rody Phát Tiếng Rừ Rừ & Đôi Mắt Tràn Ngập Trái Tim</h3>
+          <p>
+            Cảm biến chạm điện dung trên đỉnh đầu phân biệt giữa cú chạm nhẹ (Tap) và hành động vuốt ve âu yếm (Petting). Khi được nựng, Rody phát âm thanh rung rừ rừ (purr 90–120Hz), mắt cười trăng khuyết và đôi má ửng hồng phúng phính.
+          </p>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Tăng điểm tình cảm (Affection Score) và giảm căng thẳng.</span>
+            </li>
+            <li class="feature-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Phát âm thanh chiptune mèo rừ rừ độc quyền qua loa MAX98357A.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Feature 2: Disco Dance & Funky Beat -->
+      <div class="split-feature" style="direction: rtl;">
+        <div class="split-media" style="direction: ltr;">
+          <img src="./images/rody_disco.jpg" alt="Rody S3 nhảy Disco khi nghe tiếng vỗ tay">
+        </div>
+        <div class="split-text" style="direction: ltr;">
+          <span class="pill pill-teal whitespace-nowrap shrink-0">Vũ Điệu Disco (Clap-Clap Dance)</span>
+          <h3 style="margin-top:10px;">Vỗ Tay Đôi Nhịp: Rody Lên Kính Râm Neon & Khiêu Vũ Moonwalk</h3>
+          <p>
+            Microphone I2S INMP441 nhận diện nhịp vỗ tay đôi của bạn (khoảng cách 160–550ms). Rody sẽ lập tức chuyển màn hình sang kính râm pixel Thug Life, bật beat funky 8-bit và hai bánh xe nhịp nhàng lùi Moonwalk lắc hông!
+          </p>
+          <ul class="feature-list">
+            <li class="feature-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Nhận diện vỗ tay chuẩn xác nhờ thuật toán lọc năng lượng âm thanh RMS.</span>
+            </li>
+            <li class="feature-item">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Vũ đạo đồng bộ nhịp nhàng giữa bánh xe Servo MG90S và loa ngoài.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 6 Emotional States Grid -->
+      <div class="emotions-grid">
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <span class="emotion-title">✈️ Bay Lượn (Airplane Mode)</span>
+            <span class="pill pill-blue whitespace-nowrap shrink-0">IMU Lift</span>
+          </div>
+          <p class="emotion-desc">
+            Khi bạn nhấc bổng Rody lượn sóng trên không trung, mắt Rody đổi thành kính phi công cổ điển, loa phát tiếng động cơ rền vang và bánh quay tít như cánh quạt!
+          </p>
+        </div>
+
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <span class="emotion-title">😆 Cù Lét Nhột (Tickle)</span>
+            <span class="pill pill-rose whitespace-nowrap shrink-0">Multi-Tap</span>
+          </div>
+          <p class="emotion-desc">
+            Chạm ngón tay nhanh 3 lần liên tiếp: Mắt Rody híp tịt `> <`, phát tiếng cười khúc khích chiptune và lắc rung hai bánh như đang cười ngặt nghẽo.
+          </p>
+        </div>
+
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <span class="emotion-title">😵 Bị Lắc Chóng Mặt (Dizzy)</span>
+            <span class="pill pill-amber whitespace-nowrap shrink-0">Gyro Shock</span>
+          </div>
+          <p class="emotion-desc">
+            Nếu bạn lắc mạnh robot: Cảm biến con quay hồi chuyển kích hoạt mắt xoắn ốc chóng mặt, hai bánh xe đứng loạng choạng và phát tiếng kêu xin tha.
+          </p>
+        </div>
+
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <span class="emotion-title">🆘 Bị Lật Ngửa Bụng (Belly Up)</span>
+            <span class="pill pill-rose whitespace-nowrap shrink-0">Gravity Flip</span>
+          </div>
+          <p class="emotion-desc">
+            Khi bị lật ngửa bụng lên trời: Trục Z trọng trường đảo ngược, còi cấp cứu réo nhịp nhanh và 2 bánh quẫy đạp liên hồi cầu cứu người lật lại.
+          </p>
+        </div>
+
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <span class="emotion-title">✋ Đập Tay Khen Ngợi (High-Five)</span>
+            <span class="pill pill-teal whitespace-nowrap shrink-0">Game Mode</span>
+          </div>
+          <p class="emotion-desc">
+            Rody giơ bàn tay vàng mời gọi. Nếu bạn kịp chạm tay trong 1.2s: Khúc kèn đồng khải hoàn vang dội và robot quay vòng 360 độ ăn mừng chiến thắng!
+          </p>
+        </div>
+
+        <div class="emotion-card">
+          <div class="emotion-header">
+            <span class="emotion-title">🤧 Thổi Gió Hắt Xì (Achoo!)</span>
+            <span class="pill pill-blue whitespace-nowrap shrink-0">Air Flow</span>
+          </div>
+          <p class="emotion-desc">
+            Thổi nhẹ vào microphone: Rody co giật run rẩy, mắt nhấp nháy chuẩn bị rồi bùng nổ cú hắt xì cực mạnh làm bánh giật lùi 5cm đầy hài hước!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: 3D Cyber Arena Game -->
+  <section class="section-wrap" id="game" data-od-id="cyber-arena-game">
+    <div class="container">
+      <div class="section-tag">
+        <span class="pill pill-blue whitespace-nowrap shrink-0">Đấu Trường 3D WebGL</span>
+      </div>
+      <h2 class="section-heading text-balance">Thử Tài Cầm Lái Trong Đấu Trường Cyber 3D</h2>
+      <p class="section-desc text-balance">
+        Điều khiển mô hình 3D của Rody S3 vượt qua chướng ngại vật, né bẫy laser và thu thập năng lượng trên sa bàn tương tác thời gian thực.
+      </p>
+
+      <div class="hero-visual">
+        <img src="./images/rody_arena.jpg" alt="Rody S3 trong đấu trường game 3D Cyber Arena" class="hero-img">
+        <div class="hero-badge-overlay whitespace-nowrap shrink-0">
+          <div class="live-dot"></div>
+          <span>Three.js WebGL Engine &bull; Vật Lý Bánh Xe Vi Sai Chân Thực</span>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: -20px; margin-bottom: 20px;">
+        <a href="./rody_3d_game.html" class="btn btn-primary" style="font-size:15px; padding:12px 28px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line><rect x="2" y="6" width="20" height="12" rx="6"></rect></svg>
+          <span>Chơi Thử Game 3D Ngay Bây Giờ</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: 6 Super Core Capabilities -->
+  <section class="section-wrap" id="capabilities" data-od-id="core-capabilities">
+    <div class="container">
+      <div class="section-tag">
+        <span class="pill pill-teal whitespace-nowrap shrink-0">Phần Cứng & Trí Tuệ Nhân Tạo</span>
+      </div>
+      <h2 class="section-heading text-balance">6 Siêu Năng Lực Phần Cứng Đẳng Cấp Của Rody S3</h2>
+      <p class="section-desc text-balance">
+        Được thiết kế tỉ mỉ trên vi điều khiển ESP32-S3 thế hệ mới, tối ưu hóa từng chân GPIO và giao thức ngoại vi chuẩn công nghiệp.
+      </p>
+
+      <div class="portal-grid">
+        <div class="portal-card">
+          <div class="portal-icon-wrap" style="background:var(--primary-subtle); color:var(--primary);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
+          </div>
+          <h4>Bộ Não ESP32-S3 N16R8</h4>
+          <p>CPU kép 240MHz Xtensa LX7, 16MB Flash, 8MB Octal PSRAM siêu tốc. Xử lý thuật toán AI, đồ họa 60FPS và âm thanh I2S cục bộ không cần cloud.</p>
+        </div>
+
+        <div class="portal-card">
+          <div class="portal-icon-wrap" style="background:var(--teal-subtle); color:var(--teal);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+          </div>
+          <h4>Màn Hình ST7789 IPS 1.54"</h4>
+          <p>Độ phân giải 240x240 góc nhìn rộng, giao tiếp SPI DMA phần cứng kết hợp LovyanGFX double-buffered sprite, triệt tiêu 100% nhấp nháy.</p>
+        </div>
+
+        <div class="portal-card">
+          <div class="portal-icon-wrap" style="background:var(--rose-subtle); color:var(--rose);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+          </div>
+          <h4>Giọng Nói Tiếng Việt INMP441</h4>
+          <p>Micro kỹ thuật số I2S 16kHz 24-bit lọc nhiễu, nhận diện chuẩn xác các khẩu lệnh tiếng Việt: <i>"Rody ơi", "Tiến lên", "Lùi lại", "Vui vẻ"...</i></p>
+        </div>
+
+        <div class="portal-card">
+          <div class="portal-icon-wrap" style="background:var(--amber-subtle); color:var(--amber);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+          </div>
+          <h4>Âm Thanh Hi-Fi MAX98357A</h4>
+          <p>Amply Class-D 3.2W kỹ thuật số không rè nhiễu, tích hợp bộ tổng hợp âm thanh procedural tạo ra 8 hiệu ứng SFX chim hót R2-D2 độc đáo.</p>
+        </div>
+
+        <div class="portal-card">
+          <div class="portal-icon-wrap" style="background:var(--primary-subtle); color:var(--primary);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </div>
+          <h4>Khử Lệch Động Cơ NVS Trim</h4>
+          <p>Điều khiển 2 bánh xe Servo MG90S qua mạch PCA9685 I2C. Thuật toán bù tốc độ giúp robot chạy thẳng băng, lưu thông số vĩnh viễn vào NVS flash.</p>
+        </div>
+
+        <div class="portal-card">
+          <div class="portal-icon-wrap" style="background:var(--teal-subtle); color:var(--teal);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          </div>
+          <h4>Chẩn Đoán Thông Minh Web UI</h4>
+          <p>Giám sát điện áp pin, nhiệt độ CPU, đo khoảng cách siêu âm HC-SR05 và test động cơ trực tiếp qua Wi-Fi AP hoặc USB Serial Bridge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Comparison Table -->
+  <section class="section-wrap" data-od-id="comparison-table">
+    <div class="container">
+      <div class="section-tag">
+        <span class="pill pill-green whitespace-nowrap shrink-0">Giá Trị Vượt Trội</span>
+      </div>
+      <h2 class="section-heading text-balance">Rody S3 vs Robot Đồ Chơi Thông Thường</h2>
+      <p class="section-desc text-balance">
+        Tại sao Rody S3 là nền tảng robot thông minh đáng sở hữu và học tập nhất hiện nay.
+      </p>
+
+      <div class="compare-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tiêu Chí Kỹ Thuật</th>
+              <th class="col-highlight">Robot Rody S3 (Mochi AI)</th>
+              <th>Robot Đồ Chơi & Xe Arduino Thường</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Màn hình biểu cảm</b></td>
+              <td class="col-highlight">ST7789 IPS 1.54" 60 FPS (12 cảm xúc Mochi)</td>
+              <td>Mắt LED ma trận 8x8 hoặc không có màn hình</td>
+            </tr>
+            <tr>
+              <td><b>Tương tác xúc giác thú cưng</b></td>
+              <td class="col-highlight">Chạm vuốt ve đầu, rung rừ rừ, nhận diện lật ngửa, lắc</td>
+              <td>Chỉ có nút bấm cơ học bật/tắt đơn điệu</td>
+            </tr>
+            <tr>
+              <td><b>Âm thanh & Lời nói</b></td>
+              <td class="col-highlight">I2S DAC 3.2W Hi-Fi + Nhận diện tiếng Việt</td>
+              <td>Còi chíp thô sơ mono 1 âm điệu</td>
+            </tr>
+            <tr>
+              <td><b>Điều khiển & Chẩn đoán</b></td>
+              <td class="col-highlight">Web App Mobile-First + Cầu nối USB Serial Bridge</td>
+              <td>Remote hồng ngoại cồng kềnh hoặc Bluetooth chập chờn</td>
+            </tr>
+            <tr>
+              <td><b>Game & Trải nghiệm 3D</b></td>
+              <td class="col-highlight">Game 3D WebGL trực tuyến + Bộ giả lập Web</td>
+              <td>Không có bộ giả lập trực tuyến</td>
+            </tr>
+            <tr>
+              <td><b>Mã nguồn & Tự lắp ráp</b></td>
+              <td class="col-highlight">Mã nguồn mở 100% + Sơ đồ mạch Smart CAD 2D</td>
+              <td>Đóng gói sẵn, không tùy biến được mạch</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA Banner -->
+  <div class="container" data-od-id="cta-section">
+    <div class="cta-banner">
+      <h2>Sẵn Sàng Trải Nghiệm Cùng Rody S3?</h2>
+      <p>
+        Bắt đầu chơi game 3D trực tuyến, xem sơ đồ mạch tương tác hoặc nạp firmware vào chiếc robot để bàn thông minh của bạn ngay hôm nay!
+      </p>
+      <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+        <a href="./rody_3d_game.html" class="cta-white-btn">
+          <span>Vào Chơi Game 3D Ngay</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </a>
+        <a href="./hardware/wiring_interactive.html" class="btn" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3);">
+          <span>Xem Sơ Đồ Mạch Smart CAD</span>
+        </a>
+      </div>
+    </div>
   </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p style="margin-bottom:8px;">
+        <strong>Dự án Robot Rody S3 (Mochi AI Edition)</strong> &bull; Mã nguồn mở hoàn toàn &bull; Thiết kế bởi OpenDesign
+      </p>
+      <p>
+        <a href="https://github.com/tody-agent/rody-s3" target="_blank">GitHub Repository</a> &bull;
+        <a href="./HUONG_DAN_SU_DUNG.md">Sổ Tay Hướng Dẫn</a> &bull;
+        <a href="./hardware/WIRING.md">Tiêu Chuẩn Đấu Dây</a> &bull;
+        <a href="./hardware/DEBUG.md">Cẩm Nang Sửa Lỗi</a>
+      </p>
+    </div>
+  </footer>
 
 </body>
 </html>
