@@ -1,0 +1,82 @@
+{
+  "name": "Otto S3 Xiaozhi / Mochi AI Robot (TFT 1.54 + I2S Audio + Drive)",
+  "chip": "esp32_s3",
+  "board": "ESP32-S3 DevKitC-1 N16R8 (40-Pin)",
+  "usb_cdc_enabled": true,
+  "wifi_enabled": true,
+  "components": [
+    {
+      "name": "ESP32-S3 DevKit N16R8",
+      "type": "MICROCONTROLLER",
+      "power_source": "USB_5V_OR_BAT_BOOST",
+      "current_ma": 160
+    },
+    {
+      "name": "ST7789 1.54\" SPI TFT Display",
+      "type": "DISPLAY",
+      "power_source": "3V3",
+      "current_ma": 50
+    },
+    {
+      "name": "INMP441 I2S Digital Mic",
+      "type": "AUDIO_INPUT",
+      "power_source": "3V3",
+      "current_ma": 2
+    },
+    {
+      "name": "MAX98357A I2S 3W Class-D Amp",
+      "type": "AUDIO_AMPLIFIER",
+      "power_source": "5V_EXT_BOOST",
+      "current_ma": 350
+    },
+    {
+      "name": "PCA9685 16-CH PWM Controller",
+      "type": "I2C_PWM_DRIVER",
+      "power_source": "3V3",
+      "i2c_address": "0x40",
+      "current_ma": 10
+    },
+    {
+      "name": "Left Servo MG90S 360",
+      "type": "SERVO_MOTOR",
+      "power_source": "5V_SERVO_RAIL",
+      "current_ma": 350
+    },
+    {
+      "name": "Right Servo MG90S 360",
+      "type": "SERVO_MOTOR",
+      "power_source": "5V_SERVO_RAIL",
+      "current_ma": 350
+    },
+    {
+      "name": "Left IR Sensor LM393",
+      "type": "SENSOR_DIGITAL",
+      "power_source": "3V3",
+      "current_ma": 15
+    },
+    {
+      "name": "Right IR Sensor LM393",
+      "type": "SENSOR_DIGITAL",
+      "power_source": "3V3",
+      "current_ma": 15
+    }
+  ],
+  "connections": [
+    { "esp_pin": 4,  "target_component": "INMP441 I2S Mic", "target_signal": "SCK", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 5,  "target_component": "INMP441 I2S Mic", "target_signal": "WS",  "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 6,  "target_component": "INMP441 I2S Mic", "target_signal": "SD",  "direction": "IN",  "target_voltage": 3.3 },
+    { "esp_pin": 7,  "target_component": "MAX98357A Amp",   "target_signal": "DIN", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 15, "target_component": "MAX98357A Amp",   "target_signal": "LRC", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 16, "target_component": "MAX98357A Amp",   "target_signal": "BCLK","direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 8,  "target_component": "PCA9685",         "target_signal": "SDA", "direction": "BIDIR","target_voltage": 3.3 },
+    { "esp_pin": 9,  "target_component": "PCA9685",         "target_signal": "SCL", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 10, "target_component": "Left IR Sensor",  "target_signal": "DO",  "direction": "IN",  "target_voltage": 3.3 },
+    { "esp_pin": 11, "target_component": "Right IR Sensor", "target_signal": "DO",  "direction": "IN",  "target_voltage": 3.3 },
+    { "esp_pin": 42, "target_component": "ST7789 TFT",      "target_signal": "SCL", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 41, "target_component": "ST7789 TFT",      "target_signal": "SDA", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 40, "target_component": "ST7789 TFT",      "target_signal": "DC",  "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 39, "target_component": "ST7789 TFT",      "target_signal": "RES", "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 38, "target_component": "ST7789 TFT",      "target_signal": "CS",  "direction": "OUT", "target_voltage": 3.3 },
+    { "esp_pin": 21, "target_component": "ST7789 TFT",      "target_signal": "BLK", "direction": "OUT", "target_voltage": 3.3 }
+  ]
+}

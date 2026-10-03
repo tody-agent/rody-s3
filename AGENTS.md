@@ -1,10 +1,10 @@
-# Quy tắc cho AI agent – Otto S3
+# Quy tắc cho AI agent – Rody S3
 
 ## Bạn ĐƯỢC tự làm
 - Viết/sửa code trong src/, lib/, test/, tools/.
-- `pio run -e otto`, `pio test -e native`, `pio run -e otto -t upload --upload-port $OTTO_PORT`.
+- `pio run -e rody` (hoặc `pio run -e otto`), `pio test -e native`, `pio run -e rody -t upload --upload-port $RODY_PORT`.
 - `pytest tools/hil -m bench` và các marker khác SAU KHI người xác nhận gate tương ứng.
-- Gửi lệnh serial qua tools/hil/conftest.py (class Otto).
+- Gửi lệnh serial qua tools/hil/conftest.py (class Rody / Otto).
 
 ## Bạn PHẢI DỪNG và hỏi người (GATE)
 | Gate | Điều kiện người phải xác nhận |
@@ -22,9 +22,9 @@
 - Bỏ qua test thất bại; phải chẩn đoán theo docs/hardware/DEBUG.md.
 
 ## Lệnh nhanh
-export OTTO_PORT=/dev/ttyUSB0      # Windows: set OTTO_PORT=COM5
+export RODY_PORT=/dev/ttyUSB0      # Windows: set RODY_PORT=COM5 (hỗ trợ cả OTTO_PORT)
 pio test -e native
-pio run -e otto -t upload --upload-port $OTTO_PORT
+pio run -e rody -t upload --upload-port $RODY_PORT
 pytest tools/hil -m bench -v
 pytest tools/hil -m lifted -v      # sau G1
 pytest tools/hil -m floor -v -s    # sau G2 (-s để nhập số đo)

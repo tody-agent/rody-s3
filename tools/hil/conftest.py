@@ -24,11 +24,17 @@ class Otto:
         try: self.cmd("stop", 1.0)
         finally: self.s.close()
 
+Rody = Otto
+
 @pytest.fixture(scope="session")
-def otto():
-    port = os.environ.get("OTTO_PORT")
+def rody():
+    port = os.environ.get("RODY_PORT") or os.environ.get("OTTO_PORT")
     if not port:
-        pytest.skip("Đặt biến OTTO_PORT (vd /dev/ttyUSB0 hoặc COM5)")
-    o = Otto(port)
+        pytest.skip("Đặt biến RODY_PORT hoặc OTTO_PORT (vd /dev/ttyUSB0 hoặc COM5)")
+    o = Rody(port)
     yield o
     o.close()
+
+@pytest.fixture(scope="session")
+def otto(rody):
+    return rody

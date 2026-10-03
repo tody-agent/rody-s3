@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HP Robots Otto Starter Assembly Test</title>
+  <style>
+    body { margin: 0; background: #93c5fd; overflow: hidden; }
+    #canvas { width: 100vw; height: 100vh; display: block; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="GLTFLoader.js"></script>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xbfe3ff);
+
+  const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(140, 90, 160);
+
+  const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 16, 0);
+  controls.update();
+
+  // Minecraft-style checkered grass floor
+  const groundGeo = new THREE.PlaneGeometry(300, 300);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x5da83b,
+    roughness: 0.9,
+    metalness: 0.05
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -31.64; // Ground aligned with wheel bottom
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Studio / Sunlight Rig
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x475569, 0.65);
+  scene.add(hemiLight);
+
+  const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.3);
+  sunLight.position.set(70, 150, 90);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(1024, 1024);
+  sunLight.shadow.bias = -0.001;
+  scene.add(sunLight);
+
+  const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.6);
+  fillLight.position.set(-80, 60, 40);
+  scene.add(fillLight);
+
+  const backLight = new THREE.DirectionalLight(0xffffff, 0.4);
+  backLight.position.set(0, 90, -120);
+  scene.add(backLight);
+
+  const robotRoot = new THREE.Group();
+  scene.add(robotRoot);
+
+  const loader = new THREE.GLTFLoader();
+
+  // Official HP Robots Otto Starter Palette
+  const parts = [
+    { file: 'bottom.glb', color: '#FFFFFF', roughness: 0.35 },
+    { file: 'middle.glb', color: '#549EF7', roughness: 0.32 },
+    { file: 'face_ultrasonic.glb', color: '#549EF7', roughness: 0.32 },
+    { file: 'top.glb', color: '#FFFFFF', roughness: 0.28 },
+    { file: 'wheels.glb', color: null, roughness: 0.85 }
+  ];
+
+  // Kinematic pivots
+  const chassisGroup = new THREE.Group();
+  robotRoot.add(chassisGroup);
+
+  const leftWheelPivot = new THREE.Group();
+  const rightWheelPivot = new THREE.Group();
+  // Axle centers: Y = -10.0, Z = -23.0
+  leftWheelPivot.position.set(-40.612, -10.0, -23.0);
+  rightWheelPivot.position.set(40.612, -10.0, -23.0);
+  chassisGroup.add(leftWheelPivot);
+  chassisGroup.add(rightWheelPivot);
+
+  // Elevate entire robot so wheels sit on ground Y = 0
+  robotRoot.position.y = 31.64;
+
+  let eyePupils = [];
+
+  let loadedCount = 0;
+  parts.forEach(p => {
+    loader.load('models/otto_starter/' + p.file, (gltf) => {
+      const obj = gltf.scene;
+
+      if (p.file === 'wheels.glb') {
+        let meshIdx = 0;
+        let origTireMesh = null;
+        const otherMeshes = [];
+
+        obj.traverse(child => {
+          if (child.isMesh) {
+            if (meshIdx === 0) {
+              origTireMesh = child;
+            } else if (meshIdx === 1) {
+              // Caster ball: chrome
+              child.material = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                roughness: 0.15,
+                metalness: 0.85
+              });
+              otherMeshes.push(child);
+            } else {
+              // Brackets: HP Blue
+              child.material = new THREE.MeshStandardMaterial({
+                color: 0x549ef7,
+                roughness: 0.35,
+                metalness: 0.08
+              });
+              otherMeshes.push(child);
+            }
+            meshIdx++;
+          }
+        });
+
+        // Split tire mesh into left and right wheels
+        if (origTireMesh) {
+          const origGeo = origTireMesh.geometry;
+          const index = origGeo.index;
+          const pos = origGeo.attributes.position;
+          const leftIndices = [];
+          const rightIndices = [];
+
+          for (let i = 0; i < index.count; i += 3) {
+            const a = index.getX(i);
+            const b = index.getX(i + 1);
+            const c = index.getX(i + 2);
+            if (pos.getX(a) < 0) {
+              leftIndices.push(a, b, c);
+            } else {
+              rightIndices.push(a, b, c);
+            }
+          }
+
+          const tireMat = new THREE.MeshStandardMaterial({
+            color: 0x1f242d,
+            roughness: 0.85,
+            metalness: 0.08
+          });
+
+          // Left wheel
+          const leftGeo = origGeo.clone();
+          leftGeo.setIndex(leftIndices);
+          leftGeo.translate(40.612, 10.0, 23.0); // center on pivot (0,0,0)
+          const leftMesh = new THREE.Mesh(leftGeo, tireMat);
+          leftMesh.castShadow = true;
+          leftMesh.receiveShadow = true;
+          leftWheelPivot.add(leftMesh);
+
+          // Right wheel
+          const rightGeo = origGeo.clone();
+          rightGeo.setIndex(rightIndices);
+          rightGeo.translate(-40.612, 10.0, 23.0); // center on pivot (0,0,0)
+          const rightMesh = new THREE.Mesh(rightGeo, tireMat);
+          rightMesh.castShadow = true;
+          rightMesh.receiveShadow = true;
+          rightWheelPivot.add(rightMesh);
+        }
+
+        // Add remaining caster and bracket meshes to chassis
+        otherMeshes.forEach(m => {
+          m.castShadow = true;
+          m.receiveShadow = true;
+          chassisGroup.add(m);
+        });
+
+      } else {
+        // Standard body part
+        obj.traverse(child => {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            if (child.material) {
+              child.material = child.material.clone();
+              if (p.color) {
+                child.material.color.set(p.color);
+                child.material.roughness = p.roughness;
+                child.material.metalness = 0.05;
+              }
+            }
+          }
+        });
+        chassisGroup.add(obj);
+      }
+
+      loadedCount++;
+      if (loadedCount === parts.length) {
+        addUltrasonicEyes(chassisGroup);
+        console.log('ALL PARTS ASSEMBLED AND RIGGED!');
+        window.allLoaded = true;
+      }
+    });
+  });
+
+  function addUltrasonicEyes(parent) {
+    eyePupils = [];
+    [-15.65, 15.65].forEach(xOffset => {
+      // Aluminum barrel (pointing along Z axis forward)
+      const barrelGeo = new THREE.CylinderGeometry(7.8, 7.8, 6.0, 32);
+      const barrelMat = new THREE.MeshStandardMaterial({
+        color: 0xd1d5db,
+        metalness: 0.88,
+        roughness: 0.22
+      });
+      const barrel = new THREE.Mesh(barrelGeo, barrelMat);
+      barrel.rotation.x = Math.PI / 2; // Point along Z
+      barrel.position.set(xOffset, 16.0, 36.0);
+      parent.add(barrel);
+
+      // Black mesh transducer grill
+      const grillGeo = new THREE.CylinderGeometry(6.6, 6.6, 0.4, 32);
+      const grillMat = new THREE.MeshStandardMaterial({
+        color: 0x111827,
+        roughness: 0.8,
+        metalness: 0.5
+      });
+      const grill = new THREE.Mesh(grillGeo, grillMat);
+      grill.rotation.x = Math.PI / 2;
+      grill.position.set(xOffset, 16.0, 39.1);
+      parent.add(grill);
+
+      // Glowing pupil / LED center ring
+      const pupilGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.5, 24);
+      const pupilMat = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        emissive: 0x0284c7,
+        emissiveIntensity: 1.2,
+        roughness: 0.2
+      });
+      const pupil = new THREE.Mesh(pupilGeo, pupilMat);
+      pupil.rotation.x = Math.PI / 2;
+      pupil.position.set(xOffset, 16.0, 39.2);
+      parent.add(pupil);
+      eyePupils.push(pupil);
+    });
+  }
+
+  // Animation loop with spinning wheels and breathing idle
+  let clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    const dt = clock.getDelta();
+    const t = clock.getElapsedTime();
+
+    if (window.allLoaded) {
+      // Rotate wheels smoothly around their axles
+      leftWheelPivot.rotation.x += dt * 4.0;
+      rightWheelPivot.rotation.x += dt * 4.0;
+
+      // Subtle breathing
+      chassisGroup.position.y = Math.sin(t * 3.0) * 0.4;
+      chassisGroup.rotation.x = Math.sin(t * 2.0) * 0.015;
+
+      // Pulse eyes
+      if (eyePupils.length > 0) {
+        const pulse = 1.0 + Math.sin(t * 4.0) * 0.4;
+        eyePupils.forEach(p => {
+          p.material.emissiveIntensity = pulse;
+        });
+      }
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
+</body>
+</html>

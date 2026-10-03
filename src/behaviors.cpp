@@ -2,6 +2,8 @@
 #include "../include/pins.h"
 #include "sensors.h"
 #include "drive.h"
+#include "emotion_gfx.h"
+#include "audio_player.h"
 #include <Arduino.h>
 #include <string.h>
 
@@ -55,10 +57,13 @@ void update() {
     if (dist <= OBSTACLE_CM && dist > 1.0f) {
       // Obstacle detected within 20cm!
       drive::stop();
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::OBSTACLE);
+      audio_player::playSfx(audio_player::SoundEffect::OBSTACLE_ALARM);
       // Back up slightly or rotate
       drive::drive(-40.0f, 40.0f, 350, err); // pivot
     } else {
       // Clear ahead
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::DRIVE_FWD);
       drive::drive(45.0f, 45.0f, 200, err);
     }
   }
@@ -68,15 +73,19 @@ void update() {
     const char* err = nullptr;
     if (l == 0 && r == 0) {
       // On track
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::DRIVE_FWD);
       drive::drive(40.0f, 40.0f, 150, err);
     } else if (l == 1 && r == 0) {
       // Left sensor off track / on line -> turn left
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::TURN_LEFT);
       drive::drive(15.0f, 45.0f, 150, err);
     } else if (l == 0 && r == 1) {
       // Right sensor on line -> turn right
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::TURN_RIGHT);
       drive::drive(45.0f, 15.0f, 150, err);
     } else {
-      // Both detected (cross line) -> slow straight
+      // Both detected (cross line) -> slow straight & happy
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::HAPPY);
       drive::drive(30.0f, 30.0f, 150, err);
     }
   }

@@ -41,7 +41,7 @@ bool setPwmRaw(int ch, uint16_t us) {
   if (us == 0) {
     pca.setPin(ch, 0, false);
   } else {
-    if (sensors::readBatteryVoltage() < BAT_LOW_V) {
+    if (sensors::isBatteryLow()) {
       stop();
       return false;
     }
@@ -53,7 +53,7 @@ bool setPwmRaw(int ch, uint16_t us) {
 }
 
 bool drive(float speedL, float speedR, uint32_t durationMs, const char*& err) {
-  if (sensors::readBatteryVoltage() < BAT_LOW_V) {
+  if (sensors::isBatteryLow()) {
     stop();
     err = "low_battery";
     return false;
@@ -90,7 +90,7 @@ bool drive(float speedL, float speedR, uint32_t durationMs, const char*& err) {
 
 void update() {
   if (activeMotion) {
-    if (sensors::readBatteryVoltage() < BAT_LOW_V) {
+    if (sensors::isBatteryLow()) {
       Serial.println("# [drive] Low battery detected during motion! Emergency stop.");
       stop();
       return;

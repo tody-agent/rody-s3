@@ -4484,5 +4484,67 @@
     ],
     "esp32_notes": "Chirp Spread Spectrum (CSS) modulation. Sandeep Mistry's LoRa library or RadioLib standard.",
     "shopee_keywords": "module lora ra-02 sx1278 433mhz kem anten"
+  },
+  {
+    "id": "st7789_tft_154",
+    "name": "1.54\" Square SPI TFT IPS Display 240x240 (ST7789)",
+    "category": "Displays & Visual Indicators",
+    "operating_voltage": "3.3V",
+    "logic_level": "3.3V strictly",
+    "current_draw_typical_ma": 50,
+    "interface": "SPI (4-wire / 8-pin: SCL, SDA, RES, DC, CS, BLK)",
+    "default_address": null,
+    "pinout": [
+      {
+        "name": "VCC",
+        "type": "pwr",
+        "desc": "3.3V Power logic (from ESP32 3V3 rail)"
+      },
+      {
+        "name": "GND",
+        "type": "gnd",
+        "desc": "Ground (nối GND chung)"
+      },
+      {
+        "name": "SCL",
+        "type": "sig",
+        "desc": "SPI Clock (nối GPIO 42 trên ESP32-S3)"
+      },
+      {
+        "name": "SDA",
+        "type": "sig",
+        "desc": "SPI MOSI Data (nối GPIO 41 trên ESP32-S3)"
+      },
+      {
+        "name": "RES",
+        "type": "sig",
+        "desc": "Hardware Reset (nối GPIO 39 trên ESP32-S3)"
+      },
+      {
+        "name": "DC",
+        "type": "sig",
+        "desc": "Data / Command select (nối GPIO 40 trên ESP32-S3)"
+      },
+      {
+        "name": "CS",
+        "type": "sig",
+        "desc": "Chip Select active low (nối GPIO 38 trên ESP32-S3)"
+      },
+      {
+        "name": "BLK",
+        "type": "sig",
+        "desc": "Backlight LED control (nối GPIO 21 PWM hoặc 3V3)"
+      }
+    ],
+    "dos": [
+      "Dùng LovyanGFX hoặc TFT_eSPI với bus SPI DMA tốc độ cao 40MHz - 80MHz để render hoạt ảnh mắt 60 FPS mượt mà.",
+      "Nối chân BLK vào GPIO 21 để điều khiển độ sáng màn hình qua LEDC PWM hoặc tắt khi robot ngủ."
+    ],
+    "donts": [
+      "CẤM cấp nguồn 5V vào chân VCC/BLK nếu module là bản thuần 3.3V không có chip hạ áp.",
+      "Không nối MOSI/SCLK vào các chân SPI Flash/PSRAM bị cấm (GPIO 26-37 trên ESP32-S3)."
+    ],
+    "esp32_notes": "Độ phân giải 240x240 chuẩn vuông, góc nhìn IPS 178 độ sắc nét, cực kỳ thích hợp cho hoạt ảnh biểu cảm khuôn mặt Mochi / Xiaozhi.",
+    "shopee_keywords": "man hinh tft 1.54 inch st7789 spi 240x240 ips 8 pin"
   }
 ]

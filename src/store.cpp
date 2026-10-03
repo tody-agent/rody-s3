@@ -49,7 +49,13 @@ void init() {
 }
 
 bool load() {
-  if (!prefs.begin("otto", true)) {
+  bool opened = prefs.begin("rody", true);
+  if (!opened || prefs.getBytesLength("cal") != sizeof(CalBlob)) {
+    if (opened) prefs.end();
+    // Fallback to legacy "otto" namespace if present
+    opened = prefs.begin("otto", true);
+  }
+  if (!opened) {
     Serial.println("# [store] Failed to open NVS namespace readonly");
     gCalValid = false;
     return false;
@@ -85,7 +91,7 @@ bool load() {
 bool save() {
   gCal.ver = CAL_VERSION;
   gCal.crc = computeCrc(gCal);
-  if (!prefs.begin("otto", false)) {
+  if (!prefs.begin("rody", false)) {
     Serial.println("# [store] Failed to open NVS namespace read-write");
     return false;
   }

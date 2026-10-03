@@ -15,3 +15,8 @@
 | us = 999 liên tục | Echo không qua shifter / HV thiếu 5V | đo M7; kiểm tra HV=5V, LV=3V3 |
 | bat đọc sai | sai hệ số | so với đồng hồ, chỉnh BAT_DIV (mặc định 5.0) |
 | Chạy thẳng vẫn lệch sau cân bằng | lốp khác cỡ, ma sát bi | `cal drift` lặp lại; kiểm tra bi lăn trơn |
+| Màn hình TFT tối đen | Chân BLK chưa kéo cao / thiếu 3V3 | Kiểm tra GPIO 21 (BLK), đo 3V3 tại chân VCC màn hình |
+| Màn hình trắng xóa hoặc sọc nhiễu | Sai chân SPI hoặc clock quá cao | Kiểm tra SCLK (IO42), MOSI (IO41), DC (IO40), CS (IO38), RST (IO39) |
+| Loa MAX98357A không kêu / rè | Thiếu nguồn 5V Boost hoặc sai chân I2S | Đo 5V tại VIN amply; kiểm tra BCLK (IO16), LRC (IO15), DIN (IO7); SPK- CẤM GND |
+| Mic INMP441 không thu được âm | Cấp nhầm 5V hoặc chân L/R bị hở | Đo VDD phải là 3.3V; chân L/R phải nối đất GND; kiểm tra SCK (IO4), WS (IO5), SD (IO6) |
+

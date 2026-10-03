@@ -5,3 +5,8 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 .ux_audit/
+.ux_audit*/
+*.log
+.system_generated/
+.vscode/
+.idea/

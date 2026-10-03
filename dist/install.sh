@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+ #!/usr/bin/env bash
 # Universal Installer for ESP32 Circuit Architect Plugin & Skill
 # Compatible with Claude Code, OpenAI Codex, and Google Antigravity / Gemini CLI
 set -eo pipefail

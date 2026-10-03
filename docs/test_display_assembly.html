@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HP Robots Otto Display Face Test</title>
+  <style>
+    body { margin: 0; background: #60a5fa; overflow: hidden; }
+    #canvas { width: 100vw; height: 100vh; display: block; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="GLTFLoader.js"></script>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xbbe1fa);
+
+  const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.set(45, 35, 140);
+
+  const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 16, 0);
+  controls.update();
+
+  // Warm gentle meadow ground
+  const groundGeo = new THREE.PlaneGeometry(300, 300);
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x5b9e38,
+    roughness: 0.85,
+    metalness: 0.02
+  });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = 0;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Soft warm sunlight
+  const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x857564, 0.65);
+  scene.add(hemiLight);
+
+  const sunLight = new THREE.DirectionalLight(0xfff8eb, 1.25);
+  sunLight.position.set(60, 120, 80);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.set(1024, 1024);
+  sunLight.shadow.bias = -0.0005;
+  scene.add(sunLight);
+
+  const fillLight = new THREE.DirectionalLight(0xbae6fd, 0.45);
+  fillLight.position.set(-60, 50, 40);
+  scene.add(fillLight);
+
+  const robotRoot = new THREE.Group();
+  robotRoot.position.y = 31.64; // Wheels rest on ground Y = 0
+  scene.add(robotRoot);
+
+  const chassisGroup = new THREE.Group();
+  robotRoot.add(chassisGroup);
+
+  const leftWheelPivot = new THREE.Group();
+  const rightWheelPivot = new THREE.Group();
+  leftWheelPivot.position.set(-40.612, -10.0, -23.0);
+  rightWheelPivot.position.set(40.612, -10.0, -23.0);
+  chassisGroup.add(leftWheelPivot);
+  chassisGroup.add(rightWheelPivot);
+
+  // Dynamic Eye Screen Canvas (512x320)
+  const screenCanvas = document.createElement('canvas');
+  screenCanvas.width = 512;
+  screenCanvas.height = 320;
+  const sCtx = screenCanvas.getContext('2d');
+  const screenTex = new THREE.CanvasTexture(screenCanvas);
+  screenTex.generateMipmaps = false;
+  screenTex.minFilter = THREE.LinearFilter;
+  screenTex.magFilter = THREE.LinearFilter;
+
+  let currentEmotion = 'idle';
+  let eyeBlink = 0;
+  let pupilX = 0;
+  let pupilY = 0;
+
+  function renderRobotFace() {
+    const w = screenCanvas.width;
+    const h = screenCanvas.height;
+    sCtx.clearRect(0, 0, w, h);
+
+    // Dark OLED display background with subtle curved gradient
+    const bgGrad = sCtx.createRadialGradient(w/2, h/2, 20, w/2, h/2, w/1.2);
+    bgGrad.addColorStop(0, '#0a1628');
+    bgGrad.addColorStop(1, '#030712');
+    sCtx.fillStyle = bgGrad;
+    sCtx.fillRect(0, 0, w, h);
+
+    // Eye Centers
+    const eyeSpacing = 120;
+    const leftX = w / 2 - eyeSpacing + pupilX;
+    const rightX = w / 2 + eyeSpacing + pupilX;
+    const centerY = h / 2 + pupilY;
+
+    if (currentEmotion === 'happy') {
+      // Cheerful crescent upward curve eyes ^ ^
+      sCtx.strokeStyle = '#34d399';
+      sCtx.lineWidth = 26;
+      sCtx.lineCap = 'round';
+      sCtx.shadowColor = '#10b981';
+      sCtx.shadowBlur = 30;
+
+      [-eyeSpacing, eyeSpacing].forEach(off => {
+        sCtx.beginPath();
+        sCtx.arc(w/2 + off, centerY + 20, 52, Math.PI * 1.15, Math.PI * 1.85);
+        sCtx.stroke();
+      });
+    } else if (currentEmotion === 'dizzy') {
+      // Swirly cartoon spiral eyes @ @
+      sCtx.strokeStyle = '#fbbf24';
+      sCtx.lineWidth = 14;
+      sCtx.lineCap = 'round';
+      sCtx.shadowColor = '#f59e0b';
+      sCtx.shadowBlur = 25;
+
+      [-eyeSpacing, eyeSpacing].forEach(off => {
+        const cx = w/2 + off;
+        sCtx.beginPath();
+        for (let a = 0; a < Math.PI * 4; a += 0.15) {
+          const r = 6 + a * 9;
+          const x = cx + Math.cos(a + performance.now() * 0.01) * r;
+          const y = centerY + Math.sin(a + performance.now() * 0.01) * r;
+          if (a === 0) sCtx.moveTo(x, y);
+          else sCtx.lineTo(x, y);
+        }
+        sCtx.stroke();
+      });
+    } else {
+      // IDLE / NORMAL: Gorgeous anime robot pill eyes
+      const eyeW = 72;
+      const eyeH = 100 * (1 - eyeBlink); // Blinking squash
+      const eyeR = 36 * (1 - eyeBlink);
+
+      // Outer Cyan Glow
+      sCtx.shadowColor = '#00f0ff';
+      sCtx.shadowBlur = 35;
+      sCtx.fillStyle = '#22d3ee';
+
+      function drawPillEye(x, y) {
+        if (eyeH < 6) {
+          // Closed eye slit
+          sCtx.strokeStyle = '#38bdf8';
+          sCtx.lineWidth = 10;
+          sCtx.lineCap = 'round';
+          sCtx.beginPath();
+          sCtx.moveTo(x - eyeW/2, y);
+          sCtx.lineTo(x + eyeW/2, y);
+          sCtx.stroke();
+          return;
+        }
+
+        sCtx.beginPath();
+        sCtx.roundRect(x - eyeW/2, y - eyeH/2, eyeW, eyeH, Math.min(eyeR, eyeH/2));
+        sCtx.fill();
+
+        // Inner pupil highlight (white gloss circle)
+        sCtx.shadowBlur = 0;
+        sCtx.fillStyle = '#ffffff';
+        sCtx.beginPath();
+        sCtx.arc(x - 14, y - eyeH/4, 14 * (1 - eyeBlink), 0, Math.PI * 2);
+        sCtx.fill();
+
+        // Tiny secondary sparkle
+        sCtx.beginPath();
+        sCtx.arc(x + 16, y + eyeH/6, 7 * (1 - eyeBlink), 0, Math.PI * 2);
+        sCtx.fill();
+      }
+
+      drawPillEye(leftX, centerY);
+      drawPillEye(rightX, centerY);
+    }
+
+    screenTex.needsUpdate = true;
+  }
+  renderRobotFace();
+
+  // Load Official 5 CAD parts with face_display.glb
+  const loader = new THREE.GLTFLoader();
+  const parts = [
+    { file: 'bottom.glb', color: 0xffffff, roughness: 0.35, role: 'bottom' },
+    { file: 'middle.glb', color: 0x549ef7, roughness: 0.35, role: 'middle' },
+    { file: 'face_display.glb', color: 0x549ef7, roughness: 0.35, role: 'face' },
+    { file: 'top.glb', color: 0xffffff, roughness: 0.30, role: 'top' },
+    { file: 'wheels.glb', color: null, roughness: 0.85, role: 'wheels' }
+  ];
+
+  let loadedCount = 0;
+  parts.forEach(p => {
+    loader.load('models/otto_starter/' + p.file, (gltf) => {
+      const obj = gltf.scene;
+
+      if (p.role === 'wheels') {
+        let meshIdx = 0;
+        let origTireMesh = null;
+        const otherMeshes = [];
+
+        obj.traverse(child => {
+          if (child.isMesh) {
+            // FIX: Convert to non-indexed before computing normals to eliminate all warping/distortion!
+            if (child.geometry.index) {
+              child.geometry = child.geometry.toNonIndexed();
+            }
+            child.geometry.computeVertexNormals();
+
+            if (meshIdx === 0) {
+              origTireMesh = child;
+            } else if (meshIdx === 1) {
+              child.material = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                roughness: 0.15,
+                metalness: 0.90,
+                side: THREE.DoubleSide
+              });
+              otherMeshes.push(child);
+            } else {
+              child.material = new THREE.MeshStandardMaterial({
+                color: 0x549ef7,
+                roughness: 0.35,
+                metalness: 0.05,
+                side: THREE.DoubleSide
+              });
+              otherMeshes.push(child);
+            }
+            meshIdx++;
+          }
+        });
+
+        // Split tire mesh into left and right wheels
+        if (origTireMesh) {
+          const origGeo = origTireMesh.geometry;
+          const pos = origGeo.attributes.position;
+          const leftPositions = [];
+          const rightPositions = [];
+
+          for (let i = 0; i < pos.count; i += 3) {
+            const x0 = pos.getX(i);
+            const isLeft = x0 < 0;
+            const target = isLeft ? leftPositions : rightPositions;
+            for (let j = 0; j < 3; j++) {
+              target.push(pos.getX(i + j), pos.getY(i + j), pos.getZ(i + j));
+            }
+          }
+
+          const tireMat = new THREE.MeshStandardMaterial({
+            color: 0x1f242d,
+            roughness: 0.85,
+            metalness: 0.08,
+            side: THREE.DoubleSide
+          });
+
+          // Left wheel
+          const leftGeo = new THREE.BufferGeometry();
+          leftGeo.setAttribute('position', new THREE.Float32BufferAttribute(leftPositions, 3));
+          leftGeo.computeVertexNormals();
+          leftGeo.translate(40.612, 10.0, 23.0);
+          const leftMesh = new THREE.Mesh(leftGeo, tireMat);
+          leftMesh.castShadow = true;
+          leftMesh.receiveShadow = true;
+          leftWheelPivot.add(leftMesh);
+
+          // Right wheel
+          const rightGeo = new THREE.BufferGeometry();
+          rightGeo.setAttribute('position', new THREE.Float32BufferAttribute(rightPositions, 3));
+          rightGeo.computeVertexNormals();
+          rightGeo.translate(-40.612, 10.0, 23.0);
+          const rightMesh = new THREE.Mesh(rightGeo, tireMat);
+          rightMesh.castShadow = true;
+          rightMesh.receiveShadow = true;
+          rightWheelPivot.add(rightMesh);
+        }
+
+        otherMeshes.forEach(m => {
+          m.castShadow = true;
+          m.receiveShadow = true;
+          chassisGroup.add(m);
+        });
+
+      } else {
+        // Body parts
+        obj.traverse(child => {
+          if (child.isMesh) {
+            // FIX: Convert to non-indexed to give razor-sharp flat planes & clean bevels without distortion!
+            if (child.geometry.index) {
+              child.geometry = child.geometry.toNonIndexed();
+            }
+            child.geometry.computeVertexNormals();
+            child.castShadow = true;
+            child.receiveShadow = true;
+            child.material = new THREE.MeshStandardMaterial({
+              color: p.color,
+              roughness: p.roughness,
+              metalness: 0.04,
+              side: THREE.DoubleSide
+            });
+          }
+        });
+        chassisGroup.add(obj);
+      }
+
+      loadedCount++;
+      if (loadedCount === parts.length) {
+        addDisplayScreen(chassisGroup);
+        console.log('ALL PARTS ASSEMBLED WITH DISPLAY SCREEN!');
+        window.allLoaded = true;
+      }
+    });
+  });
+
+  function addDisplayScreen(parent) {
+    // Opening is X: [-20.2, 20.2], Y: [2.5, 28.5], Z: 41.5
+    const screenW = 39.5;
+    const screenH = 25.5;
+    const screenGeo = new THREE.PlaneGeometry(screenW, screenH);
+    const screenMat = new THREE.MeshStandardMaterial({
+      map: screenTex,
+      emissiveMap: screenTex,
+      emissive: 0xffffff,
+      emissiveIntensity: 0.95,
+      roughness: 0.25,
+      metalness: 0.1
+    });
+
+    const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    // Position inside the face window bevel
+    screenMesh.position.set(0, 15.5, 41.2);
+    parent.add(screenMesh);
+
+    // Protective glass cover
+    const glassGeo = new THREE.PlaneGeometry(screenW, screenH);
+    const glassMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.22,
+      roughness: 0.05,
+      metalness: 0.1,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05
+    });
+    const glassMesh = new THREE.Mesh(glassGeo, glassMat);
+    glassMesh.position.set(0, 15.5, 41.4);
+    parent.add(glassMesh);
+  }
+
+  // Animation loop with natural eye blinking
+  let clock = new THREE.Clock();
+  let nextBlink = 2.0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const dt = clock.getDelta();
+    const t = clock.getElapsedTime();
+
+    if (window.allLoaded) {
+      leftWheelPivot.rotation.x += dt * 3.0;
+      rightWheelPivot.rotation.x += dt * 3.0;
+
+      // Natural eye blinking
+      nextBlink -= dt;
+      if (nextBlink <= 0) {
+        eyeBlink = 1.0;
+        renderRobotFace();
+        setTimeout(() => {
+          eyeBlink = 0.0;
+          // Random slight gaze shift
+          pupilX = (Math.random() - 0.5) * 24;
+          pupilY = (Math.random() - 0.5) * 12;
+          renderRobotFace();
+          nextBlink = 2.5 + Math.random() * 2.5;
+        }, 120);
+      }
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+</script>
+</body>
+</html>

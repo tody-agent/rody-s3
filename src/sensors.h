@@ -5,6 +5,7 @@
 namespace sensors {
 void init();
 float readBatteryVoltage();
+bool isBatteryLow();
 float measureDistanceCmOnce();
 bool readUltrasonicN(size_t n, float* results, size_t maxN);
 void readLine(int& l, int& r);

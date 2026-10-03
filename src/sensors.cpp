@@ -41,6 +41,16 @@ float readBatteryVoltage() {
   return (float)mv * BAT_DIV / 1000.0f;
 }
 
+bool isBatteryLow() {
+  float v = readBatteryVoltage();
+  // Auto-detect: if no voltage divider is connected (ADC reads near 0V / v < 1.0V),
+  // assume unmonitored power (USB or direct 1S battery) and do NOT block robot motion.
+  if (v < 1.0f) {
+    return false;
+  }
+  return (v < BAT_LOW_V);
+}
+
 float measureDistanceCmOnce() {
   digitalWrite(pins::US_TRIG, LOW);
   delayMicroseconds(4);

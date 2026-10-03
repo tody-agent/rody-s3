@@ -112,15 +112,17 @@ When a new component or module is requested:
 When generating circuit documentation, NEVER provide flat ASCII text or messy overlapping SVG lines. Build a rich, interactive HTML/SVG canvas based on `templates/wiring_canvas_template.html`.
 
 **Mandatory Visual Design Rules:**
-1. **Clear Pin Labels:** Display text labels on every component pin. Distinct visual badges for Power (`red`), Ground (`black`), Signal (`blue/green/gold`), and Reserved/Forbidden (`gray/red outline`). Highlight active project pins with bright neon border.
-2. **Schematic Jumper Hops (Cầu nhảy dây):** When wires cross each other, the vertical wire MUST render an arc bridge (`A 7 7 0 0 1 ...`) jumping over the horizontal wire. Wires only connect when a solid junction dot (`●`) is drawn.
-3. **Distinct Wire Colors per Component:** Prevent visual spaghetti by assigning dedicated color palettes to each peripheral (e.g. Left Servo: Orange/Pink/Brown; Right Servo: Magenta/Crimson/Dark Brown; Ultrasonic: Cyan/Royal Blue/Amber/Black).
-4. **macOS Trackpad & CAD Navigation:**
+1. **Clear Pin Labels & Toggle Mode (Chế Độ Hiện Tên Chân Pin):** Display legible monospace text labels right next to every component pin dot (`3V3`, `IO4`, `SDA`, `SCL`, `GND`, `DIN`...). Distinct visual badges for Power (`red`), Ground (`black`), Signal (`blue/cyan/gold`), and Reserved/Forbidden (`gray/red outline`). Provide a prominent top toolbar toggle button `[🏷️ Tên Chân]` (Keyboard Shortcut `L`) so makers can view all pin labels at a glance without hover guessing.
+2. **Dual-Endpoint Interactive Callouts (Huy Hiệu 2 Đầu Chân Nối):** When hovering or clicking any wire, immediately spawn floating glowing callout badges (`.endpoint-callout`) attached directly at both endpoints (`📍 [Component A]: [Pin A]` and `📍 [Component B]: [Pin B]`), accompanied by a pulsating neon halo (`.pin-pulse-active`) on both pin dots so users immediately know exactly which two pins to plug.
+3. **Obstacle-Avoidance Wire Routing & Z-Index Overlay (Thuật Giải Né Linh Kiện & Lớp Nổi):** Wires must NEVER cut through or dive behind component cards. All routes must navigate through designated wiring corridors (gutters) around component bounding boxes. Active/hovered wires must be elevated to a top SVG overlay (`#wire-top-overlay`) above all component cards.
+4. **Schematic Jumper Hops (Cầu Nhảy Dây):** When wires cross each other, the vertical wire MUST render an arc bridge (`A 7 7 0 0 1 ...`) jumping over the horizontal wire. Wires only connect when a solid junction dot (`●`) is drawn.
+5. **Distinct Wire Colors per Component:** Prevent visual spaghetti by assigning dedicated color palettes to each peripheral (e.g. Left Servo: Orange/Pink/Brown; Right Servo: Magenta/Crimson/Dark Brown; I2S Mic: Yellow/Green/SkyBlue; I2S Amp: Orange/Purple/Cyan; Touch: Pink/Rose).
+6. **macOS Trackpad & CAD Navigation:**
    - Two-finger scroll to pan infinitely in all directions.
    - Two-finger pinch to zoom smoothly anchored at cursor coordinate (`zoomAt(cursorX, cursorY)`).
    - Spacebar + Drag to pan.
-   - Floating zoom widget with `[-]`, `[ 100% ]`, `[+]`, and `[⛶ Fit to Screen]` bounding-box centering.
-5. **Component Inspector & BOM Shopping Guide:**
+   - Floating zoom widget with `[-]`, `[ 100% ]`, `[+]`, and `[⛶ Cân Màn]` bounding-box centering.
+7. **Component Inspector & BOM Shopping Guide:**
    - Click any component to reveal full electrical ratings, pin table, and DOs/DON'Ts.
    - Top-bar `🛒 BOM Shopping Guide` button displaying exact commercial names, quantities, and 1-click Shopee search keywords.
 

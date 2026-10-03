@@ -6,6 +6,9 @@
 #include "calib_run.h"
 #include "calib.h"
 #include "behaviors.h"
+#include "emotion_gfx.h"
+#include "audio_player.h"
+#include "voice_control.h"
 #include <Arduino.h>
 #include <Wire.h>
 #include <vector>
@@ -303,6 +306,53 @@ static void handleCommand(const String& line) {
       Serial.printf("{\"cmd\":\"mode\",\"ok\":true,\"mode\":\"%s\"}\n", m.c_str());
     } else {
       Serial.println("{\"cmd\":\"mode\",\"ok\":false,\"err\":\"invalid_mode\"}");
+    }
+  }
+  else if (cmd == "face") {
+    if (tokens.size() < 2) {
+      Serial.printf("{\"cmd\":\"face\",\"ok\":true,\"emotion\":\"%s\"}\n", emotion_gfx::getEmotionStr());
+      return;
+    }
+    const String& emo = tokens[1];
+    if (emotion_gfx::setEmotionByName(emo.c_str())) {
+      Serial.printf("{\"cmd\":\"face\",\"ok\":true,\"emotion\":\"%s\"}\n", emotion_gfx::getEmotionStr());
+    } else {
+      Serial.println("{\"cmd\":\"face\",\"ok\":false,\"err\":\"invalid_emotion\"}");
+    }
+  }
+  else if (cmd == "sfx") {
+    if (tokens.size() < 2) {
+      Serial.println("{\"cmd\":\"sfx\",\"ok\":false,\"err\":\"missing_sfx_name\"}");
+      return;
+    }
+    const String& name = tokens[1];
+    if (audio_player::playSfxByName(name.c_str())) {
+      Serial.printf("{\"cmd\":\"sfx\",\"ok\":true,\"played\":\"%s\"}\n", name.c_str());
+    } else {
+      Serial.println("{\"cmd\":\"sfx\",\"ok\":false,\"err\":\"invalid_sfx\"}");
+    }
+  }
+  else if (cmd == "voice") {
+    if (tokens.size() < 2) {
+      Serial.printf("{\"cmd\":\"voice\",\"ok\":true,\"last\":\"%s\",\"level\":%u,\"listening\":%s}\n",
+                    voice_control::getCommandStr(voice_control::getLastCommand()),
+                    voice_control::getAudioLevel(),
+                    voice_control::isListening() ? "true" : "false");
+      return;
+    }
+    const String& vcmd = tokens[1];
+    if (vcmd == "listen_on") {
+      voice_control::setListening(true);
+      Serial.println("{\"cmd\":\"voice\",\"ok\":true,\"listening\":true}");
+    } else if (vcmd == "listen_off") {
+      voice_control::setListening(false);
+      Serial.println("{\"cmd\":\"voice\",\"ok\":true,\"listening\":false}");
+    } else {
+      if (voice_control::triggerCommandByName(vcmd.c_str())) {
+        Serial.printf("{\"cmd\":\"voice\",\"ok\":true,\"triggered\":\"%s\"}\n", vcmd.c_str());
+      } else {
+        Serial.println("{\"cmd\":\"voice\",\"ok\":false,\"err\":\"invalid_voice_command\"}");
+      }
     }
   }
   else {

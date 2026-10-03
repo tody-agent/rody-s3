@@ -182,12 +182,13 @@
     /* Main Viewport Workspace */
     #viewport {
       position: absolute;
-      top: 58px;
+      top: 106px;
       left: 0;
       width: 100vw;
-      height: calc(100vh - 58px);
+      height: calc(100vh - 106px);
       overflow: hidden;
       cursor: grab;
+      touch-action: none;
       background-image: 
         radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 0);
       background-size: 24px 24px;
@@ -247,7 +248,13 @@
       stroke-width: 14;
     }
     .wire-dimmed {
-      opacity: 0.12 !important;
+      opacity: 0.08 !important;
+      stroke-dasharray: 4 4 !important;
+      pointer-events: none !important;
+    }
+    .wire-hidden {
+      display: none !important;
+      pointer-events: none !important;
     }
 
     /* Component Nodes */
@@ -314,6 +321,65 @@
       background: rgba(16, 185, 129, 0.22); 
       border-color: rgba(16, 185, 129, 0.7); 
       color: #34d399; 
+    }
+    .hide-pin-labels .pin-label {
+      display: none !important;
+    }
+
+    /* Dual-Endpoint Interactive Callout Badges */
+    .endpoint-callout {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid var(--accent);
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 50;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 10px rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transform: translate(-50%, -135%);
+      animation: calloutPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .endpoint-callout::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px 5px 0 5px;
+      border-style: solid;
+      border-color: rgba(15, 23, 42, 0.96) transparent transparent transparent;
+    }
+    .endpoint-callout .callout-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px currentColor;
+    }
+    .endpoint-callout .callout-pin {
+      color: #38bdf8;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    @keyframes calloutPop {
+      0% { opacity: 0; transform: translate(-50%, -115%) scale(0.85); }
+      100% { opacity: 1; transform: translate(-50%, -135%) scale(1); }
+    }
+    .pin-pulse-active {
+      transform: translate(-50%, -50%) scale(1.7) !important;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.6), 0 0 12px var(--accent) !important;
+      border-color: #ffffff !important;
+      z-index: 48 !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease !important;
     }
 
     /* M1-M8 Checkpoint Badges */
@@ -415,46 +481,76 @@
       color: #fff;
     }
 
-    /* Filter Chips Bar */
+    /* Filter Bar (Fixed below Header) */
     #filter-bar {
       position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: color-mix(in srgb, var(--surface-deep) 92%, transparent);
+      top: 58px;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
       backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 30px;
-      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
       display: flex;
-      gap: 6px;
-      z-index: 1000;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+      z-index: 950;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    #filter-bar::-webkit-scrollbar { display: none; }
+
     .filter-chip {
-      background: transparent;
-      border: 1px solid transparent;
+      background: var(--surface-deep);
+      border: 1px solid var(--border-light);
       color: var(--fg-muted);
-      font-size: 11px;
-      font-weight: 600;
-      padding: 5px 12px;
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 6px 12px;
       border-radius: 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
     }
     .filter-chip:hover {
       color: var(--fg);
-      background: color-mix(in srgb, var(--fg) 8%, transparent);
+      background: var(--surface-elevated);
+      border-color: var(--accent);
     }
     .filter-chip.active {
       background: var(--primary);
+      border-color: var(--primary-hover);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+    .chip-count {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.18);
+      font-weight: 700;
+    }
+    .filter-chip.active .chip-count {
+      background: rgba(255, 255, 255, 0.3);
       color: #fff;
     }
+    .chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
 
-    /* Modal Overlays (BOM & Checklist) */
+    /* Modal Overlays (BOM, Checklist, Wire Filters) */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -476,6 +572,11 @@
       flex-direction: column;
       padding: 24px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+      animation: modalFadeIn 0.2s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
     }
     .modal-header {
       display: flex;
@@ -484,18 +585,25 @@
       margin-bottom: 16px;
     }
     .modal-header h3 {
-      font-size: 18px;
+      font-size: 17px;
       color: var(--accent);
       display: flex;
       align-items: center;
       gap: 8px;
+      text-wrap: balance;
     }
     .modal-body {
       overflow-y: auto;
       padding-right: 6px;
     }
+    .bom-table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     .bom-table {
       width: 100%;
+      min-width: 600px;
       border-collapse: collapse;
       font-size: 12px;
     }
@@ -507,6 +615,7 @@
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
+      white-space: nowrap;
     }
     .bom-table td {
       padding: 10px;
@@ -592,6 +701,147 @@
       transition: opacity 0.3s;
       pointer-events: none;
     }
+
+    /* Mobile Menu Drawer & Backdrop */
+    .mobile-menu-btn {
+      display: none;
+      background: var(--surface-deep);
+      border: 1px solid var(--border-light);
+      color: var(--fg);
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mobile-menu-btn:hover {
+      background: var(--border-light);
+    }
+    #mobile-drawer-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 2400;
+      display: none;
+    }
+    #mobile-drawer-backdrop.open {
+      display: block;
+    }
+    #mobile-drawer {
+      position: fixed;
+      top: 0; right: 0; width: 310px; max-width: 86vw; height: 100vh;
+      background: var(--surface-elevated);
+      border-left: 1px solid var(--border);
+      box-shadow: -8px 0 30px rgba(0,0,0,0.7);
+      z-index: 2500;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 20px;
+      overflow-y: auto;
+    }
+    #mobile-drawer.open {
+      transform: translateX(0);
+    }
+
+    /* Sheet Handle for Bottom Sheet on Mobile */
+    .sheet-handle {
+      display: none;
+      width: 40px;
+      height: 5px;
+      background: var(--border-light);
+      border-radius: 3px;
+      margin: 0 auto 10px auto;
+      cursor: pointer;
+    }
+
+    /* Mobile Responsive Adaptation (< 768px) */
+    @media (max-width: 768px) {
+      header {
+        height: 52px;
+        padding: 0 12px;
+      }
+      h1 {
+        font-size: 13px;
+      }
+      .toolbar-tools.desktop-only {
+        display: none;
+      }
+      .mobile-menu-btn {
+        display: flex;
+      }
+      #filter-bar {
+        top: 52px;
+        height: 44px;
+        padding: 0 10px;
+        gap: 6px;
+      }
+      .filter-chip {
+        padding: 5px 10px;
+        font-size: 11px;
+        min-height: 32px;
+      }
+      #viewport {
+        top: 96px;
+        height: calc(100vh - 96px);
+      }
+      #trackpad-hint {
+        display: none;
+      }
+      #zoom-widget {
+        bottom: 60px;
+        left: 12px;
+        padding: 2px;
+      }
+
+      /* Inspector Bottom Sheet on Mobile */
+      #inspector {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 20px 20px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.7);
+        padding: 12px 16px 28px 16px;
+        max-height: 75vh;
+        transform: translateY(calc(100% - 50px));
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 1500;
+      }
+      #inspector.minimized {
+        transform: translateY(calc(100% - 50px));
+      }
+      #inspector.sheet-expanded {
+        transform: translateY(0);
+      }
+      .sheet-handle {
+        display: block;
+      }
+
+      /* Mobile Modals as Bottom Sheets */
+      .modal-overlay {
+        align-items: flex-end;
+      }
+      .modal-content {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 20px 20px 0 0;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        max-height: 85vh;
+        padding: 18px 16px 28px 16px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -605,7 +855,8 @@
       </div>
     </div>
 
-    <div class="toolbar-tools">
+    
+    <div class="toolbar-tools desktop-only">
       
       <div class="btn-group">
         <button class="tool-btn active" id="btn-ortho" onclick="setWireMode('orthogonal')" title="Đi dây vuông góc với cầu nhảy cong khi giao nhau">
@@ -622,7 +873,16 @@
         </button>
       </div>
 
-      
+      <button class="action-btn active" id="btn-toggle-labels" onclick="togglePinLabels()" title="Bật/Tắt hiển thị tên chân pin cạnh nốt hàn (Phím L)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+        🏷️ Tên Chân
+      </button>
+
+      <button class="action-btn" onclick="openWireFilterModal()" title="Cài đặt ẩn hiện theo khối linh kiện">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Ẩn/Hiện Dây
+      </button>
+
       <button class="action-btn bom-btn" onclick="openBomModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         🛒 Mua Linh Kiện (BOM)
@@ -638,7 +898,119 @@
         Đặt Lại Vị Trí
       </button>
     </div>
+
+    
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button class="mobile-menu-btn" onclick="openWireFilterModal()" title="Cài đặt ẩn hiện dây" aria-label="Bộ lọc dây">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button class="mobile-menu-btn" onclick="openMobileDrawer()" title="Mở danh mục menu" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
   </header>
+
+  
+  <div id="filter-bar">
+    <button class="filter-chip active whitespace-nowrap shrink-0" id="chip-all" onclick="filterWires('all')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#38bdf8;"></span>
+      Tất cả dây <span class="chip-count whitespace-nowrap shrink-0" id="count-all">43</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-power" onclick="filterWires('power')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#ef4444;"></span>
+      Nguồn & Boost <span class="chip-count whitespace-nowrap shrink-0" id="count-power">7</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-servo" onclick="filterWires('servo')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#f97316;"></span>
+      Servo & PCA9685 <span class="chip-count whitespace-nowrap shrink-0" id="count-servo">9</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-ultrasonic" onclick="filterWires('ultrasonic')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#06b6d4;"></span>
+      Siêu Âm HC-SR05 <span class="chip-count whitespace-nowrap shrink-0" id="count-ultrasonic">10</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-ir" onclick="filterWires('ir')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#22c55e;"></span>
+      Hồng Ngoại IR <span class="chip-count whitespace-nowrap shrink-0" id="count-ir">6</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-battery" onclick="filterWires('battery')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#10b981;"></span>
+      Đo Pin ADC <span class="chip-count whitespace-nowrap shrink-0" id="count-battery">4</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-buzzer" onclick="filterWires('buzzer')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#ec4899;"></span>
+      Còi Buzzer <span class="chip-count whitespace-nowrap shrink-0" id="count-buzzer">2</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" id="chip-gnd" onclick="filterWires('gnd')">
+      <span class="chip-dot whitespace-nowrap shrink-0" style="background:#94a3b8;"></span>
+      Mass (GND) <span class="chip-count whitespace-nowrap shrink-0" id="count-gnd">13</span>
+    </button>
+    <button class="filter-chip whitespace-nowrap shrink-0" onclick="openWireFilterModal()" style="border-style: dashed; color: var(--accent);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Tùy Chỉnh Ẩn/Hiện...
+    </button>
+  </div>
+
+  
+  <div id="mobile-drawer-backdrop" onclick="closeMobileDrawer()"></div>
+  <div id="mobile-drawer">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="badge whitespace-nowrap shrink-0">Otto S3</span>
+        <span style="font-weight: 600; font-size: 14px;">Bảng Điều Khiển</span>
+      </div>
+      <button class="action-btn" style="padding: 6px 10px;" onclick="closeMobileDrawer()">✕</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--fg-muted); text-transform: uppercase; margin-bottom: 8px;">
+          Chế độ đi dây
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button class="tool-btn" id="m-btn-ortho" style="width: 100%; justify-content: flex-start; padding: 10px 12px; min-height: 44px;" onclick="setWireMode('orthogonal'); closeMobileDrawer();">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 19h6a3 3 0 0 1 6 0h6"/><path d="M12 4v11"/></svg>
+            Mạch Điện (Cầu Nhảy)
+          </button>
+          <button class="tool-btn" id="m-btn-curve" style="width: 100%; justify-content: flex-start; padding: 10px 12px; min-height: 44px;" onclick="setWireMode('curved'); closeMobileDrawer();">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 19c6-10 12 10 18-10"/></svg>
+            Dây Cong Mềm
+          </button>
+          <button class="tool-btn" id="m-btn-straight" style="width: 100%; justify-content: flex-start; padding: 10px 12px; min-height: 44px;" onclick="setWireMode('straight'); closeMobileDrawer();">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="19" x2="21" y2="5"/></svg>
+            Dây Nối Thẳng
+          </button>
+          <button class="tool-btn active" id="m-btn-toggle-labels" style="width: 100%; justify-content: flex-start; padding: 10px 12px; min-height: 44px;" onclick="togglePinLabels(); closeMobileDrawer();">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+            🏷️ Bật/Tắt Tên Chân Pin
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 11px; font-weight: 700; color: var(--fg-muted); text-transform: uppercase; margin-bottom: 8px;">
+          Tiện ích & Danh mục
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="action-btn bom-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="openBomModal(); closeMobileDrawer();">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            🛒 Mua Linh Kiện (BOM)
+          </button>
+          <button class="action-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="openChecklistModal(); closeMobileDrawer();">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            📋 Checklist Đo Gate G0
+          </button>
+          <button class="action-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="openWireFilterModal(); closeMobileDrawer();">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            ⚙️ Cài Đặt Ẩn/Hiện Dây
+          </button>
+          <button class="action-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="fitToScreen(); closeMobileDrawer();">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            ↺ Căn Vừa Màn Hình
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   
   <div id="viewport">
@@ -652,56 +1024,37 @@
           </filter>
         </defs>
       </svg>
+      <!-- SVG Top Overlay for Active/Hovered Wires (No Component Clipping) -->
+      <svg id="wire-top-overlay" width="3200" height="2000" style="position:absolute; top:0; left:0; pointer-events:none; z-index:36;"></svg>
+      <!-- Dual-Endpoint Interactive Callout Badges Layer -->
+      <div id="endpoint-callouts-layer" style="position:absolute; top:0; left:0; pointer-events:none; z-index:45;"></div>
     </div>
   </div>
 
   
   <div id="trackpad-hint">
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="3"/><line x1="12" y1="14" x2="12" y2="22"/></svg>
-    <span><b>Trackpad Mac:</b> Vuốt 2 ngón để cuộn • Nhúm 2 ngón phóng to/thu nhỏ • Giữ Space + kéo</span>
+    <span><b>Trackpad / Cảm ứng:</b> Vuốt để cuộn • Nhúm 2 ngón phóng to/thu nhỏ • Giữ Space + kéo</span>
   </div>
 
   
   <div id="zoom-widget">
-    <button class="zoom-btn" onclick="zoomDelta(-0.15)" title="Thu nhỏ (Pinch in)">
+    <button class="zoom-btn" onclick="zoomDelta(-0.15)" title="Thu nhỏ (Pinch in)" aria-label="Thu nhỏ">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <span id="zoom-level" onclick="resetZoom100()" title="Bấm để đưa về 100%">90%</span>
-    <button class="zoom-btn" onclick="zoomDelta(0.15)" title="Phóng to (Pinch out)">
+    <button class="zoom-btn" onclick="zoomDelta(0.15)" title="Phóng to (Pinch out)" aria-label="Phóng to">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </button>
     <div class="zoom-divider"></div>
-    <button class="zoom-btn" onclick="fitToScreen()" title="Căn toàn bộ linh kiện vừa màn hình (Fit to Screen)">
+    <button class="zoom-btn" onclick="fitToScreen()" title="Căn toàn bộ linh kiện vừa màn hình (Fit to Screen)" aria-label="Căn vừa màn hình">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
     </button>
   </div>
 
   
-  <div id="filter-bar">
-    <button class="filter-chip active" onclick="filterWires('all')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
-      Tất cả dây
-    </button>
-    <button class="filter-chip" onclick="filterWires('power')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      Nguồn (5V/3.3V)
-    </button>
-    <button class="filter-chip" onclick="filterWires('gnd')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
-      Mass (GND)
-    </button>
-    <button class="filter-chip" onclick="filterWires('i2c')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-      I2C & Servo
-    </button>
-    <button class="filter-chip" onclick="filterWires('sensor')">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20"/><path d="M20 12a8 8 0 0 1-16 0"/></svg>
-      Cảm biến & Còi
-    </button>
-  </div>
-
-  
   <div id="inspector">
+    <div class="sheet-handle" onclick="toggleInspector()"></div>
     <div class="drawer-header" onclick="toggleInspector()">
       <div class="drawer-title">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -727,19 +1080,21 @@
         <p style="font-size: 12px; color: var(--fg-muted); margin-bottom: 14px;">
           Danh mục 15 linh kiện được xác minh tương thích tuyệt đối cho dự án Otto S3. Bấm nút <b>Sao Chép Từ Khóa</b> để tìm kiếm trực tiếp trên Shopee / Lazada!
         </p>
-        <table class="bom-table">
-          <thead>
-            <tr>
-              <th style="width: 25%;">Linh kiện & Mã chuẩn</th>
-              <th style="width: 10%;">SL</th>
-              <th style="width: 35%;">Từ khóa tìm mua Shopee</th>
-              <th style="width: 30%;">Lưu ý kỹ thuật then chốt</th>
-            </tr>
-          </thead>
-          <tbody id="bom-table-body">
-            
-          </tbody>
-        </table>
+        <div class="bom-table-container">
+          <table class="bom-table">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Linh kiện & Mã chuẩn</th>
+                <th style="width: 10%;">SL</th>
+                <th style="width: 35%;">Từ khóa tìm mua Shopee</th>
+                <th style="width: 30%;">Lưu ý kỹ thuật then chốt</th>
+              </tr>
+            </thead>
+            <tbody id="bom-table-body">
+              
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -749,7 +1104,7 @@
     <div class="modal-content" style="width: 580px;" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h3>Checklist Đo An Toàn Trước Khi Bật Nguồn (Gate G0)</h3>
-        <button class="action-btn" onclick="document.getElementById('checklist-modal').style.display='none'">✕</button>
+        <button class="action-btn" onclick="document.getElementById('checklist-modal').style.display='none'">✕ Đóng</button>
       </div>
       <div class="modal-body">
         <div class="info-row"><span class="info-label"><b>M1</b>: Trở kháng 5V/3V3/GND</span><span class="info-val">&gt; 1 kOhm (Không chạm mass)</span></div>
@@ -764,12 +1119,74 @@
     </div>
   </div>
 
+  
+  <div id="wire-filter-modal" class="modal-overlay" onclick="closeWireFilterModal(event)">
+    <div class="modal-content" style="width: 620px;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚙️ Cài Đặt Ẩn / Hiện Dây Theo Khối Linh Kiện</h3>
+        <button class="action-btn" onclick="closeWireFilterModal()">✕ Đóng</button>
+      </div>
+      <div class="modal-body">
+        
+        <div style="background: var(--surface-deep); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+            Chế độ hiển thị khi lọc dây:
+          </div>
+          <div style="display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: var(--fg);">
+              <input type="radio" name="filterMode" value="dim" id="radio-mode-dim" checked onchange="setFilterDisplayMode('dim')">
+              <span><b>Làm mờ dây khác (Dim 90%)</b> – Vẫn thấy đường nét mờ</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: var(--fg);">
+              <input type="radio" name="filterMode" value="hide" id="radio-mode-hide" onchange="setFilterDisplayMode('hide')">
+              <span><b>Ẩn hoàn toàn (Hide 100%)</b> – Chỉ thấy khối đang chọn</span>
+            </label>
+          </div>
+        </div>
+
+        
+        <div style="font-size: 11px; font-weight: 700; color: var(--fg-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Chọn các khối linh kiện cần hiển thị dây:
+        </div>
+        <div id="filter-subsystems-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          
+        </div>
+
+        
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border);">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button class="action-btn" onclick="toggleAllSubsystems(true)">✓ Hiện Tất Cả</button>
+            <button class="action-btn" onclick="setPresetSubsystem('power_servo')">⚡ Nguồn & Servo</button>
+            <button class="action-btn" onclick="setPresetSubsystem('sensors')">📡 Cảm Biến</button>
+            <button class="action-btn" onclick="toggleAllSubsystems(false)">✕ Ẩn Tất Cả</button>
+          </div>
+          <button class="action-btn bom-btn" onclick="closeWireFilterModal()">Áp Dụng & Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // --- Data Model: Components, Pins & Specifications ---
     let wireMode = 'orthogonal'; // 'orthogonal' (schematic jumper hop) | 'curved' | 'straight'
-    let currentFilter = 'all';
+    let currentFilter = 'all'; // 'all' | 'power' | 'servo' | 'ultrasonic' | 'ir' | 'battery' | 'buzzer' | 'gnd'
+    let filterDisplayMode = 'dim'; // 'dim' (làm mờ 90%) | 'hide' (ẩn 100%)
+    let isolatedCompId = null; // Khi người dùng chọn "Chỉ hiện dây linh kiện này"
     let selectedWireId = null;
     let selectedCompId = null;
+    let showPinLabels = true;
+
+    const subsystemsMeta = {
+      power: { id: 'power', label: 'Nguồn & Sạc', icon: '⚡', color: '#ef4444', desc: 'Pin Li-ion, TP4056, MT3608 Boost, Diode 1N5819' },
+      servo: { id: 'servo', label: 'Servo & PCA9685', icon: '🤖', color: '#f97316', desc: '2x MG90S 360°, Driver PCA9685, I2C Bus' },
+      ultrasonic: { id: 'ultrasonic', label: 'Siêu Âm HC-SR05', icon: '📡', color: '#06b6d4', desc: 'HC-SR05 & Shifter chuyển mức 5V-3.3V' },
+      ir: { id: 'ir', label: 'Hồng Ngoại IR', icon: '👁️', color: '#22c55e', desc: '2x Mắt IR đếm xung sọc / dò đường' },
+      battery: { id: 'battery', label: 'Đo Pin (ADC)', icon: '📊', color: '#10b981', desc: 'Module chia áp 1/5 nối GPIO1 (ADC1)' },
+      buzzer: { id: 'buzzer', label: 'Còi Báo Buzzer', icon: '🔔', color: '#ec4899', desc: 'Còi chip 3.3V kích hoạt qua GPIO10' },
+      gnd: { id: 'gnd', label: 'Đường Mass (GND)', icon: '⏚', color: '#94a3b8', desc: 'Mạng Star Ground chung toàn robot' }
+    };
+
+    let activeSubsystems = new Set(Object.keys(subsystemsMeta));
 
     const components = {
       // 1. ESP32-S3 DevKitC-1 (40 Pin)
@@ -1110,68 +1527,68 @@
     // --- All Verified Wires Connecting The Components (Each with Distinct Color) ---
     const wires = [
       // === 1. Power Supply System ===
-      { id: 'w_bat_p', name: 'Dương Pin Li-ion', color: 'var(--wire-pwr-main)', from: 'bat_plus', to: 'tp_bplus', cat: 'power', volt: '3.7V – 4.2V', note: 'Dây đỏ nối từ cực dương pin vào chân B+ TP4056.' },
-      { id: 'w_bat_n', name: 'Âm Pin Li-ion', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'bat_minus', to: 'tp_bminus', cat: 'gnd', volt: '0V (GND)', note: 'Dây đen nối từ cực âm pin vào chân B- TP4056.' },
-      { id: 'w_tp_sw', name: 'Dương nguồn sạc qua công tắc', color: 'var(--wire-pwr-main)', from: 'tp_outplus', to: 'sw_in', cat: 'power', volt: '3.0V – 4.2V', note: 'Nguồn sau mạch bảo vệ pin cấp vào chân công tắc gạt.' },
-      { id: 'w_sw_boost', name: 'Nguồn bật sang Boost (VBAT_SW)', color: 'var(--wire-pwr-sw)', from: 'sw_out', to: 'boost_inplus', cat: 'power', volt: 'VBAT_SW', note: 'Sau công tắc, cấp vào ngõ IN+ của mạch Boost MT3608.' },
-      { id: 'w_sw_vs', name: 'Nguồn đo pin (VBAT_SW)', color: '#f59e0b', from: 'sw_out', to: 'vs_vcc_in', cat: 'power', volt: 'VBAT_SW', note: 'Sau công tắc, cấp vào cọc VCC module đo áp để khi tắt không rút cạn pin!' },
-      { id: 'w_tp_gnd', name: 'Mass TP4056', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'tp_outminus', to: 'boost_inminus', cat: 'gnd', volt: 'GND', note: 'Mass nguồn từ TP4056 nối vào Boost IN-.' },
-      { id: 'w_boost_gnd_link', name: 'Mass Boost nối tiếp', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_inminus', to: 'boost_outminus', cat: 'gnd', volt: 'GND', note: 'Mass chung trên mạch Boost.' },
+      { id: 'w_bat_p', name: 'Dương Pin Li-ion', color: 'var(--wire-pwr-main)', from: 'bat_plus', to: 'tp_bplus', cat: 'power', subsystem: 'power', volt: '3.7V – 4.2V', note: 'Dây đỏ nối từ cực dương pin vào chân B+ TP4056.' },
+      { id: 'w_bat_n', name: 'Âm Pin Li-ion', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'bat_minus', to: 'tp_bminus', cat: 'gnd', subsystem: 'power', volt: '0V (GND)', note: 'Dây đen nối từ cực âm pin vào chân B- TP4056.' },
+      { id: 'w_tp_sw', name: 'Dương nguồn sạc qua công tắc', color: 'var(--wire-pwr-main)', from: 'tp_outplus', to: 'sw_in', cat: 'power', subsystem: 'power', volt: '3.0V – 4.2V', note: 'Nguồn sau mạch bảo vệ pin cấp vào chân công tắc gạt.' },
+      { id: 'w_sw_boost', name: 'Nguồn bật sang Boost (VBAT_SW)', color: 'var(--wire-pwr-sw)', from: 'sw_out', to: 'boost_inplus', cat: 'power', subsystem: 'power', volt: 'VBAT_SW', note: 'Sau công tắc, cấp vào ngõ IN+ của mạch Boost MT3608.' },
+      { id: 'w_sw_vs', name: 'Nguồn đo pin (VBAT_SW)', color: '#f59e0b', from: 'sw_out', to: 'vs_vcc_in', cat: 'power', subsystem: 'battery', volt: 'VBAT_SW', note: 'Sau công tắc, cấp vào cọc VCC module đo áp để khi tắt không rút cạn pin!' },
+      { id: 'w_tp_gnd', name: 'Mass TP4056', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'tp_outminus', to: 'boost_inminus', cat: 'gnd', subsystem: 'power', volt: 'GND', note: 'Mass nguồn từ TP4056 nối vào Boost IN-.' },
+      { id: 'w_boost_gnd_link', name: 'Mass Boost nối tiếp', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_inminus', to: 'boost_outminus', cat: 'gnd', subsystem: 'power', volt: 'GND', note: 'Mass chung trên mạch Boost.' },
 
       // === 2. Servo Power 5.1V & Diode Schottky ===
-      { id: 'w_boost_servo', name: 'Nguồn Servo 5.1V (SERVO_5V)', color: 'var(--wire-pwr-boost)', from: 'boost_outplus', to: 'pca_term_vplus', cat: 'power', volt: '5.10V', thick: 4.5, note: 'Nguồn chính nuôi 2 servo bánh xe. Cọc V+ có tụ hóa 1000uF chống sụt áp.' },
-      { id: 'w_boost_pca_gnd', name: 'Mass Cọc PCA9685', color: 'var(--wire-gnd)', stroke: '#64748b', from: 'boost_outminus', to: 'pca_term_gnd', cat: 'gnd', volt: 'GND', thick: 4.5, note: 'Mass cọc vít PCA9685.' },
-      { id: 'w_boost_diode', name: 'Boost vào Diode', color: '#e11d48', from: 'boost_outplus', to: 'diode_anode', cat: 'power', volt: '5.10V', note: 'Nối vào chân Anode của Diode 1N5819.' },
-      { id: 'w_diode_esp', name: 'Nguồn ESP32 (Sau Diode)', color: 'var(--wire-pwr-diode)', from: 'diode_cathode', to: 'esp32_5v', cat: 'power', volt: '4.8V (Check M4)', thick: 4, note: 'Vạch trắng diode nối vào chân 5V của ESP32. Chặn dòng USB không chạy ngược vào Boost!' },
+      { id: 'w_boost_servo', name: 'Nguồn Servo 5.1V (SERVO_5V)', color: 'var(--wire-pwr-boost)', from: 'boost_outplus', to: 'pca_term_vplus', cat: 'power', subsystem: 'servo', volt: '5.10V', thick: 4.5, note: 'Nguồn chính nuôi 2 servo bánh xe. Cọc V+ có tụ hóa 1000uF chống sụt áp.' },
+      { id: 'w_boost_pca_gnd', name: 'Mass Cọc PCA9685', color: 'var(--wire-gnd)', stroke: '#64748b', from: 'boost_outminus', to: 'pca_term_gnd', cat: 'gnd', subsystem: 'servo', volt: 'GND', thick: 4.5, note: 'Mass cọc vít PCA9685.' },
+      { id: 'w_boost_diode', name: 'Boost vào Diode', color: '#e11d48', from: 'boost_outplus', to: 'diode_anode', cat: 'power', subsystem: 'power', volt: '5.10V', note: 'Nối vào chân Anode của Diode 1N5819.' },
+      { id: 'w_diode_esp', name: 'Nguồn ESP32 (Sau Diode)', color: 'var(--wire-pwr-diode)', from: 'diode_cathode', to: 'esp32_5v', cat: 'power', subsystem: 'power', volt: '4.8V (Check M4)', thick: 4, note: 'Vạch trắng diode nối vào chân 5V của ESP32. Chặn dòng USB không chạy ngược vào Boost!' },
 
       // === 3. Common Star Ground ===
-      { id: 'w_esp_gnd_pca', name: 'Mass Logic ESP32 -> PCA9685', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'pca_side_gnd', cat: 'gnd', volt: 'GND', note: 'Nối mass logic giữa ESP32 và PCA9685.' },
-      { id: 'w_esp_gnd_boost', name: 'Mass Chung ESP32 -> Boost', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'boost_outminus', cat: 'gnd', volt: 'GND', note: 'Đảm bảo toàn hệ thống chung 1 điểm Mass (Star Ground).' },
-      { id: 'w_vs_gnd_term', name: 'Mass Module Đo Áp Cọc', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'vs_gnd_in', to: 'esp32_gnd_r', cat: 'gnd', volt: 'GND', note: 'Mass cọc vít module đo áp nối về GND ESP32.' },
-      { id: 'w_vs_gnd_hdr', name: 'Mass Header Đo Áp', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'vs_minus', to: 'esp32_gnd_r', cat: 'gnd', volt: 'GND', note: 'Mass tín hiệu module đo áp.' },
+      { id: 'w_esp_gnd_pca', name: 'Mass Logic ESP32 -> PCA9685', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'pca_side_gnd', cat: 'gnd', subsystem: 'servo', volt: 'GND', note: 'Nối mass logic giữa ESP32 và PCA9685.' },
+      { id: 'w_esp_gnd_boost', name: 'Mass Chung ESP32 -> Boost', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'boost_outminus', cat: 'gnd', subsystem: 'power', volt: 'GND', note: 'Đảm bảo toàn hệ thống chung 1 điểm Mass (Star Ground).' },
+      { id: 'w_vs_gnd_term', name: 'Mass Module Đo Áp Cọc', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'vs_gnd_in', to: 'esp32_gnd_r', cat: 'gnd', subsystem: 'battery', volt: 'GND', note: 'Mass cọc vít module đo áp nối về GND ESP32.' },
+      { id: 'w_vs_gnd_hdr', name: 'Mass Header Đo Áp', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'vs_minus', to: 'esp32_gnd_r', cat: 'gnd', subsystem: 'battery', volt: 'GND', note: 'Mass tín hiệu module đo áp.' },
 
       // === 4. I2C Bus & PCA9685 Logic ===
-      { id: 'w_pca_vcc', name: 'Nguồn Logic 3.3V cho PCA9685', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'pca_side_vcc', cat: 'power', volt: '3.3V', note: 'Chỉ nuôi IC PCA9685 (không nuôi servo).' },
-      { id: 'w_i2c_sda', name: 'I2C SDA (GPIO8)', color: 'var(--wire-i2c-sda)', from: 'esp32_io8', to: 'pca_side_sda', cat: 'i2c', volt: '3.3V Logic', note: 'Đường truyền dữ liệu I2C nối vào GPIO8 của ESP32.' },
-      { id: 'w_i2c_scl', name: 'I2C SCL (GPIO9)', color: 'var(--wire-i2c-scl)', from: 'esp32_io9', to: 'pca_side_scl', cat: 'i2c', volt: '3.3V Logic', note: 'Đường xung nhịp I2C nối vào GPIO9 của ESP32.' },
+      { id: 'w_pca_vcc', name: 'Nguồn Logic 3.3V cho PCA9685', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'pca_side_vcc', cat: 'power', subsystem: 'servo', volt: '3.3V', note: 'Chỉ nuôi IC PCA9685 (không nuôi servo).' },
+      { id: 'w_i2c_sda', name: 'I2C SDA (GPIO8)', color: 'var(--wire-i2c-sda)', from: 'esp32_io8', to: 'pca_side_sda', cat: 'i2c', subsystem: 'servo', volt: '3.3V Logic', note: 'Đường truyền dữ liệu I2C nối vào GPIO8 của ESP32.' },
+      { id: 'w_i2c_scl', name: 'I2C SCL (GPIO9)', color: 'var(--wire-i2c-scl)', from: 'esp32_io9', to: 'pca_side_scl', cat: 'i2c', subsystem: 'servo', volt: '3.3V Logic', note: 'Đường xung nhịp I2C nối vào GPIO9 của ESP32.' },
 
       // === 5. Servos (Left & Right MG90S 360) ===
-      { id: 'w_srv_l_pwm', name: 'Servo Trái PWM (Ch0)', color: 'var(--wire-srv-l-pwm)', from: 'pca_ch0_pwm', to: 'servol_pwm', cat: 'i2c', volt: 'PWM Pulse', thick: 3.5, note: 'Xung điều khiển servo bánh trái.' },
-      { id: 'w_srv_l_vcc', name: 'Servo Trái VCC (Ch0)', color: 'var(--wire-srv-l-vcc)', from: 'pca_ch0_vcc', to: 'servol_vcc', cat: 'power', volt: '5.1V', note: 'Nguồn 5.1V servo bánh trái.' },
-      { id: 'w_srv_l_gnd', name: 'Servo Trái GND (Ch0)', color: 'var(--wire-srv-l-gnd)', stroke: 'var(--wire-srv-l-gnd)', from: 'pca_ch0_gnd', to: 'servol_gnd', cat: 'gnd', volt: 'GND', note: 'Dây nâu GND servo bánh trái.' },
+      { id: 'w_srv_l_pwm', name: 'Servo Trái PWM (Ch0)', color: 'var(--wire-srv-l-pwm)', from: 'pca_ch0_pwm', to: 'servol_pwm', cat: 'i2c', subsystem: 'servo', volt: 'PWM Pulse', thick: 3.5, note: 'Xung điều khiển servo bánh trái.' },
+      { id: 'w_srv_l_vcc', name: 'Servo Trái VCC (Ch0)', color: 'var(--wire-srv-l-vcc)', from: 'pca_ch0_vcc', to: 'servol_vcc', cat: 'power', subsystem: 'servo', volt: '5.1V', note: 'Nguồn 5.1V servo bánh trái.' },
+      { id: 'w_srv_l_gnd', name: 'Servo Trái GND (Ch0)', color: 'var(--wire-srv-l-gnd)', stroke: 'var(--wire-srv-l-gnd)', from: 'pca_ch0_gnd', to: 'servol_gnd', cat: 'gnd', subsystem: 'servo', volt: 'GND', note: 'Dây nâu GND servo bánh trái.' },
 
-      { id: 'w_srv_r_pwm', name: 'Servo Phải PWM (Ch1)', color: 'var(--wire-srv-r-pwm)', from: 'pca_ch1_pwm', to: 'servor_pwm', cat: 'i2c', volt: 'PWM Pulse', thick: 3.5, note: 'Xung điều khiển servo bánh phải (Màu Hồng Tím).' },
-      { id: 'w_srv_r_vcc', name: 'Servo Phải VCC (Ch1)', color: 'var(--wire-srv-r-vcc)', from: 'pca_ch1_vcc', to: 'servor_vcc', cat: 'power', volt: '5.1V', note: 'Nguồn 5.1V servo bánh phải.' },
-      { id: 'w_srv_r_gnd', name: 'Servo Phải GND (Ch1)', color: 'var(--wire-srv-r-gnd)', stroke: 'var(--wire-srv-r-gnd)', from: 'pca_ch1_gnd', to: 'servor_gnd', cat: 'gnd', volt: 'GND', note: 'Dây nâu đậm GND servo bánh phải.' },
+      { id: 'w_srv_r_pwm', name: 'Servo Phải PWM (Ch1)', color: 'var(--wire-srv-r-pwm)', from: 'pca_ch1_pwm', to: 'servor_pwm', cat: 'i2c', subsystem: 'servo', volt: 'PWM Pulse', thick: 3.5, note: 'Xung điều khiển servo bánh phải (Màu Hồng Tím).' },
+      { id: 'w_srv_r_vcc', name: 'Servo Phải VCC (Ch1)', color: 'var(--wire-srv-r-vcc)', from: 'pca_ch1_vcc', to: 'servor_vcc', cat: 'power', subsystem: 'servo', volt: '5.1V', note: 'Nguồn 5.1V servo bánh phải.' },
+      { id: 'w_srv_r_gnd', name: 'Servo Phải GND (Ch1)', color: 'var(--wire-srv-r-gnd)', stroke: 'var(--wire-srv-r-gnd)', from: 'pca_ch1_gnd', to: 'servor_gnd', cat: 'gnd', subsystem: 'servo', volt: 'GND', note: 'Dây nâu đậm GND servo bánh phải.' },
 
       // === 6. Ultrasonic HC-SR05 & Level Shifter ===
-      { id: 'w_shifter_lv', name: 'Nguồn 3.3V cho Shifter LV', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'shifter_lv', cat: 'power', volt: '3.3V', note: 'Nuôi phía điện áp thấp của mạch chuyển mức.' },
-      { id: 'w_shifter_hv', name: 'Nguồn 5V cho Shifter HV', color: 'var(--wire-pwr-5v-shifter)', from: 'esp32_5v', to: 'shifter_hv', cat: 'power', volt: '5.0V', note: 'Nuôi phía điện áp cao của mạch chuyển mức.' },
-      { id: 'w_shifter_gnd_l', name: 'Mass Shifter LV', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'shifter_lv_gnd', cat: 'gnd', volt: 'GND', note: 'Mass phía LV.' },
-      { id: 'w_shifter_gnd_h', name: 'Mass Shifter HV', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'shifter_hv_gnd', cat: 'gnd', volt: 'GND', note: 'Mass phía HV.' },
+      { id: 'w_shifter_lv', name: 'Nguồn 3.3V cho Shifter LV', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'shifter_lv', cat: 'power', subsystem: 'ultrasonic', volt: '3.3V', note: 'Nuôi phía điện áp thấp của mạch chuyển mức.' },
+      { id: 'w_shifter_hv', name: 'Nguồn 5V cho Shifter HV', color: 'var(--wire-pwr-5v-shifter)', from: 'esp32_5v', to: 'shifter_hv', cat: 'power', subsystem: 'ultrasonic', volt: '5.0V', note: 'Nuôi phía điện áp cao của mạch chuyển mức.' },
+      { id: 'w_shifter_gnd_l', name: 'Mass Shifter LV', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'shifter_lv_gnd', cat: 'gnd', subsystem: 'ultrasonic', volt: 'GND', note: 'Mass phía LV.' },
+      { id: 'w_shifter_gnd_h', name: 'Mass Shifter HV', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'shifter_hv_gnd', cat: 'gnd', subsystem: 'ultrasonic', volt: 'GND', note: 'Mass phía HV.' },
 
-      { id: 'w_trig_lv', name: 'Trig Phát (GPIO4 -> LV1)', color: 'var(--wire-trig-lv)', from: 'esp32_io4', to: 'shifter_lv1', cat: 'sensor', volt: '3.3V Pulse', note: 'ESP32 phát xung kích siêu âm 10us (Xanh Cyan).' },
-      { id: 'w_trig_hv', name: 'Trig Kích (HV1 -> HC-SR05)', color: 'var(--wire-trig-hv)', from: 'shifter_hv1', to: 'us_trig', cat: 'sensor', volt: '5.0V Pulse', note: 'Xung kích 5V đưa vào chân Trig cảm biến (Xanh Dương Đậm).' },
-      { id: 'w_echo_hv', name: 'Echo 5V (HC-SR05 -> HV2)', color: 'var(--wire-echo-hv)', from: 'us_echo', to: 'shifter_hv2', cat: 'sensor', volt: '5.0V Echo', note: 'HC-SR05 phát xung phản xạ 5V (Màu Cam Đậm).' },
-      { id: 'w_echo_lv', name: 'Echo An Toàn (LV2 -> GPIO5)', color: 'var(--wire-echo-lv)', from: 'shifter_lv2', to: 'esp32_io5', cat: 'sensor', volt: '3.3V Echo (M7)', thick: 4, note: 'Hạ áp an toàn xuống 3.3V vào GPIO5, không làm cháy ESP32! (Màu Vàng Hổ Phách)' },
-      { id: 'w_us_vcc', name: 'Nguồn HC-SR05 5V', color: 'var(--wire-pwr-5v-shifter)', from: 'esp32_5v', to: 'us_vcc', cat: 'power', volt: '5.0V', note: 'Nguồn nuôi HC-SR05.' },
-      { id: 'w_us_gnd', name: 'Mass HC-SR05', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'us_gnd', cat: 'gnd', volt: 'GND', note: 'Mass HC-SR05.' },
+      { id: 'w_trig_lv', name: 'Trig Phát (GPIO4 -> LV1)', color: 'var(--wire-trig-lv)', from: 'esp32_io4', to: 'shifter_lv1', cat: 'sensor', subsystem: 'ultrasonic', volt: '3.3V Pulse', note: 'ESP32 phát xung kích siêu âm 10us (Xanh Cyan).' },
+      { id: 'w_trig_hv', name: 'Trig Kích (HV1 -> HC-SR05)', color: 'var(--wire-trig-hv)', from: 'shifter_hv1', to: 'us_trig', cat: 'sensor', subsystem: 'ultrasonic', volt: '5.0V Pulse', note: 'Xung kích 5V đưa vào chân Trig cảm biến (Xanh Dương Đậm).' },
+      { id: 'w_echo_hv', name: 'Echo 5V (HC-SR05 -> HV2)', color: 'var(--wire-echo-hv)', from: 'us_echo', to: 'shifter_hv2', cat: 'sensor', subsystem: 'ultrasonic', volt: '5.0V Echo', note: 'HC-SR05 phát xung phản xạ 5V (Màu Cam Đậm).' },
+      { id: 'w_echo_lv', name: 'Echo An Toàn (LV2 -> GPIO5)', color: 'var(--wire-echo-lv)', from: 'shifter_lv2', to: 'esp32_io5', cat: 'sensor', subsystem: 'ultrasonic', volt: '3.3V Echo (M7)', thick: 4, note: 'Hạ áp an toàn xuống 3.3V vào GPIO5, không làm cháy ESP32! (Màu Vàng Hổ Phách)' },
+      { id: 'w_us_vcc', name: 'Nguồn HC-SR05 5V', color: 'var(--wire-pwr-5v-shifter)', from: 'esp32_5v', to: 'us_vcc', cat: 'power', subsystem: 'ultrasonic', volt: '5.0V', note: 'Nguồn nuôi HC-SR05.' },
+      { id: 'w_us_gnd', name: 'Mass HC-SR05', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'us_gnd', cat: 'gnd', subsystem: 'ultrasonic', volt: 'GND', note: 'Mass HC-SR05.' },
 
       // === 7. IR Sensors (Tachometer / Line) ===
-      { id: 'w_irl_vcc', name: 'Nguồn IR Trái 3.3V', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'irl_vcc', cat: 'power', volt: '3.3V', note: 'Nguồn nuôi mắt IR trái.' },
-      { id: 'w_irl_gnd', name: 'Mass IR Trái', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irl_gnd', cat: 'gnd', volt: 'GND', note: 'Mass IR trái.' },
-      { id: 'w_irl_do', name: 'Tín Hiệu IR Trái (GPIO6)', color: 'var(--wire-irl-do)', from: 'irl_do', to: 'esp32_io6', cat: 'sensor', volt: 'DO Digital', thick: 3.5, note: 'Ngắt đếm cạnh đĩa sọc (G1) hoặc dò line (G2) bên Trái (Xanh Lá).' },
+      { id: 'w_irl_vcc', name: 'Nguồn IR Trái 3.3V', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'irl_vcc', cat: 'power', subsystem: 'ir', volt: '3.3V', note: 'Nguồn nuôi mắt IR trái.' },
+      { id: 'w_irl_gnd', name: 'Mass IR Trái', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irl_gnd', cat: 'gnd', subsystem: 'ir', volt: 'GND', note: 'Mass IR trái.' },
+      { id: 'w_irl_do', name: 'Tín Hiệu IR Trái (GPIO6)', color: 'var(--wire-irl-do)', from: 'irl_do', to: 'esp32_io6', cat: 'sensor', subsystem: 'ir', volt: 'DO Digital', thick: 3.5, note: 'Ngắt đếm cạnh đĩa sọc (G1) hoặc dò line (G2) bên Trái (Xanh Lá).' },
 
-      { id: 'w_irr_vcc', name: 'Nguồn IR Phải 3.3V', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'irr_vcc', cat: 'power', volt: '3.3V', note: 'Nguồn nuôi mắt IR phải.' },
-      { id: 'w_irr_gnd', name: 'Mass IR Phải', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irr_gnd', cat: 'gnd', volt: 'GND', note: 'Mass IR phải.' },
-      { id: 'w_irr_do', name: 'Tín Hiệu IR Phải (GPIO7)', color: 'var(--wire-irr-do)', from: 'irr_do', to: 'esp32_io7', cat: 'sensor', volt: 'DO Digital', thick: 3.5, note: 'Ngắt đếm cạnh đĩa sọc (G1) hoặc dò line (G2) bên Phải (Xanh Teal).' },
+      { id: 'w_irr_vcc', name: 'Nguồn IR Phải 3.3V', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'irr_vcc', cat: 'power', subsystem: 'ir', volt: '3.3V', note: 'Nguồn nuôi mắt IR phải.' },
+      { id: 'w_irr_gnd', name: 'Mass IR Phải', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irr_gnd', cat: 'gnd', subsystem: 'ir', volt: 'GND', note: 'Mass IR phải.' },
+      { id: 'w_irr_do', name: 'Tín Hiệu IR Phải (GPIO7)', color: 'var(--wire-irr-do)', from: 'irr_do', to: 'esp32_io7', cat: 'sensor', subsystem: 'ir', volt: 'DO Digital', thick: 3.5, note: 'Ngắt đếm cạnh đĩa sọc (G1) hoặc dò line (G2) bên Phải (Xanh Teal).' },
 
       // === 8. Battery ADC Sensor (GPIO1) ===
-      { id: 'w_vs_sig', name: 'Đo Áp Pin (GPIO1 / ADC1)', color: 'var(--wire-bat-adc)', from: 'vs_s', to: 'esp32_io1', cat: 'sensor', volt: '≈ VBAT/5 (M6)', thick: 3.5, note: 'Điện áp chia 5 đưa vào ADC1 (GPIO1) để giám sát pin.' },
+      { id: 'w_vs_sig', name: 'Đo Áp Pin (GPIO1 / ADC1)', color: 'var(--wire-bat-adc)', from: 'vs_s', to: 'esp32_io1', cat: 'sensor', subsystem: 'battery', volt: '≈ VBAT/5 (M6)', thick: 3.5, note: 'Điện áp chia 5 đưa vào ADC1 (GPIO1) để giám sát pin.' },
 
       // === 9. Buzzer (Optional) ===
-      { id: 'w_buzz_p', name: 'Còi Buzzer (+) GPIO10', color: 'var(--wire-buzzer)', from: 'buzz_plus', to: 'esp32_io10', cat: 'sensor', volt: '3.3V Audio', thick: 3.5, note: 'Tín hiệu còi báo (Màu Hồng Magenta).' },
-      { id: 'w_buzz_n', name: 'Mass Còi Buzzer (-)', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'buzz_gnd', to: 'esp32_gnd_l', cat: 'gnd', volt: 'GND', note: 'Mass còi.' }
+      { id: 'w_buzz_p', name: 'Còi Buzzer (+) GPIO10', color: 'var(--wire-buzzer)', from: 'buzz_plus', to: 'esp32_io10', cat: 'sensor', subsystem: 'buzzer', volt: '3.3V Audio', thick: 3.5, note: 'Tín hiệu còi báo (Màu Hồng Magenta).' },
+      { id: 'w_buzz_n', name: 'Mass Còi Buzzer (-)', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'buzz_gnd', to: 'esp32_gnd_l', cat: 'gnd', subsystem: 'buzzer', volt: 'GND', note: 'Mass còi.' }
     ];
 
     // Checkpoint Badges Definition
@@ -1455,6 +1872,30 @@
       return null;
     }
 
+    // --- Wire Visibility & Layer Isolation Helper ---
+    function isWireActive(w) {
+      if (isolatedCompId) {
+        const fromPos = getPinPos(w.from);
+        const toPos = getPinPos(w.to);
+        return (fromPos && fromPos.comp.id === isolatedCompId) || (toPos && toPos.comp.id === isolatedCompId);
+      }
+
+      if (currentFilter === 'all') {
+        if (activeSubsystems.size < 7) {
+          if (w.subsystem && activeSubsystems.has(w.subsystem)) return true;
+          if (w.cat === 'gnd' && activeSubsystems.has('gnd')) return true;
+          return false;
+        }
+        return true;
+      }
+
+      if (currentFilter === 'gnd') {
+        return w.cat === 'gnd' || w.subsystem === 'gnd';
+      }
+
+      return w.subsystem === currentFilter;
+    }
+
     // --- Dynamic Wire Path Rendering with Electrical Jumper Bridges ---
     function renderWires() {
       const svg = document.getElementById('wire-canvas');
@@ -1466,8 +1907,6 @@
           </filter>
         </defs>`;
 
-      // Pre-calculate polyline segments for all visible wires
-      const activeWiresData = [];
       const drawnSegments = []; // Register drawn segments for bridge hop intersections
 
       wires.forEach(w => {
@@ -1475,16 +1914,19 @@
         const to = getPinPos(w.to);
         if (!from || !to) return;
 
-        let isDimmed = false;
-        if (currentFilter !== 'all' && w.cat !== currentFilter) {
-          isDimmed = true;
-        }
+        const active = isWireActive(w);
         const isSelected = (selectedWireId === w.id);
+
+        if (!active && filterDisplayMode === 'hide' && !isSelected) {
+          return; // Skip rendering hidden wires
+        }
+
+        const isDimmed = !active && !isSelected;
 
         let pathData = '';
         if (wireMode === 'orthogonal') {
-          // Manhattan Orthogonal Routing with Semi-Circular Jumper Arches
-          pathData = buildOrthogonalWithHops(from, to, drawnSegments);
+          // Only active wires register into drawnSegments to prevent phantom jumper arches!
+          pathData = buildOrthogonalWithHops(from, to, drawnSegments, active, w);
         } else if (wireMode === 'curved') {
           // Smooth Bezier Curve Spline
           const dx = Math.abs(to.x - from.x) * 0.45;
@@ -1514,7 +1956,17 @@
         path.setAttribute('stroke', w.stroke || w.color);
         path.setAttribute('stroke-width', w.thick || 3.5);
 
-        path.onmouseenter = () => highlightWire(w.id);
+        path.onmouseenter = () => {
+          highlightWire(w.id);
+          showEndpointCallouts(w);
+          renderTopOverlayWire(w, pathData);
+        };
+        path.onmouseleave = () => {
+          if (selectedWireId !== w.id) {
+            hideEndpointCallouts();
+            clearTopOverlay();
+          }
+        };
         path.onclick = (e) => {
           e.stopPropagation();
           selectWire(w.id);
@@ -1524,100 +1976,68 @@
       });
     }
 
-    // --- Intelligent Orthogonal Router with Semi-Circular Jumper Hops ---
-    function buildOrthogonalWithHops(from, to, registeredSegments) {
-      // 1. Calculate raw orthogonal corners
-      let p1 = { x: from.x, y: from.y };
-      let p4 = { x: to.x, y: to.y };
-      
-      const midX = Math.round((from.x + to.x) / 2);
-      let p2 = { x: midX, y: from.y };
-      let p3 = { x: midX, y: to.y };
+    // --- Intelligent Obstacle-Avoidance Router with Semi-Circular Jumper Hops ---
+    function getSmartRouteWaypoints(from, to, wire = {}) {
+      if (wire.waypoints && wire.waypoints.length > 0) {
+        return [{ x: from.x, y: from.y }, ...wire.waypoints, { x: to.x, y: to.y }];
+      }
 
-      const segments = [
-        { type: 'H', x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y },
-        { type: 'V', x1: p2.x, y1: p2.y, x2: p3.x, y2: p3.y },
-        { type: 'H', x1: p3.x, y1: p3.y, x2: p4.x, y2: p4.y }
+      // Default orthogonal 3-point routing
+      let midX = (from.x + to.x) / 2;
+      if (Math.abs(from.x - to.x) < 40) midX = Math.max(from.x, to.x) + 30;
+      return [
+        { x: from.x, y: from.y },
+        { x: midX, y: from.y },
+        { x: midX, y: to.y },
+        { x: to.x, y: to.y }
       ];
+    }
 
-      let d = `M ${p1.x} ${p1.y}`;
+    // Router with Semi-Circular Jumper Hops over arbitrary waypoints
+    function buildOrthogonalWithHops(from, to, registeredSegments, shouldRegister = true, wire = {}) {
+      const pts = getSmartRouteWaypoints(from, to, wire);
+      const segs = [];
+      for (let i = 0; i < pts.length - 1; i++) {
+        segs.push({
+          x1: pts[i].x, y1: pts[i].y,
+          x2: pts[i+1].x, y2: pts[i+1].y,
+          isVert: (pts[i].x === pts[i+1].x)
+        });
+      }
 
-      segments.forEach(seg => {
-        if (seg.type === 'H') {
-          // Horizontal segment: check crossings with registered Vertical segments
-          const y = seg.y1;
-          const minX = Math.min(seg.x1, seg.x2);
-          const maxX = Math.max(seg.x1, seg.x2);
-          const isRight = (seg.x2 >= seg.x1);
+      let d = `M ${pts[0].x} ${pts[0].y}`;
 
-          // Find crossings
-          const crossings = [];
-          registeredSegments.forEach(prev => {
-            if (prev.type === 'V') {
-              const vx = prev.x1;
-              const minY = Math.min(prev.y1, prev.y2);
-              const maxY = Math.max(prev.y1, prev.y2);
-
-              if (vx > minX + 10 && vx < maxX - 10 && y > minY + 6 && y < maxY - 6) {
-                crossings.push(vx);
-              }
-            }
-          });
-
-          // Sort crossings along movement direction
-          if (isRight) crossings.sort((a, b) => a - b);
-          else crossings.sort((a, b) => b - a);
-
-          const r = 7; // Jumper arch radius
-          let currX = seg.x1;
-
-          crossings.forEach(cx => {
-            if (isRight) {
-              d += ` L ${cx - r} ${y}`;
-              // Semi-circular arch jumping UP
-              d += ` A ${r} ${r} 0 0 1 ${cx + r} ${y}`;
-              currX = cx + r;
-            } else {
-              d += ` L ${cx + r} ${y}`;
-              // Semi-circular arch jumping UP
-              d += ` A ${r} ${r} 0 0 1 ${cx - r} ${y}`;
-              currX = cx - r;
-            }
-          });
-
-          d += ` L ${seg.x2} ${y}`;
-          registeredSegments.push(seg);
-
+      segs.forEach(seg => {
+        if (!seg.isVert) {
+          d += ` L ${seg.x2} ${seg.y2}`;
+          if (shouldRegister) registeredSegments.push(seg);
         } else {
-          // Vertical segment: check crossings with registered Horizontal segments
+          const yStart = Math.min(seg.y1, seg.y2);
+          const yEnd = Math.max(seg.y1, seg.y2);
           const x = seg.x1;
-          const minY = Math.min(seg.y1, seg.y2);
-          const maxY = Math.max(seg.y1, seg.y2);
-          const isDown = (seg.y2 >= seg.y1);
 
           const crossings = [];
-          registeredSegments.forEach(prev => {
-            if (prev.type === 'H') {
-              const hy = prev.y1;
-              const minX = Math.min(prev.x1, prev.x2);
-              const maxX = Math.max(prev.x1, prev.x2);
-
-              if (hy > minY + 10 && hy < maxY - 10 && x > minX + 6 && x < maxX - 6) {
+          registeredSegments.forEach(hSeg => {
+            if (!hSeg.isVert) {
+              const hxStart = Math.min(hSeg.x1, hSeg.x2);
+              const hxEnd = Math.max(hSeg.x1, hSeg.x2);
+              const hy = hSeg.y1;
+              if (x > hxStart + 6 && x < hxEnd - 6 && hy > yStart + 8 && hy < yEnd - 8) {
                 crossings.push(hy);
               }
             }
           });
 
+          const isDown = (seg.y2 >= seg.y1);
           if (isDown) crossings.sort((a, b) => a - b);
           else crossings.sort((a, b) => b - a);
 
-          const r = 7;
+          const r = 7; // Jumper arch radius
           let currY = seg.y1;
 
           crossings.forEach(cy => {
             if (isDown) {
               d += ` L ${x} ${cy - r}`;
-              // Semi-circular arch jumping RIGHT
               d += ` A ${r} ${r} 0 0 1 ${x} ${cy + r}`;
               currY = cy + r;
             } else {
@@ -1628,11 +2048,92 @@
           });
 
           d += ` L ${x} ${seg.y2}`;
-          registeredSegments.push(seg);
+          if (shouldRegister) registeredSegments.push(seg);
         }
       });
 
       return d;
+    }
+
+    // --- Dual-Endpoint Interactive Callout Badges ---
+    function showEndpointCallouts(wire) {
+      const container = document.getElementById('endpoint-callouts-layer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Clear previous pin pulse
+      document.querySelectorAll('.pin-pulse-active').forEach(el => el.classList.remove('pin-pulse-active'));
+
+      const fromPos = getPinPos(wire.from);
+      const toPos = getPinPos(wire.to);
+      if (!fromPos || !toPos) return;
+
+      // Add pulse to both pins
+      const pinA = document.getElementById(`pin-${wire.from}`);
+      const pinB = document.getElementById(`pin-${wire.to}`);
+      if (pinA) pinA.classList.add('pin-pulse-active');
+      if (pinB) pinB.classList.add('pin-pulse-active');
+
+      // Callout A
+      const elA = document.createElement('div');
+      elA.className = 'endpoint-callout';
+      elA.style.left = `${fromPos.x}px`;
+      elA.style.top = `${fromPos.y}px`;
+      elA.style.borderColor = wire.color;
+      elA.innerHTML = `
+        <span class="callout-dot" style="background:${wire.color};"></span>
+        <span><strong>${fromPos.comp.title}</strong>: <span class="callout-pin">${fromPos.pin.name}</span></span>
+      `;
+      container.appendChild(elA);
+
+      // Callout B
+      const elB = document.createElement('div');
+      elB.className = 'endpoint-callout';
+      elB.style.left = `${toPos.x}px`;
+      elB.style.top = `${toPos.y}px`;
+      elB.style.borderColor = wire.color;
+      elB.innerHTML = `
+        <span class="callout-dot" style="background:${wire.color};"></span>
+        <span><strong>${toPos.comp.title}</strong>: <span class="callout-pin">${toPos.pin.name}</span></span>
+      `;
+      container.appendChild(elB);
+    }
+
+    function hideEndpointCallouts() {
+      const container = document.getElementById('endpoint-callouts-layer');
+      if (container) container.innerHTML = '';
+      document.querySelectorAll('.pin-pulse-active').forEach(el => el.classList.remove('pin-pulse-active'));
+    }
+
+    // --- Top Overlay Active Wire Layer ---
+    function renderTopOverlayWire(wire, pathData) {
+      const svg = document.getElementById('wire-top-overlay');
+      if (!svg) return;
+      svg.innerHTML = `
+        <defs>
+          <filter id="top-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <path d="${pathData}" fill="none" stroke="${wire.color}" stroke-width="${(wire.thick || 3.5) + 6}" opacity="0.6" filter="url(#top-glow)"/>
+        <path d="${pathData}" fill="none" stroke="#ffffff" stroke-width="${wire.thick || 3.5}" />
+      `;
+    }
+
+    function clearTopOverlay() {
+      const svg = document.getElementById('wire-top-overlay');
+      if (svg) svg.innerHTML = '';
+    }
+
+    function togglePinLabels() {
+      showPinLabels = !showPinLabels;
+      const btn = document.getElementById('btn-toggle-labels');
+      if (btn) btn.classList.toggle('active', showPinLabels);
+      const mBtn = document.getElementById('m-btn-toggle-labels');
+      if (mBtn) mBtn.classList.toggle('active', showPinLabels);
+      const container = document.getElementById('canvas-container');
+      if (container) container.classList.toggle('hide-pin-labels', !showPinLabels);
     }
 
     // --- Wire Selection & Highlighting Logic ---
@@ -1641,11 +2142,35 @@
       selectedCompId = null;
       document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
 
+      if (window.innerWidth <= 768) {
+        const insp = document.getElementById('inspector');
+        if (insp) insp.classList.add('sheet-expanded');
+      }
+
       const wire = wires.find(w => w.id === wireId);
       if (!wire) return;
 
       const fromPos = getPinPos(wire.from);
       const toPos = getPinPos(wire.to);
+
+      showEndpointCallouts(wire);
+
+      if (fromPos && toPos) {
+        let pData = '';
+        if (wireMode === 'orthogonal') pData = buildOrthogonalWithHops(fromPos, toPos, [], false, wire);
+        else if (wireMode === 'curved') {
+          const dx = Math.abs(toPos.x - fromPos.x) * 0.45;
+          const dy = Math.abs(toPos.y - fromPos.y) * 0.45;
+          const cx1 = fromPos.x + (fromPos.x < toPos.x ? dx : -dx);
+          const cy1 = fromPos.y + (fromPos.y < toPos.y ? dy : -dy);
+          const cx2 = toPos.x + (fromPos.x < toPos.x ? -dx : dx);
+          const cy2 = toPos.y + (fromPos.y < toPos.y ? -dy : dy);
+          pData = `M ${fromPos.x} ${fromPos.y} C ${cx1} ${fromPos.y}, ${cx2} ${toPos.y}, ${toPos.x} ${toPos.y}`;
+        } else {
+          pData = `M ${fromPos.x} ${fromPos.y} L ${toPos.x} ${toPos.y}`;
+        }
+        renderTopOverlayWire(wire, pData);
+      }
 
       document.getElementById('inspector-title-text').innerText = 'Chi tiết Dây Nối';
       const inspector = document.getElementById('inspector-content');
@@ -1676,13 +2201,29 @@
     function selectComponent(compId) {
       selectedCompId = compId;
       selectedWireId = null;
+      hideEndpointCallouts();
+      clearTopOverlay();
 
       document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
       const compEl = document.getElementById(`comp-${compId}`);
       if (compEl) compEl.classList.add('selected-comp');
 
+      if (window.innerWidth <= 768) {
+        const insp = document.getElementById('inspector');
+        if (insp) insp.classList.add('sheet-expanded');
+      }
+
       const comp = components[compId];
       if (!comp) return;
+
+      const isIsolated = (isolatedCompId === compId);
+      const compWires = wires.filter(w => {
+        const fromPos = getPinPos(w.from);
+        const toPos = getPinPos(w.to);
+        return (fromPos && fromPos.comp.id === compId) || (toPos && toPos.comp.id === compId);
+      });
+
+      const isolateBtnLabel = isIsolated ? '✕ Bỏ cô lập' : `🔍 Cô lập dây (${compWires.length})`;
 
       document.getElementById('inspector-title-text').innerText = 'Thông Tin & Mua Sắm';
       const inspector = document.getElementById('inspector-content');
@@ -1697,6 +2238,11 @@
         <div class="info-row"><span class="info-label">Giá tham khảo</span><span class="info-val" style="color:var(--success); font-weight:700;">${comp.price}</span></div>
         <div class="info-row"><span class="info-label">Thông số chuẩn</span><span class="info-val" style="font-size:11px;">${comp.spec}</span></div>
         
+        
+        <button class="action-btn" style="margin-top:10px; width:100%; justify-content:center; min-height:38px; ${isIsolated ? 'background:var(--primary); color:#fff;' : ''}" onclick="toggleIsolateComponent('${compId}')">
+          ${isolateBtnLabel}
+        </button>
+
         <div style="margin-top:10px; padding:10px; background:var(--surface-deep); border:1px solid var(--border); border-radius:8px;">
           <div style="font-size:11px; color:var(--fg-muted); margin-bottom:4px;">Từ khóa tìm mua trên Shopee:</div>
           <div style="font-size:12px; font-weight:700; color:#fff; font-family:monospace; word-break:break-all;">
@@ -1713,6 +2259,16 @@
         </div>
       `;
 
+      renderWires();
+    }
+
+    function toggleIsolateComponent(compId) {
+      if (isolatedCompId === compId) {
+        isolatedCompId = null;
+      } else {
+        isolatedCompId = compId;
+      }
+      selectComponent(compId);
       renderWires();
     }
 
@@ -1769,12 +2325,142 @@
       });
     }
 
+    // --- Subsystem Wire Count Calculation ---
+    function getSubsystemCounts() {
+      const counts = { all: wires.length, gnd: 0 };
+      Object.keys(subsystemsMeta).forEach(k => { counts[k] = 0; });
+      wires.forEach(w => {
+        if (w.subsystem && counts[w.subsystem] !== undefined) {
+          counts[w.subsystem]++;
+        }
+        if (w.cat === 'gnd') {
+          counts.gnd++;
+        }
+      });
+      return counts;
+    }
+
+    function updateFilterBarCounts() {
+      const counts = getSubsystemCounts();
+      Object.entries(counts).forEach(([k, count]) => {
+        const el = document.getElementById(`count-${k}`);
+        if (el) el.innerText = count;
+      });
+    }
+
     // --- Filter Function ---
     function filterWires(category) {
+      isolatedCompId = null;
       currentFilter = category;
       document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
+      const activeChip = document.getElementById(`chip-${category}`);
+      if (activeChip) activeChip.classList.add('active');
       renderWires();
+      updateSubsystemModalCheckboxes();
+    }
+
+    // --- Display Mode Toggle (Dim vs Hide) ---
+    function setFilterDisplayMode(mode) {
+      filterDisplayMode = mode;
+      const dimRadio = document.getElementById('radio-mode-dim');
+      const hideRadio = document.getElementById('radio-mode-hide');
+      if (dimRadio) dimRadio.checked = (mode === 'dim');
+      if (hideRadio) hideRadio.checked = (mode === 'hide');
+      renderWires();
+    }
+
+    // --- Wire Layer Visibility Filter Modal Helpers ---
+    function openWireFilterModal() {
+      renderFilterModalList();
+      document.getElementById('wire-filter-modal').style.display = 'flex';
+    }
+
+    function closeWireFilterModal(e) {
+      if (!e || e.target.id === 'wire-filter-modal' || e.target.classList.contains('action-btn') || e.target.closest('.action-btn')) {
+        document.getElementById('wire-filter-modal').style.display = 'none';
+      }
+    }
+
+    function toggleSubsystemCheckbox(subsystemKey, isChecked) {
+      if (isChecked) {
+        activeSubsystems.add(subsystemKey);
+      } else {
+        activeSubsystems.delete(subsystemKey);
+      }
+      currentFilter = 'all';
+      isolatedCompId = null;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      const chipAll = document.getElementById('chip-all');
+      if (chipAll) chipAll.classList.add('active');
+      renderWires();
+    }
+
+    function toggleAllSubsystems(enable) {
+      if (enable) {
+        activeSubsystems = new Set(Object.keys(subsystemsMeta));
+      } else {
+        activeSubsystems.clear();
+      }
+      renderFilterModalList();
+      currentFilter = 'all';
+      isolatedCompId = null;
+      renderWires();
+    }
+
+    function setPresetSubsystem(preset) {
+      if (preset === 'power_servo') {
+        activeSubsystems = new Set(['power', 'servo', 'gnd']);
+      } else if (preset === 'sensors') {
+        activeSubsystems = new Set(['ultrasonic', 'ir', 'battery', 'buzzer', 'gnd']);
+      }
+      renderFilterModalList();
+      currentFilter = 'all';
+      isolatedCompId = null;
+      renderWires();
+    }
+
+    function renderFilterModalList() {
+      const container = document.getElementById('filter-subsystems-list');
+      if (!container) return;
+      const counts = getSubsystemCounts();
+
+      container.innerHTML = Object.entries(subsystemsMeta).map(([k, meta]) => {
+        const isChecked = activeSubsystems.has(k);
+        const count = counts[k] || 0;
+        return `
+          <label style="display:flex; align-items:center; justify-content:space-between; background:var(--surface-elevated); padding:10px 14px; border-radius:8px; border:1px solid var(--border); cursor:pointer;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSubsystemCheckbox('${k}', this.checked)" style="width:16px; height:16px; cursor:pointer;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:var(--fg); display:flex; align-items:center; gap:6px;">
+                  <span>${meta.icon}</span> ${meta.label}
+                  <span class="chip-dot whitespace-nowrap shrink-0" style="background:${meta.color}; width:8px; height:8px;"></span>
+                </div>
+                <div style="font-size:11px; color:var(--fg-muted); margin-top:2px;">${meta.desc}</div>
+              </div>
+            </div>
+            <span class="chip-count whitespace-nowrap shrink-0" style="font-size:11px; padding:3px 8px; background:var(--surface-deep);">${count} dây</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function updateSubsystemModalCheckboxes() {
+      const modal = document.getElementById('wire-filter-modal');
+      if (modal && modal.style.display === 'flex') {
+        renderFilterModalList();
+      }
+    }
+
+    // --- Mobile Drawer Controls ---
+    function openMobileDrawer() {
+      document.getElementById('mobile-drawer-backdrop').classList.add('open');
+      document.getElementById('mobile-drawer').classList.add('open');
+    }
+
+    function closeMobileDrawer() {
+      document.getElementById('mobile-drawer-backdrop').classList.remove('open');
+      document.getElementById('mobile-drawer').classList.remove('open');
     }
 
     // --- Routing Mode Toggle ---
@@ -1904,7 +2590,7 @@
       e.preventDefault();
     });
 
-    // Spacebar Drag (Figma / Photoshop style)
+    // Spacebar Drag & Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && !e.target.matches('input, textarea')) {
         if (!isSpacePressed) {
@@ -1912,6 +2598,9 @@
           viewport.style.cursor = 'grab';
         }
         e.preventDefault();
+      }
+      if ((e.key === 'l' || e.key === 'L') && !e.target.matches('input, textarea')) {
+        togglePinLabels();
       }
     });
     window.addEventListener('keyup', (e) => {
@@ -1923,6 +2612,7 @@
 
     // Click-and-Drag Panning on Empty Canvas or with Spacebar / Middle Click
     viewport.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') return;
       const isMiddleButton = (e.button === 1);
       const isLeftOnCanvas = (e.button === 0 && (e.target === viewport || e.target.id === 'wire-canvas' || isSpacePressed));
 
@@ -1936,6 +2626,8 @@
         if (!isSpacePressed) {
           selectedWireId = null;
           selectedCompId = null;
+          hideEndpointCallouts();
+          clearTopOverlay();
           document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
           renderWires();
         }
@@ -2003,7 +2695,13 @@
     }
 
     function toggleInspector() {
-      document.getElementById('inspector').classList.toggle('minimized');
+      const insp = document.getElementById('inspector');
+      if (!insp) return;
+      if (window.innerWidth <= 768) {
+        insp.classList.toggle('sheet-expanded');
+      } else {
+        insp.classList.toggle('minimized');
+      }
     }
 
     function openChecklistModal() {
@@ -2016,6 +2714,59 @@
       }
     }
 
+    // --- Mobile Touch Gestures (1-Finger Pan, 2-Finger Pinch Zoom, Double-Tap Fit) ---
+    let touchDistanceStart = 0;
+    let touchStartScale = 1;
+    let touchPanStartX = 0;
+    let touchPanStartY = 0;
+    let isTouchPanning = false;
+    let lastTapTime = 0;
+
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          fitToScreen();
+          lastTapTime = 0;
+          return;
+        }
+        lastTapTime = now;
+
+        if (e.target === viewport || e.target.id === 'wire-canvas') {
+          isTouchPanning = true;
+          touchPanStartX = e.touches[0].clientX - panX;
+          touchPanStartY = e.touches[0].clientY - panY;
+        }
+      } else if (e.touches.length === 2) {
+        isTouchPanning = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchDistanceStart = Math.hypot(dx, dy);
+        touchStartScale = scale;
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isTouchPanning) {
+        panX = e.touches[0].clientX - touchPanStartX;
+        panY = e.touches[0].clientY - touchPanStartY;
+        updateTransform();
+      } else if (e.touches.length === 2 && touchDistanceStart > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const factor = dist / touchDistanceStart;
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        zoomAt(midX, midY, touchStartScale * factor);
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) touchDistanceStart = 0;
+      if (e.touches.length === 0) isTouchPanning = false;
+    }, { passive: true });
+
     // Auto-fade trackpad helper hint after 7 seconds
     setTimeout(() => {
       const hint = document.getElementById('trackpad-hint');
@@ -2026,9 +2777,10 @@
 
     // --- Initialization ---
     window.addEventListener('DOMContentLoaded', () => {
+      updateFilterBarCounts();
       renderComponents();
       renderWires();
-      updateTransform();
+      fitToScreen();
     });
   </script>
 </body>

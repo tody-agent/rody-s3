@@ -1,0 +1,5372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07090e">
+  <title>Rody 3D Cyber-Arena – Trải Nghiệm Robot 3D Đỉnh Cao & Điều Khiển Giọng Nói AI</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Three.js, OrbitControls & GLTFLoader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="GLTFLoader.js"></script>
+
+  <style>
+    :root {
+      --bg: #07090e;
+      --surface: rgba(13, 18, 30, 0.72);
+      --surface-elevated: rgba(22, 30, 49, 0.85);
+      --surface-card: rgba(16, 23, 38, 0.78);
+      --border: rgba(34, 211, 238, 0.22);
+      --border-accent: rgba(34, 211, 238, 0.5);
+      --fg: #f1f5f9;
+      --fg-muted: #94a3b8;
+      --fg-subtle: #64748b;
+      
+      --cyan: #22d3ee;
+      --cyan-glow: rgba(34, 211, 238, 0.4);
+      --mint: #10b981;
+      --mint-glow: rgba(16, 185, 129, 0.35);
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.35);
+      --blue: #3b82f6;
+
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-glass: 0 16px 40px 0 rgba(0, 0, 0, 0.6), inset 0 0 0 1px var(--border);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* 3D WebGL Canvas */
+    #webgl-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      outline: none;
+    }
+
+    /* HUD Layer (Pointer events pass-through to 3D scene) */
+    #game-hud {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+    }
+
+    .interactive {
+      pointer-events: auto;
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-glass);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card:hover {
+      border-color: var(--border-accent);
+    }
+
+    /* Top Lean Game HUD Bar (Floating Translucent Chips) */
+    header.top-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      gap: 8px;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+    .top-hud-left, .top-hud-center, .top-hud-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto;
+    }
+    .game-chip {
+      background: rgba(11, 19, 38, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      border-radius: 20px;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      white-space: nowrap;
+    }
+    .brand-chip {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+    .quest-chip {
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+    .timer-chip {
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Sporty Center Speedometer Capsule */
+    .game-speed-badge {
+      background: rgba(11, 19, 38, 0.90);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(56, 189, 248, 0.5);
+      border-radius: 20px;
+      padding: 4px 14px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55), 0 0 14px rgba(56, 189, 248, 0.2);
+    }
+    .game-speed-badge .gear-tag {
+      background: #10b981;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .game-speed-badge .speed-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .game-speed-badge .speed-unit {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    /* Minimal Game Icon Buttons */
+    .game-icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(11, 19, 38, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+    .game-icon-btn:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px var(--cyan-glow);
+      transform: scale(1.06);
+    }
+    .game-icon-btn:active {
+      transform: scale(0.92);
+    }
+    .game-icon-btn.listening {
+      background: linear-gradient(135deg, #f43f5e, #a855f7);
+      border-color: #f43f5e;
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.8);
+      animation: pulse-mic 1s infinite alternate;
+    }
+
+    /* Telemetry Pills */
+    .top-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stat-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--fg-muted);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .stat-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 8px var(--mint);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Camera Switcher */
+    .cam-switcher {
+      display: flex;
+      background: rgba(10, 15, 26, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 3px;
+    }
+    .cam-btn {
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .cam-btn:hover {
+      color: var(--fg);
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .cam-btn.active {
+      color: var(--cyan);
+      background: rgba(34, 211, 238, 0.18);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+
+    /* Top Tools */
+    .top-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hud-btn {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      min-height: 34px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .hud-btn:hover {
+      background: rgba(34, 211, 238, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan-glow);
+    }
+    .hud-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* =========================================================================
+     * ARCADE RACING HUD STYLES (Kids PC Racing & Clean Gameplay)
+     * ========================================================================= */
+
+    /* Top Quest & Lap Bar */
+    .arcade-quest-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quest-pill {
+      background: rgba(10, 16, 28, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--fg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .quest-pill .quest-icon {
+      font-size: 15px;
+    }
+    .quest-pill .quest-val {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--cyan);
+    }
+    #pill-diamonds .quest-val {
+      color: #38bdf8;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+    #pill-timer .quest-val {
+      color: var(--mint);
+    }
+    #pill-gate .quest-val {
+      color: var(--amber);
+    }
+
+    /* Left Bottom: Arcade Speedometer */
+    .arcade-speedo {
+      position: fixed;
+      bottom: 22px;
+      left: 22px;
+      z-index: 25;
+      width: 145px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(8, 14, 26, 0.85);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      border-radius: var(--radius-md);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(34, 211, 238, 0.15);
+    }
+    .speedo-dial {
+      position: relative;
+      width: 110px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .speedo-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(0deg);
+    }
+    .speedo-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -46%);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .speedo-gear {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.25);
+      color: var(--mint);
+      border: 1px solid var(--mint);
+      margin-bottom: 2px;
+    }
+    .speedo-gear.gear-r {
+      background: rgba(244, 63, 94, 0.25);
+      color: var(--rose);
+      border-color: var(--rose);
+    }
+    .speedo-gear.gear-n {
+      background: rgba(245, 158, 11, 0.25);
+      color: var(--amber);
+      border-color: var(--amber);
+    }
+    .speedo-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 12px var(--cyan-glow);
+    }
+    .speedo-kph {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--fg-muted);
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+    .nitro-bar-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .nitro-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--amber);
+    }
+    .nitro-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .nitro-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+      transition: width 0.15s ease;
+    }
+
+    /* Right Top: Arcade Radar (Mini-Map) & Cute Reaction Bubble */
+    .arcade-radar-card {
+      position: fixed;
+      top: 76px;
+      right: 22px;
+      z-index: 25;
+      width: 160px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(8, 14, 26, 0.85);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: var(--radius-md);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    }
+    .radar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--cyan);
+      letter-spacing: 0.05em;
+    }
+    .radar-canvas-wrap {
+      width: 100%;
+      height: 90px;
+      background: rgba(2, 6, 14, 0.85);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #radar-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .racer-reaction-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .racer-face-bubble {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #111;
+      border: 1.5px solid var(--cyan);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px var(--cyan-glow);
+    }
+    #racer-face-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    .racer-bubble-text {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--fg);
+      line-height: 1.25;
+      text-wrap: balance;
+    }
+
+    /* Bottom Center: Kid-Friendly PC Keybar */
+    .arcade-keybar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(8, 14, 26, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 16px rgba(34, 211, 238, 0.15);
+      white-space: nowrap;
+    }
+    .key-chip {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .key-chip b {
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+    .key-chip.boost b { color: #f59e0b; }
+    .key-chip.horn b { color: #38bdf8; }
+    .key-chip.dance b { color: #ec4899; }
+    .key-chip:hover {
+      background: rgba(255, 255, 255, 0.14);
+      transform: translateY(-1px);
+    }
+    .key-mic-btn {
+      background: linear-gradient(135deg, rgba(34, 211, 238, 0.3), rgba(168, 85, 247, 0.3));
+      border: 1.5px solid var(--cyan);
+      color: #fff;
+      border-radius: 18px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 12px var(--cyan-glow);
+      transition: all 0.2s ease;
+    }
+    .key-mic-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 18px var(--cyan-glow);
+    }
+    .key-mic-btn.listening {
+      background: linear-gradient(135deg, var(--rose), var(--purple));
+      border-color: var(--rose);
+      box-shadow: 0 0 20px rgba(244, 63, 94, 0.7);
+      animation: pulse-mic 1s infinite alternate;
+    }
+    @keyframes pulse-mic {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.08); }
+    }
+
+    /* Mobile / Touch Arcade Controls Overlay (Floating Lean Gaming Style) */
+    .arcade-touch-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      box-sizing: border-box;
+      z-index: 25;
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Floating Steer Pad (Left Thumb) - No heavy box container! */
+    .floating-steer-pad {
+      position: absolute;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      left: calc(16px + env(safe-area-inset-left, 0px));
+      pointer-events: auto;
+      display: flex;
+      gap: 12px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Floating Pedal Pad (Right Thumb) - No heavy box container! */
+    .floating-pedal-pad {
+      position: absolute;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      right: calc(16px + env(safe-area-inset-right, 0px));
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .pedal-sub-row {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      width: 100%;
+    }
+
+    .pedal-main-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    /* Game Touch Buttons - Floating Arcade Glass Style */
+    .game-touch-btn {
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 800;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: transform 0.08s ease, filter 0.08s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+    }
+    .game-touch-btn:active, .game-touch-btn.active {
+      transform: scale(0.92);
+      filter: brightness(1.35);
+    }
+    .game-touch-btn .touch-icon {
+      font-size: 24px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .game-touch-btn .touch-sub {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    /* Steer Left/Right (Deep Ocean Cyan Glass) */
+    .btn-steer {
+      width: 66px;
+      height: 62px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(2, 132, 199, 0.85), rgba(3, 105, 161, 0.90));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    }
+    .btn-steer:active, .btn-steer.active {
+      background: #0ea5e9;
+      box-shadow: 0 0 24px #38bdf8;
+    }
+
+    /* Big Green Gas Accelerator */
+    .btn-gas {
+      width: 72px;
+      height: 68px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.92), rgba(5, 150, 105, 0.95));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-color: #34d399;
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    }
+    .btn-gas:active, .btn-gas.active {
+      background: #34d399;
+      box-shadow: 0 0 28px #10b981;
+    }
+
+    /* Crimson Reverse / Brake */
+    .btn-brake {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(244, 63, 94, 0.88), rgba(225, 29, 72, 0.92));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-color: #fb7185;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(244, 63, 94, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    }
+    .btn-brake:active, .btn-brake.active {
+      background: #fb7185;
+      box-shadow: 0 0 24px #f43f5e;
+    }
+
+    /* Secondary Action Pills */
+    .game-pill-btn {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 14px;
+      border: 1.5px solid transparent;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: all 0.08s ease;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .game-pill-btn:active, .game-pill-btn.active {
+      transform: scale(0.93);
+      filter: brightness(1.25);
+    }
+    .btn-turbo {
+      background: linear-gradient(145deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.95));
+      border-color: #fcd34d;
+      color: #ffffff;
+    }
+    .btn-jump {
+      background: linear-gradient(145deg, rgba(2, 132, 199, 0.92), rgba(3, 105, 161, 0.95));
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45);
+    }
+    .btn-jump:active, .btn-jump.active {
+      background: #0284c7;
+      box-shadow: 0 0 20px #38bdf8;
+    }
+    .btn-horn {
+      background: linear-gradient(145deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.95));
+      border-color: #c4b5fd;
+      color: #ffffff;
+    }
+
+    /* Floating Banner (Nitro / Checkpoint / Impact) */
+    .racer-floating-banner {
+      position: fixed;
+      top: 86px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(239, 68, 68, 0.95));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 8px 22px;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5);
+      z-index: 40;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      letter-spacing: 0.05em;
+    }
+    .racer-floating-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Dev / Maker Mode Slide-Over Drawer */
+    .dev-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 330px;
+      max-width: 85vw;
+      background: rgba(8, 14, 24, 0.96);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-left: 1px solid var(--border);
+      box-shadow: -15px 0 40px rgba(0, 0, 0, 0.8);
+      z-index: 55;
+      padding: 18px;
+      overflow-y: auto;
+      transform: translateX(105%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .dev-drawer.open {
+      transform: translateX(0);
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .drawer-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--fg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .drawer-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .drawer-stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--fg-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 5px 8px;
+      border-radius: 6px;
+    }
+    .drawer-stat-row b {
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .mode-btn {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+      border-radius: var(--radius-sm);
+      padding: 7px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .mode-btn.active {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: rgba(34, 211, 238, 0.2);
+    }
+    .emotion-matrix {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .btn-emo {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--fg);
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .btn-emo.active {
+      border-color: var(--cyan);
+      background: rgba(34, 211, 238, 0.25);
+    }
+    .color-chips {
+      display: flex;
+      gap: 8px;
+    }
+    .color-chip {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex-shrink: 0;
+    }
+    .color-chip.active {
+      border-color: #fff;
+    }
+    .terminal-logs {
+      background: #020408;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: var(--mint);
+      overflow-y: auto;
+      line-height: 1.35;
+    }
+    .terminal-input-wrap {
+      display: flex;
+      gap: 6px;
+    }
+    .terminal-input {
+      flex: 1;
+      background: rgba(5, 10, 20, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      padding: 5px 8px;
+      outline: none;
+    }
+    .terminal-btn {
+      background: rgba(34, 211, 238, 0.2);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 0 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Unified In-Game Pause / Settings Menu Modal */
+    .game-menu-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 9, 20, 0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: 120;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .game-menu-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .game-menu-dialog {
+      background: linear-gradient(145deg, rgba(11, 19, 38, 0.96), rgba(15, 23, 42, 0.98));
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      border-radius: 24px;
+      padding: 22px 24px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: pop-dialog 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+    }
+    .game-menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+    .game-menu-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .game-menu-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      transition: all 0.15s ease;
+    }
+    .game-menu-close:hover {
+      background: rgba(244, 63, 94, 0.3);
+      border-color: #f43f5e;
+      color: #f43f5e;
+    }
+    .menu-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .menu-section-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--cyan);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .menu-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .menu-chip-btn {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 9px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .menu-chip-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .menu-chip-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.5), rgba(56, 189, 248, 0.3));
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
+    }
+    .menu-action-sub {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: var(--fg-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 7px 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .menu-action-sub:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+    .menu-toggle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .menu-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 8px 12px;
+    }
+    .toggle-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .toggle-switch-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--fg-muted);
+      border-radius: 8px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-width: 52px;
+      text-align: center;
+    }
+    .toggle-switch-btn.active {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #34d399;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+    .menu-actions-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .menu-btn-action {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 8px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .menu-btn-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--cyan);
+      color: #ffffff;
+    }
+    .menu-footer {
+      margin-top: 4px;
+    }
+    .menu-resume-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border: none;
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
+      transition: all 0.15s ease;
+      letter-spacing: 0.04em;
+    }
+    .menu-resume-btn:hover {
+      background: linear-gradient(135deg, #0369a1, #0284c7);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px rgba(2, 132, 199, 0.6);
+    }
+
+    /* Victory Celebration Modal */
+    .victory-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .victory-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .victory-dialog {
+      background: linear-gradient(135deg, rgba(13, 23, 42, 0.95), rgba(22, 38, 70, 0.95));
+      border: 2px solid #38bdf8;
+      border-radius: 24px;
+      padding: 28px 24px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: pop-dialog 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes pop-dialog {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .victory-trophy {
+      font-size: 52px;
+      animation: bounce-trophy 1.2s infinite alternate ease-in-out;
+    }
+    @keyframes bounce-trophy {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+    .victory-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 0.05em;
+    }
+    .victory-desc {
+      font-size: 13px;
+      color: var(--fg-muted);
+      line-height: 1.4;
+    }
+    .victory-stats {
+      display: flex;
+      gap: 16px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 4px 0;
+    }
+    .vic-stat {
+      font-size: 12px;
+      color: var(--fg-muted);
+    }
+    .vic-stat b {
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: 4px;
+    }
+    .vic-replay-btn {
+      background: linear-gradient(135deg, var(--mint), #059669);
+      border: none;
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 800;
+      padding: 10px 24px;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.5);
+      transition: all 0.2s ease;
+      letter-spacing: 0.04em;
+    }
+    .vic-replay-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 26px rgba(16, 185, 129, 0.7);
+    }
+
+    /* Help Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-dialog {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--cyan);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+    .legend-table td {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .key-badge {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      color: var(--cyan);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Responsiveness for Tablets & Mobile */
+    /* Responsiveness for Tablets & Mobile (Lean Arcade Game) */
+    @media (max-width: 900px) {
+      .arcade-keybar {
+        display: none !important;
+      }
+      .arcade-speedo {
+        display: none !important;
+      }
+      .arcade-touch-overlay {
+        display: block !important;
+      }
+      .arcade-radar-card {
+        display: none;
+      }
+      .arcade-radar-card.force-show {
+        display: flex !important;
+        position: fixed;
+        top: 60px;
+        right: 12px;
+        width: 140px;
+        padding: 8px;
+        z-index: 50;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+      }
+      #btn-help, a[title*="2D"] {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body, html {
+        width: 100vw;
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+      #game-hud {
+        width: 100vw;
+        max-width: 100vw;
+        overflow-x: hidden;
+        padding: 4px 6px;
+        box-sizing: border-box;
+      }
+      header.top-hud {
+        padding: 6px 4px;
+        gap: 3px;
+        flex-wrap: nowrap;
+        width: 100%;
+        max-width: 100vw;
+        overflow: hidden;
+      }
+      .brand-chip {
+        display: none !important;
+      }
+      .game-chip {
+        padding: 3px 6px;
+        font-size: 10.5px;
+        gap: 3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      #pill-f3 {
+        padding: 3px 6px;
+        font-size: 10px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      #f3-pos {
+        display: none !important;
+      }
+      #pill-f3 span:nth-child(2) {
+        display: none !important;
+      }
+      .top-hud-left {
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .top-hud-center {
+        flex-shrink: 0;
+      }
+      .top-hud-right {
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .game-speed-badge {
+        padding: 2px 6px;
+        gap: 3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .game-speed-badge .speed-val {
+        font-size: 14px;
+      }
+      .game-speed-badge .gear-tag {
+        font-size: 9px;
+        padding: 1px 4px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .game-speed-badge .speed-unit {
+        font-size: 8px;
+      }
+      .game-icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+      #btn-toggle-radar, #btn-toggle-dev, #btn-replay {
+        display: none !important;
+      }
+
+      /* Compact floating buttons for 375px screens */
+      .floating-steer-pad {
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        left: calc(8px + env(safe-area-inset-left, 0px));
+        gap: 6px;
+      }
+      .floating-pedal-pad {
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        right: calc(8px + env(safe-area-inset-right, 0px));
+        gap: 6px;
+      }
+      .pedal-sub-row {
+        gap: 5px;
+      }
+      .pedal-main-row {
+        gap: 6px;
+      }
+      .btn-steer {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+      }
+      .btn-steer .touch-icon {
+        font-size: 18px;
+      }
+      .btn-steer .touch-sub {
+        font-size: 9.5px;
+      }
+      .btn-gas {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+      }
+      .btn-gas .touch-icon {
+        font-size: 18px;
+      }
+      .btn-gas .touch-sub {
+        font-size: 9.5px;
+      }
+      .btn-brake {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+      }
+      .btn-brake .touch-icon {
+        font-size: 16px;
+      }
+      .btn-brake .touch-sub {
+        font-size: 9.5px;
+      }
+      .game-pill-btn {
+        height: 30px;
+        padding: 0 7px;
+        font-size: 9.5px;
+        border-radius: 10px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 3D Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- Heads-Up Display (Arcade Racing HUD) -->
+  <div id="game-hud">
+    
+    <!-- Top HUD: Game Title, Quest/Diamond Pill, Lap Timer, Quick Tools -->
+    <!-- Top Lean Game HUD Bar (Floating Game Chips) -->
+    <header class="top-hud">
+      <!-- Left: Brand & Quest Floating Chips -->
+      <div class="top-hud-left">
+        <div class="game-chip brand-chip">
+          <span>🏎️</span>
+          <span style="font-weight: 800; letter-spacing: -0.01em;">RODY</span>
+        </div>
+        <div class="game-chip quest-chip" id="pill-diamonds">
+          <span>💎</span>
+          <span id="racer-score">0 / 6</span>
+          <span id="stat-score" style="display: none;">0 / 6</span>
+        </div>
+        <div class="game-chip timer-chip" id="pill-timer" style="display: none;">
+          <span>⏱️</span>
+          <span id="racer-timer">00:00.0</span>
+        </div>
+        <div class="game-chip" id="pill-f3" style="display: none; border-color: rgba(168, 85, 247, 0.4); color: #c084fc; font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+          <span id="f3-pos">XYZ: -3.5 / 0.0 / -2.5</span>
+          <span style="opacity: 0.4;">|</span>
+          <span id="f3-block">🌱 GRASS</span>
+        </div>
+      </div>
+
+      <!-- Center: Sporty Digital Speedometer (Lean Game HUD) -->
+      <div class="top-hud-center">
+        <div class="game-speed-badge" id="hud-speed-badge">
+          <span class="gear-tag" id="hud-gear">D</span>
+          <span class="speed-val" id="hud-speed-num">0</span>
+          <span class="speed-unit">KM/H</span>
+        </div>
+      </div>
+
+      <!-- Right: Minimal Game Action Tools (Only Quick Mic & Game Menu) -->
+      <div class="top-hud-right">
+        <button class="game-icon-btn" id="btn-quick-mic" title="Nói lệnh giọng nói (Nhấn để bật/tắt)">🎙️</button>
+        <button class="game-icon-btn menu-trigger-btn" id="btn-open-menu" title="Cài đặt & Menu trò chơi (M / Esc)">
+          <span style="font-size: 16px; font-weight: 900; line-height: 1;">☰</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Floating Arcade Speedometer (Left Bottom) -->
+    <div class="arcade-speedo glass-card interactive">
+      <div class="speedo-dial">
+        <svg class="speedo-svg" viewBox="0 0 120 120">
+          <path d="M 20 95 A 50 50 0 1 1 100 95" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8" stroke-linecap="round"/>
+          <path id="speedo-arc" d="M 20 95 A 50 50 0 1 1 100 95" fill="none" stroke="url(#speedo-grad)" stroke-width="8" stroke-linecap="round" stroke-dasharray="210" stroke-dashoffset="210"/>
+          <defs>
+            <linearGradient id="speedo-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#22d3ee"/>
+              <stop offset="50%" stop-color="#10b981"/>
+              <stop offset="85%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#f43f5e"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="speedo-center">
+          <div class="speedo-gear" id="racer-gear">D</div>
+          <div class="speedo-num" id="racer-speed-num">0</div>
+          <span id="tele-speed" style="display: none;">0.0</span>
+          <div class="speedo-kph">KM/H</div>
+        </div>
+      </div>
+      <div class="nitro-bar-wrap">
+        <div class="nitro-label">
+          <span>🔥 NITRO BOOST</span>
+          <span id="nitro-status">SẴN SÀNG</span>
+        </div>
+        <div class="nitro-track">
+          <div class="nitro-fill" id="nitro-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Arcade Radar Mini-Map & Reaction Bubble (Right Top) -->
+    <div class="arcade-radar-card glass-card interactive">
+      <div class="radar-header">
+        <span>🗺️ SA BÀN ĐUA XE</span>
+        <span id="stat-fps">60 FPS</span>
+      </div>
+      <div class="radar-canvas-wrap">
+        <canvas id="radar-canvas" width="130" height="90"></canvas>
+      </div>
+      <div class="racer-reaction-wrap">
+        <div class="racer-face-bubble">
+          <canvas id="racer-face-canvas" width="32" height="32"></canvas>
+        </div>
+        <div class="racer-bubble-text" id="racer-speech">Sẵn sàng đua! 🏁</div>
+      </div>
+    </div>
+
+    <!-- Kid-Friendly PC Keybar & Voice Command (Bottom Center) -->
+    <div class="arcade-keybar glass-card interactive">
+      <div class="key-chip"><b>W / ▲</b> Ga</div>
+      <div class="key-chip"><b>S / ▼</b> Lùi</div>
+      <div class="key-chip"><b>A / D</b> Lái</div>
+      <div class="key-chip jump" id="btn-quick-jump" style="cursor: pointer; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;"><b>Space</b> Nhảy 🦘</div>
+      <div class="key-chip boost" id="btn-quick-turbo" style="cursor: pointer;"><b>Shift</b> Nitro 🔥</div>
+      <div class="key-chip" id="btn-cam-orbit-hint" style="cursor: pointer; border-color: rgba(6, 182, 212, 0.4); color: #22d3ee;" title="Kéo chuột hoặc 2 ngón trackpad để xoay 360° • Lăn chuột để phóng to/thu nhỏ • Phím C hoặc nhấp đúp để về sau xe"><b>🖱️/✌️</b> Xoay 360°</div>
+      <div class="key-chip horn" id="btn-quick-horn" style="cursor: pointer;"><b>H</b> Còi 📢</div>
+      <div class="key-chip dance" id="btn-quick-dance" style="cursor: pointer;"><b>P</b> Nhảy 💃</div>
+      <button class="key-mic-btn" id="btn-arcade-mic" title="Bấm để ra lệnh giọng nói bằng Tiếng Việt hoặc English">
+        <span>🎙️</span>
+        <span id="mic-btn-label">NÓI LỆNH</span>
+      </button>
+      <span id="voice-transcript" style="display: none;"></span>
+    </div>
+
+    <!-- Floating Animated Banner (Nitro / Checkpoint / Bonk) -->
+    <div class="racer-floating-banner" id="racer-floating-banner">🔥 NITRO BOOST!</div>
+
+  </div>
+
+  <!-- Mobile / Touch Controls Overlay (Lean Floating Arcade Controls) -->
+  <div class="arcade-touch-overlay" id="arcade-touch-overlay">
+    <!-- Left Thumb: Floating Steer Pad -->
+    <div class="floating-steer-pad">
+      <button class="game-touch-btn btn-steer" id="touch-left" aria-label="Lái Trái">
+        <span class="touch-icon">◀</span>
+        <span class="touch-sub">TRÁI</span>
+      </button>
+      <button class="game-touch-btn btn-steer" id="touch-right" aria-label="Lái Phải">
+        <span class="touch-icon">▶</span>
+        <span class="touch-sub">PHẢI</span>
+      </button>
+    </div>
+
+    <!-- Right Thumb: Floating Action & Pedals Pad -->
+    <div class="floating-pedal-pad">
+      <div class="pedal-sub-row">
+        <button class="game-pill-btn btn-jump" id="touch-jump" aria-label="Nhảy Jump">
+          🦘 NHẢY
+        </button>
+        <button class="game-pill-btn btn-turbo" id="touch-turbo" aria-label="Nitro Boost">
+          🔥 NITRO
+        </button>
+      </div>
+      <div class="pedal-main-row">
+        <button class="game-touch-btn btn-brake" id="touch-brake" aria-label="Phanh Lùi">
+          <span class="touch-icon">▼</span>
+          <span class="touch-sub">LÙI</span>
+        </button>
+        <button class="game-touch-btn btn-gas" id="touch-gas" aria-label="Đạp Ga">
+          <span class="touch-icon">▲</span>
+          <span class="touch-sub">GA</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide-Over Dev / Maker Mode Drawer (Bảng Kỹ sư Vi điều khiển) -->
+  <aside class="dev-drawer glass-card interactive" id="dev-drawer">
+    <div class="drawer-header">
+      <div class="panel-title" style="margin: 0; border: none; padding: 0;">
+        🛠️ BẢNG ĐIỀU KHIỂN KỸ SƯ
+      </div>
+      <button class="drawer-close-btn" id="btn-close-dev">✕ ĐÓNG</button>
+    </div>
+
+    <!-- Telemetry -->
+    <div class="drawer-section">
+      <div class="section-title">📊 TELEMETRY CẢM BIẾN</div>
+      <div class="drawer-stat-row">
+        <span>Bánh trái (L):</span> <b id="tele-pul-l">0 pul</b>
+      </div>
+      <div class="drawer-stat-row">
+        <span>Bánh phải (R):</span> <b id="tele-pul-r">0 pul</b>
+      </div>
+      <div class="drawer-stat-row">
+        <span>Radar HC-SR04:</span> <b id="tele-sonar-dist" style="color: var(--mint);">250 cm</b>
+      </div>
+      <div class="drawer-stat-row">
+        <span>La bàn (Yaw):</span> <b id="tele-heading">0.0° N</b>
+      </div>
+      <div style="display: none;">
+        <span id="stat-batt">3.78V (94%)</span>
+        <span id="stat-link">VIRTUAL OK</span>
+        <div id="tele-speed-bar"></div>
+        <div id="tele-sonar-fill"></div>
+      </div>
+    </div>
+
+    <!-- 12 ST7789 Eye Emotions -->
+    <div class="drawer-section">
+      <div class="section-title">🎭 12 BIỂU CẢM MẮT ST7789</div>
+      <div class="emotion-matrix">
+        <button class="btn-emo active" data-emo="idle" title="IDLE (Bình thản)">
+          <span>👀</span>
+          <span>Nghỉ</span>
+        </button>
+        <button class="btn-emo" data-emo="happy" title="HAPPY (Vui vẻ)">
+          <span>😊</span>
+          <span>Vui</span>
+        </button>
+        <button class="btn-emo" data-emo="listening" title="LISTENING (Lắng nghe)">
+          <span>👂</span>
+          <span>Nghe</span>
+        </button>
+        <button class="btn-emo" data-emo="thinking" title="THINKING (Suy nghĩ)">
+          <span>🤔</span>
+          <span>Nghĩ</span>
+        </button>
+        <button class="btn-emo" data-emo="speaking" title="SPEAKING (Phát biểu)">
+          <span>🗣️</span>
+          <span>Nói</span>
+        </button>
+        <button class="btn-emo" data-emo="drive_fwd" title="DRIVE FWD (Tiến)">
+          <span>🚀</span>
+          <span>Tiến</span>
+        </button>
+        <button class="btn-emo" data-emo="drive_rev" title="DRIVE REV (Lùi)">
+          <span>🔙</span>
+          <span>Lùi</span>
+        </button>
+        <button class="btn-emo" data-emo="turn_left" title="TURN LEFT (Rẽ trái)">
+          <span>👈</span>
+          <span>Trái</span>
+        </button>
+        <button class="btn-emo" data-emo="turn_right" title="TURN RIGHT (Rẽ phải)">
+          <span>👉</span>
+          <span>Phải</span>
+        </button>
+        <button class="btn-emo" data-emo="dizzy" title="DIZZY (Chóng mặt)">
+          <span>💫</span>
+          <span>Chóng</span>
+        </button>
+        <button class="btn-emo" data-emo="obstacle" title="OBSTACLE (Cảnh báo vật cản)">
+          <span>⚠️</span>
+          <span>Vật cản</span>
+        </button>
+        <button class="btn-emo" data-emo="sleepy" title="SLEEPY (Buồn ngủ)">
+          <span>💤</span>
+          <span>Ngủ</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Robot Shell Color -->
+    <div class="drawer-section">
+      <div class="section-title">🎨 MÀU VỎ ROBOT</div>
+      <div class="color-chips">
+        <div class="color-chip active" data-color="white" style="background: #f1f5f9;" title="Trắng Pure Ceramic"></div>
+        <div class="color-chip" data-color="graphite" style="background: #1e293b;" title="Xám Graphite Carbon"></div>
+        <div class="color-chip" data-color="mint" style="background: #10b981;" title="Xanh Matrix Mint"></div>
+        <div class="color-chip" data-color="yellow" style="background: #f59e0b;" title="Vàng Solar Cyber"></div>
+      </div>
+    </div>
+
+    <!-- Drive Modes -->
+    <div class="drawer-section">
+      <div class="section-title">🕹️ CHẾ ĐỘ LÁI</div>
+      <div class="mode-grid">
+        <button class="mode-btn active" data-mode="manual">🎮 Thủ công</button>
+        <button class="mode-btn" data-mode="avoid">🛡️ Tự né</button>
+        <button class="mode-btn" data-mode="line">〰️ Dò line</button>
+        <button class="mode-btn" data-mode="dance">💃 Vũ điệu</button>
+      </div>
+    </div>
+
+    <!-- Serial UART Console -->
+    <div class="drawer-section">
+      <div class="section-title">📟 SERIAL UART CONSOLE (115200 BAUD)</div>
+      <div class="terminal-logs" id="terminal-logs" style="height: 100px;">
+        <div># [sys] Rody 3D Arcade Racer online</div>
+        <div># [sys] Solid Collision Engine: 100% active</div>
+        <div># [sys] WebGL Three.js renderer: 60 FPS target</div>
+      </div>
+      <div class="terminal-input-wrap">
+        <input type="text" class="terminal-input" id="terminal-input" placeholder="Lệnh CLI: help, speed, dance..." autocomplete="off">
+        <button class="terminal-btn whitespace-nowrap shrink-0" id="terminal-send">GỬI LỆNH</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Unified In-Game Pause / Settings Menu Modal -->
+  <div class="game-menu-backdrop" id="game-menu-backdrop">
+    <div class="game-menu-dialog glass-card">
+      <div class="game-menu-header">
+        <div class="game-menu-title">
+          <span>⚙️ MENU & CÀI ĐẶT TRÒ CHƠI</span>
+        </div>
+        <button class="game-menu-close" id="btn-close-menu" aria-label="Đóng Menu">✕</button>
+      </div>
+
+      <!-- Section: Camera Angle Presets -->
+      <div class="menu-section">
+        <div class="menu-section-label">🎥 GÓC NHÌN CAMERA</div>
+        <div class="menu-grid-4">
+          <button class="menu-chip-btn active" data-menu-cam="chase">📷 Sau xe</button>
+          <button class="menu-chip-btn" data-menu-cam="pov">🏎️ Người lái</button>
+          <button class="menu-chip-btn" data-menu-cam="orbit">🦅 Toàn cảnh</button>
+          <button class="menu-chip-btn" data-menu-cam="top">🗺️ Trên cao</button>
+        </div>
+        <button class="menu-action-sub" id="btn-menu-cam-reset">🎯 Đặt lại góc xoay Camera (Reset Orbit)</button>
+      </div>
+
+      <!-- Section: Game Toggles -->
+      <div class="menu-section">
+        <div class="menu-section-label">🕹️ TÙY CHỌN TRẢI NGHIỆM</div>
+        <div class="menu-toggle-list">
+          <div class="menu-toggle-row">
+            <span class="toggle-name">🔊 Âm thanh Synth SFX</span>
+            <button class="toggle-switch-btn active" id="btn-menu-toggle-sfx">BẬT</button>
+          </div>
+          <div class="menu-toggle-row">
+            <span class="toggle-name">🗺️ Bản đồ Sa bàn Mini-Map</span>
+            <button class="toggle-switch-btn" id="btn-menu-toggle-radar">ẨN</button>
+          </div>
+          <div class="menu-toggle-row">
+            <span class="toggle-name">📊 Tọa độ F3 & Đồng hồ bấm giờ</span>
+            <button class="toggle-switch-btn" id="btn-menu-toggle-f3">ẨN</button>
+          </div>
+          <div class="menu-toggle-row">
+            <span class="toggle-name">💡 Đèn pha LED Robot</span>
+            <button class="toggle-switch-btn active" id="btn-menu-toggle-lights">BẬT</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Quick Actions -->
+      <div class="menu-section">
+        <div class="menu-section-label">⚡ HÀNH ĐỘNG NHANH</div>
+        <div class="menu-actions-row">
+          <button class="menu-btn-action" id="btn-menu-replay">🔄 Đua lại</button>
+          <button class="menu-btn-action" id="btn-menu-help">❓ Trợ giúp</button>
+          <button class="menu-btn-action" id="btn-menu-dev">🛠️ Bảng Kỹ sư</button>
+        </div>
+      </div>
+
+      <!-- Resume Button -->
+      <div class="menu-footer">
+        <button class="menu-resume-btn" id="btn-menu-resume">▶ TIẾP TỤC ĐUA (ESC)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Celebration Modal -->
+  <div class="victory-modal-backdrop" id="modal-victory">
+    <div class="victory-dialog glass-card">
+      <div class="victory-trophy">🏆</div>
+      <div class="victory-title">CHIẾN THẮNG TUYỆT VỜI!</div>
+      <div class="victory-desc">Chúc mừng bạn đã thu thập trọn vẹn 6 viên kim cương trên đường đua Rody Racer!</div>
+      <div class="victory-stats">
+        <div class="vic-stat"><span>⏱️ Thời gian:</span> <b id="vic-time">00:00.0</b></div>
+        <div class="vic-stat"><span>💎 Kim cương:</span> <b>6 / 6</b></div>
+      </div>
+      <button class="vic-replay-btn" id="btn-vic-restart">🚀 ĐUA LẠI NGAY</button>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <div class="modal-backdrop" id="modal-help">
+    <div class="modal-dialog">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div class="modal-title">
+        <span>🎮 HƯỚNG DẪN ĐIỀU KHIỂN ROBOT RODY 3D</span>
+      </div>
+      <table class="legend-table">
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">W</span> hoặc <span class="key-badge whitespace-nowrap shrink-0">▲</span></td>
+          <td>Tiến thẳng phía trước (2 bánh quay tới)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">S</span> hoặc <span class="key-badge whitespace-nowrap shrink-0">▼</span></td>
+          <td>Lùi lại phía sau (2 bánh quay lùi)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">A</span> hoặc <span class="key-badge whitespace-nowrap shrink-0">◀</span></td>
+          <td>Quay trái vi sai (bánh phải tiến, bánh trái lùi)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">D</span> hoặc <span class="key-badge whitespace-nowrap shrink-0">▶</span></td>
+          <td>Quay phải vi sai (bánh trái tiến, bánh phải lùi)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">Space</span></td>
+          <td>Phanh khẩn cấp (Emergency Stop) & chúi đầu quán tính</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">Shift</span></td>
+          <td>Tăng tốc phản lực Turbo Boost (1.8x tốc độ)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">H</span></td>
+          <td>Bấm còi xe điện tử Cyber Horn</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">P</span></td>
+          <td>Kích hoạt vũ điệu nhảy múa Beat Sync Dance Party</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">L</span></td>
+          <td>Bật / Tắt cụm 2 đèn pha LED</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">R</span></td>
+          <td>Reset vị trí robot về Cổng xuất phát (Gate 1)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">1 - 4</span></td>
+          <td>Chuyển chế độ lái (Thủ công / Tự né / Bám Line / Nhảy)</td>
+        </tr>
+        <tr>
+          <td><span class="key-badge whitespace-nowrap shrink-0">🎙️ Giọng nói</span></td>
+          <td>Nói: "tiến", "lùi", "quay trái", "quay phải", "dừng lại", "xoay tròn", "nhảy múa", "chào bạn"...</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Load 3D Model Module -->
+  <script src="otto_model_3d.js"></script>
+
+  <!-- Main Game 3D Engine Script -->
+  <script>
+    'use strict';
+
+    /* =========================================================================
+     * 1. PROCEDURAL WEB AUDIO SYNTHESIZER
+     * 100% Procedural Generation – Zero External Audio Files
+     * ========================================================================= */
+    class ProceduralAudioSynthesizer {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.servoWhineOsc = null;
+        this.servoWhineGain = null;
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        this.ctx = new AudioCtx();
+
+        // Continuous servo whine synthesizer
+        this.servoWhineOsc = this.ctx.createOscillator();
+        this.servoWhineGain = this.ctx.createGain();
+        this.servoWhineFilter = this.ctx.createBiquadFilter();
+
+        this.servoWhineOsc.type = 'sawtooth';
+        this.servoWhineOsc.frequency.setValueAtTime(140, this.ctx.currentTime);
+        this.servoWhineFilter.type = 'lowpass';
+        this.servoWhineFilter.frequency.setValueAtTime(600, this.ctx.currentTime);
+        this.servoWhineGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+        this.servoWhineOsc.connect(this.servoWhineFilter);
+        this.servoWhineFilter.connect(this.servoWhineGain);
+        this.servoWhineGain.connect(this.ctx.destination);
+        this.servoWhineOsc.start();
+      }
+
+      resume() {
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      updateServoSpeed(speedRatio) {
+        if (!this.enabled || !this.ctx || !this.servoWhineGain) return;
+        const absRatio = Math.min(Math.abs(speedRatio), 1.0);
+        const now = this.ctx.currentTime;
+        if (absRatio < 0.05) {
+          this.servoWhineGain.gain.linearRampToValueAtTime(0, now + 0.05);
+        } else {
+          const targetFreq = 160 + absRatio * 420;
+          this.servoWhineOsc.frequency.linearRampToValueAtTime(targetFreq, now + 0.05);
+          this.servoWhineGain.gain.linearRampToValueAtTime(0.04 * absRatio, now + 0.05);
+        }
+      }
+
+      playBootChime() {
+        if (!this.enabled || !this.ctx) return;
+        const notes = [440, 659, 880];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this._beep(freq, 0.12, 'sine', 0.12);
+          }, idx * 110);
+        });
+      }
+
+      playConfirmBeep() {
+        if (!this.enabled || !this.ctx) return;
+        this._beep(987, 0.08, 'sine', 0.1);
+        setTimeout(() => this._beep(1318, 0.12, 'sine', 0.12), 90);
+      }
+
+      playHappyChirp() {
+        if (!this.enabled || !this.ctx) return;
+        const notes = [600, 800, 1000, 1400, 1760];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this._beep(freq, 0.07, 'triangle', 0.12);
+          }, idx * 60);
+        });
+      }
+
+      playHorn() {
+        if (!this.enabled || !this.ctx) return;
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc1.type = 'sawtooth';
+        osc2.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(440, this.ctx.currentTime);
+        osc2.frequency.setValueAtTime(554, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc1.start();
+        osc2.start();
+        osc1.stop(this.ctx.currentTime + 0.35);
+        osc2.stop(this.ctx.currentTime + 0.35);
+      }
+
+      playCheckpointChime() {
+        if (!this.enabled || !this.ctx) return;
+        const notes = [1046, 1318, 1568, 2093];
+        notes.forEach((freq, idx) => {
+          setTimeout(() => {
+            this._beep(freq, 0.18, 'sine', 0.15);
+          }, idx * 70);
+        });
+      }
+
+      playObstacleAlarm() {
+        if (!this.enabled || !this.ctx) return;
+        this._beep(1200, 0.12, 'sawtooth', 0.15);
+        setTimeout(() => this._beep(600, 0.15, 'sawtooth', 0.15), 130);
+      }
+
+      playImpactThump() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(30, now + 0.18);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.18);
+      }
+
+      playTurboWhoosh() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.35);
+      }
+
+      playJumpSound() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(640, now + 0.16);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.16);
+      }
+
+      playSlimeBounce() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.linearRampToValueAtTime(520, now + 0.08);
+        osc.frequency.linearRampToValueAtTime(240, now + 0.22);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.24);
+      }
+
+      playWaterSplash() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        try {
+          const bufferSize = Math.floor(this.ctx.sampleRate * 0.18);
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(900, now);
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.18, now);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          noise.start();
+        } catch (e) {
+          this._beep(320, 0.12, 'sine', 0.1);
+        }
+      }
+
+      playLandingSound(blockType = 'grass') {
+        if (!this.enabled || !this.ctx) return;
+        if (blockType === 'slime') {
+          this.playSlimeBounce();
+        } else if (blockType === 'water') {
+          this.playWaterSplash();
+        } else {
+          this.playImpactThump();
+        }
+      }
+
+      playTntFuse() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        this._beep(1800, 0.08, 'sawtooth', 0.08);
+        setTimeout(() => this._beep(2200, 0.08, 'sawtooth', 0.09), 120);
+        setTimeout(() => this._beep(2600, 0.08, 'sawtooth', 0.11), 240);
+      }
+
+      playTntExplode() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        // Deep sub blast
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(28, now + 0.45);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.45);
+
+        // Noise crackle
+        try {
+          const bufferSize = Math.floor(this.ctx.sampleRate * 0.35);
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.28));
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1100, now);
+          filter.frequency.exponentialRampToValueAtTime(180, now + 0.35);
+          const noiseGain = this.ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.35, now);
+          noise.connect(filter);
+          filter.connect(noiseGain);
+          noiseGain.connect(this.ctx.destination);
+          noise.start();
+        } catch (e) {
+          this._beep(80, 0.4, 'sawtooth', 0.3);
+        }
+      }
+
+      _beep(freq, duration, type = 'sine', volume = 0.1) {
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + duration);
+      }
+    }
+
+    /* =========================================================================
+     * 2. WEB SPEECH AI VOICE COMMAND STUDIO
+     * Bilingual (vi-VN & en-US) with Continuous Listening & Mic Analyser
+     * ========================================================================= */
+    class VoiceCommandStudio {
+      constructor(onCommand, onVolume) {
+        this.onCommand = onCommand;
+        this.onVolume = onVolume;
+        this.recognition = null;
+        this.isListening = false;
+        this.autoRestart = true;
+        this.audioContext = null;
+        this.analyser = null;
+        this.micStream = null;
+
+        this._initSpeechRecognition();
+      }
+
+      _initSpeechRecognition() {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+          console.warn('Web Speech API is not supported in this browser.');
+          return;
+        }
+
+        this.recognition = new SpeechRec();
+        this.recognition.lang = 'vi-VN';
+        this.recognition.continuous = true;
+        this.recognition.interimResults = false;
+        this.recognition.maxAlternatives = 3;
+
+        this.recognition.onstart = () => {
+          this.isListening = true;
+          document.getElementById('btn-mic').classList.add('listening');
+          this._initMicAnalyser();
+        };
+
+        this.recognition.onresult = (event) => {
+          const lastIdx = event.results.length - 1;
+          const transcript = event.results[lastIdx][0].transcript.trim().toLowerCase();
+          this._processVoiceTranscript(transcript);
+        };
+
+        this.recognition.onerror = (event) => {
+          console.log('# [voice] recognition error:', event.error);
+          if (event.error === 'not-allowed') {
+            this.autoRestart = false;
+            this.stop();
+          }
+        };
+
+        this.recognition.onend = () => {
+          this.isListening = false;
+          document.getElementById('btn-mic').classList.remove('listening');
+          if (this.autoRestart) {
+            setTimeout(() => {
+              if (this.autoRestart) this.start();
+            }, 600);
+          }
+        };
+      }
+
+      start() {
+        this.autoRestart = true;
+        if (this.recognition && !this.isListening) {
+          try {
+            this.recognition.start();
+          } catch (e) {
+            // Already started
+          }
+        }
+      }
+
+      stop() {
+        this.autoRestart = false;
+        if (this.recognition && this.isListening) {
+          try {
+            this.recognition.stop();
+          } catch (e) {}
+        }
+      }
+
+      toggle() {
+        if (this.isListening) this.stop();
+        else this.start();
+      }
+
+      _processVoiceTranscript(text) {
+        logTerminal(`[mic] Nghe được: "${text}"`);
+        document.getElementById('voice-transcript').innerHTML = `🎙️ Nhận diện: <span class="transcript-highlight">"${text.toUpperCase()}"</span>`;
+
+        // Intent Matcher
+        let cmd = null;
+        if (/tiến|thẳng|tới|forward|ahead|go/.test(text)) cmd = 'forward';
+        else if (/lùi|thụt|back|backward|reverse/.test(text)) cmd = 'backward';
+        else if (/trái|rẽ trái|quẹo trái|left/.test(text)) cmd = 'left';
+        else if (/phải|rẽ phải|quẹo phải|right/.test(text)) cmd = 'right';
+        else if (/dừng|đứng yên|stop|halt|freeze/.test(text)) cmd = 'stop';
+        else if (/xoay|quay tròn|spin|rotate|twirl/.test(text)) cmd = 'spin';
+        else if (/nhảy lên|bật nhảy|jump|hop|leap/.test(text)) cmd = 'jump';
+        else if (/nhảy múa|khiêu vũ|múa|dance|party|groove/.test(text)) cmd = 'dance';
+        else if (/chào|hello|hi|hey|rody/.test(text)) cmd = 'hello';
+        else if (/vui|happy|cười/.test(text)) cmd = 'happy';
+        else if (/ngủ|sleep|goodnight/.test(text)) cmd = 'sleep';
+        else if (/đèn|light|lights/.test(text)) cmd = 'light';
+
+        if (cmd && this.onCommand) {
+          this.onCommand(cmd, text);
+        }
+      }
+
+      async _initMicAnalyser() {
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+          if (!this.micStream) {
+            this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioCtx();
+            const source = this.audioContext.createMediaStreamSource(this.micStream);
+            this.analyser = this.audioContext.createAnalyser();
+            this.analyser.fftSize = 32;
+            source.connect(this.analyser);
+            this._loopVolume();
+          }
+        } catch (e) {
+          console.warn('Mic audio analyser stream error:', e);
+        }
+      }
+
+      _loopVolume() {
+        if (!this.analyser || !this.isListening) return;
+        const data = new Uint8Array(this.analyser.frequencyBinCount);
+        this.analyser.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) sum += data[i];
+        const avg = sum / data.length;
+        if (this.onVolume) this.onVolume(avg);
+        requestAnimationFrame(() => this._loopVolume());
+      }
+    }
+
+    /* =========================================================================
+     * 3. SOLID COLLISION WORLD & RIGID OBSTACLE SOLVER
+     * Circles & Bounding Boxes with Bouncy Elastic Repulsion
+     * ========================================================================= */
+    class SolidCollisionWorld {
+      constructor() {
+        this.circles = []; // { x, z, r, name }
+        this.boxes = [];   // { minX, maxX, minZ, maxZ, name }
+      }
+
+      addCircle(x, z, r, name = 'Vật cản') {
+        this.circles.push({ x, z, r, name });
+      }
+
+      addBox(minX, maxX, minZ, maxZ, name = 'Rào chắn') {
+        this.boxes.push({ minX, maxX, minZ, maxZ, name });
+      }
+
+      resolve(px, pz, robotRadius) {
+        let hit = false;
+        let collidedName = '';
+
+        // Check circle colliders (trees, pylons, portal pillars)
+        for (const c of this.circles) {
+          const dx = px - c.x;
+          const dz = pz - c.z;
+          const dist = Math.hypot(dx, dz);
+          const minDist = c.r + robotRadius;
+          if (dist < minDist && dist > 0.0001) {
+            const overlap = minDist - dist;
+            px += (dx / dist) * overlap;
+            pz += (dz / dist) * overlap;
+            hit = true;
+            collidedName = c.name;
+          }
+        }
+
+        // Check box colliders (fence perimeters, ramp side rails, gantry pillars)
+        for (const b of this.boxes) {
+          const closestX = Math.max(b.minX, Math.min(px, b.maxX));
+          const closestZ = Math.max(b.minZ, Math.min(pz, b.maxZ));
+          const dx = px - closestX;
+          const dz = pz - closestZ;
+          const dist = Math.hypot(dx, dz);
+          if (dist < robotRadius) {
+            if (dist > 0.0001) {
+              const overlap = robotRadius - dist;
+              px += (dx / dist) * overlap;
+              pz += (dz / dist) * overlap;
+            } else {
+              const dl = Math.abs(px - b.minX);
+              const dr = Math.abs(b.maxX - px);
+              const dt = Math.abs(pz - b.minZ);
+              const db = Math.abs(b.maxZ - pz);
+              const minD = Math.min(dl, dr, dt, db);
+              if (minD === dl) px = b.minX - robotRadius;
+              else if (minD === dr) px = b.maxX + robotRadius;
+              else if (minD === dt) pz = b.minZ - robotRadius;
+              else pz = b.maxZ + robotRadius;
+            }
+            hit = true;
+            collidedName = b.name;
+          }
+        }
+
+        return { x: px, z: pz, hit, name: collidedName };
+      }
+    }
+
+    /* =========================================================================
+     * 4. MINECRAFT DAYLIGHT ARENA 3D LEVEL ARCHITECTURE (Three.js)
+     * Voxel Grass Floor, Blocky Oak Trees, Wooden Fence, Gold Pillars, Clouds
+     * ========================================================================= */
+    class MinecraftDaylightArena {
+      constructor(scene) {
+        this.scene = scene;
+        this.crystals = [];
+        this.slalomPylons = [];
+        this.checkpointGates = [];
+        this.boostPads = [];
+        this.clouds = [];
+        this.blocks = []; // Danh sách toàn bộ các khối Voxel 3D trong thế giới Minecraft
+        this.score = 0;
+        this.collisionWorld = new SolidCollisionWorld();
+
+        this._initProceduralVoxelMaterials();
+        this._buildSunAndSky();
+        this._buildDistantWorld();
+        this._buildGrassTerrain();
+        this._buildVoxelBiomesAndBlocks();
+        this._buildVillageDirtPath();
+        this._buildRaceKerbsAndGantry();
+        this._buildWoodenFence();
+        this._buildOakTrees();
+        this._buildGoldSlalomPosts();
+        this._buildPortalAndArchGates();
+        this._buildVoxelGems();
+        this._buildVoxelFlowers();
+      }
+
+      _initProceduralVoxelMaterials() {
+        // Hàm sinh texture 16x16 pixel art chuẩn Minecraft
+        const createPixelTex = (drawFn) => {
+          const cvs = document.createElement('canvas');
+          cvs.width = 16;
+          cvs.height = 16;
+          const c = cvs.getContext('2d');
+          drawFn(c);
+          const tex = new THREE.CanvasTexture(cvs);
+          tex.magFilter = THREE.NearestFilter;
+          tex.minFilter = THREE.NearestFilter;
+          return tex;
+        };
+
+        // 1. Grass Top
+        const grassTopTex = createPixelTex((c) => {
+          const greens = ['#5ea83b', '#68b444', '#529733', '#62aa3d', '#579d36'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = greens[Math.floor(Math.random() * greens.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+        });
+
+        // 2. Dirt
+        const dirtTex = createPixelTex((c) => {
+          const dirts = ['#866043', '#724f35', '#5c3e29', '#946b4c'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = dirts[Math.floor(Math.random() * dirts.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+        });
+
+        // 3. Grass Side (Thân đất có rèm cỏ xanh rủ xuống)
+        const grassSideTex = createPixelTex((c) => {
+          const dirts = ['#866043', '#724f35', '#5c3e29', '#946b4c'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = dirts[Math.floor(Math.random() * dirts.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+          const greens = ['#5ea83b', '#68b444', '#529733'];
+          for (let x = 0; x < 16; x++) {
+            const h = 2 + (x % 3 === 0 ? 2 : (x % 2 === 0 ? 1 : 0));
+            for (let y = 0; y < h; y++) {
+              c.fillStyle = greens[Math.floor(Math.random() * greens.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+        });
+
+        // 4. Packed Ice (Băng trong suốt có vết nứt trắng)
+        const iceTex = createPixelTex((c) => {
+          const blues = ['#93c5fd', '#bfdbfe', '#60a5fa', '#a5f3fc'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = blues[Math.floor(Math.random() * blues.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+          c.fillStyle = 'rgba(255, 255, 255, 0.55)';
+          c.fillRect(2, 3, 4, 1);
+          c.fillRect(6, 4, 1, 5);
+          c.fillRect(7, 9, 5, 1);
+          c.fillRect(10, 10, 1, 4);
+        });
+
+        // 5. Slime Jelly (Thạch xanh lá cây có nhân đậm)
+        const slimeTex = createPixelTex((c) => {
+          const limes = ['#84cc16', '#a3e635', '#65a30d', '#4d7c0f'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = limes[Math.floor(Math.random() * limes.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+          c.fillStyle = '#4d7c0f';
+          c.fillRect(4, 4, 8, 8);
+          c.fillStyle = '#a3e635';
+          c.fillRect(5, 5, 6, 6);
+        });
+
+        // 6. Water (Mặt nước xanh ngọc có vân gợn sóng)
+        const waterTex = createPixelTex((c) => {
+          const azures = ['#0284c7', '#0369a1', '#38bdf8', '#0ea5e9'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = azures[Math.floor(Math.random() * azures.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+          c.fillStyle = 'rgba(255, 255, 255, 0.4)';
+          c.fillRect(3, 4, 5, 1);
+          c.fillRect(9, 11, 4, 1);
+        });
+
+        // 7. Oak Planks (Gỗ sồi ván ngang)
+        const woodTex = createPixelTex((c) => {
+          const woods = ['#b4814a', '#a16e37', '#93622e', '#c79257'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = woods[Math.floor(Math.random() * woods.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+          c.fillStyle = '#5c3a16';
+          c.fillRect(0, 3, 16, 1);
+          c.fillRect(0, 7, 16, 1);
+          c.fillRect(0, 11, 16, 1);
+          c.fillRect(0, 15, 16, 1);
+        });
+
+        // 8. Cobblestone (Đá cuội gồ ghề)
+        const cobbleTex = createPixelTex((c) => {
+          const grays = ['#737373', '#858585', '#595959', '#9e9e9e'];
+          for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+              c.fillStyle = grays[Math.floor(Math.random() * grays.length)];
+              c.fillRect(x, y, 1, 1);
+            }
+          }
+          c.fillStyle = 'rgba(0, 0, 0, 0.28)';
+          c.fillRect(0, 7, 8, 1);
+          c.fillRect(8, 0, 1, 8);
+          c.fillRect(8, 11, 8, 1);
+        });
+
+        // 9. TNT Block (Thân đỏ, băng trắng in chữ TNT)
+        const tntSideTex = createPixelTex((c) => {
+          c.fillStyle = '#dc2626';
+          c.fillRect(0, 0, 16, 16);
+          c.fillStyle = '#b91c1c';
+          for (let i = 0; i < 16; i += 4) {
+            c.fillRect(i, 0, 1, 16);
+          }
+          c.fillStyle = '#ffffff';
+          c.fillRect(0, 5, 16, 6);
+          c.fillStyle = '#111827';
+          // T
+          c.fillRect(2, 6, 3, 1); c.fillRect(3, 7, 1, 3);
+          // N
+          c.fillRect(6, 6, 1, 4); c.fillRect(7, 7, 1, 1); c.fillRect(8, 8, 1, 1); c.fillRect(9, 6, 1, 4);
+          // T
+          c.fillRect(11, 6, 3, 1); c.fillRect(12, 7, 1, 3);
+        });
+
+        const tntTopTex = createPixelTex((c) => {
+          c.fillStyle = '#dc2626';
+          c.fillRect(0, 0, 16, 16);
+          c.fillStyle = '#450a0a';
+          c.fillRect(6, 6, 4, 4);
+          c.fillStyle = '#e2e8f0';
+          c.fillRect(7, 7, 2, 2);
+        });
+
+        // Khởi tạo và lưu trữ các vật liệu MeshStandardMaterial
+        const grassSideMat = new THREE.MeshStandardMaterial({ map: grassSideTex, roughness: 0.85 });
+        const grassTopMat = new THREE.MeshStandardMaterial({ map: grassTopTex, roughness: 0.85 });
+        const dirtMat = new THREE.MeshStandardMaterial({ map: dirtTex, roughness: 0.9 });
+        this.grassCubeMats = [grassSideMat, grassSideMat, grassTopMat, dirtMat, grassSideMat, grassSideMat];
+
+        this.iceMat = new THREE.MeshStandardMaterial({
+          map: iceTex,
+          color: 0xc7d2fe,
+          transparent: true,
+          opacity: 0.88,
+          roughness: 0.08,
+          metalness: 0.15
+        });
+
+        this.slimeMat = new THREE.MeshStandardMaterial({
+          map: slimeTex,
+          color: 0x84cc16,
+          transparent: true,
+          opacity: 0.85,
+          roughness: 0.15,
+          metalness: 0.05
+        });
+
+        this.waterMat = new THREE.MeshStandardMaterial({
+          map: waterTex,
+          color: 0x38bdf8,
+          transparent: true,
+          opacity: 0.72,
+          roughness: 0.1
+        });
+
+        this.woodMat = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.85 });
+        this.cobbleMat = new THREE.MeshStandardMaterial({ map: cobbleTex, roughness: 0.9 });
+
+        const tntSideMat = new THREE.MeshStandardMaterial({ map: tntSideTex, roughness: 0.6 });
+        const tntTopMat = new THREE.MeshStandardMaterial({ map: tntTopTex, roughness: 0.6 });
+        this.tntMats = [tntSideMat, tntSideMat, tntTopMat, tntTopMat, tntSideMat, tntSideMat];
+      }
+
+      _buildSunAndSky() {
+        // Minecraft Square Sun Cube (bright glowing yellow cube in the sky)
+        const sunGeo = new THREE.BoxGeometry(2.6, 2.6, 0.4);
+        const sunMat = new THREE.MeshBasicMaterial({ color: 0xfffa60 });
+        const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+        sunMesh.position.set(1.5, 4.8, 16.0);
+        sunMesh.lookAt(0, 1.0, 0);
+        this.scene.add(sunMesh);
+
+        // Voxel Clouds drifting at Y = 5.2 to 6.2m
+        const cloudMat = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.92
+        });
+
+        const cloudConfigs = [
+          { x: -9, y: 5.4, z: 10, w: 9, h: 0.7, d: 5 },
+          { x: 3, y: 6.0, z: 14, w: 10, h: 0.8, d: 6 },
+          { x: -3, y: 5.6, z: 18, w: 8, h: 0.7, d: 5 },
+          { x: 10, y: 5.8, z: 9, w: 8, h: 0.7, d: 5 },
+          { x: -7, y: 6.0, z: -8, w: 10, h: 0.8, d: 6 },
+          { x: 5, y: 5.4, z: -11, w: 9, h: 0.7, d: 5 },
+          { x: -14, y: 5.8, z: 0, w: 8, h: 0.7, d: 4.5 }
+        ];
+
+        cloudConfigs.forEach(cfg => {
+          const cloudGroup = new THREE.Group();
+          cloudGroup.position.set(cfg.x, cfg.y, cfg.z);
+
+          // Center block
+          const mainBlock = new THREE.Mesh(new THREE.BoxGeometry(cfg.w, cfg.h, cfg.d), cloudMat);
+          cloudGroup.add(mainBlock);
+
+          // Fluffy offset block
+          const subBlock = new THREE.Mesh(new THREE.BoxGeometry(cfg.w * 0.65, cfg.h * 0.9, cfg.d * 1.35), cloudMat);
+          subBlock.position.set(cfg.w * 0.2, 0.1, 0.2);
+          cloudGroup.add(subBlock);
+
+          this.scene.add(cloudGroup);
+          this.clouds.push(cloudGroup);
+        });
+      }
+
+      _buildDistantWorld() {
+        // Large surrounding Minecraft grassland (100m x 100m) - Soft Warm Meadow
+        const outerGeo = new THREE.PlaneGeometry(100, 100);
+        const outerMat = new THREE.MeshStandardMaterial({
+          color: 0x559e36,
+          roughness: 0.85,
+          metalness: 0.02
+        });
+        const outerFloor = new THREE.Mesh(outerGeo, outerMat);
+        outerFloor.rotation.x = -Math.PI / 2;
+        outerFloor.position.y = -0.01;
+        outerFloor.receiveShadow = true;
+        this.scene.add(outerFloor);
+
+        // Distant Voxel Hills (tiered Minecraft landscape blocks on horizon)
+        const hillMat = new THREE.MeshStandardMaterial({ color: 0x478e2d, roughness: 0.85 });
+        const stoneMat = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.8 });
+
+        const hillConfigs = [
+          // North hills (Z < -10)
+          { x: -16, z: -14, w: 10, h: 2.2, d: 8, mat: hillMat },
+          { x: -6, z: -16, w: 12, h: 3.0, d: 9, mat: hillMat },
+          { x: 8, z: -15, w: 14, h: 2.6, d: 8, mat: hillMat },
+          { x: 18, z: -13, w: 9, h: 1.8, d: 7, mat: hillMat },
+          // South hills (Z > 10) - visible looking forward
+          { x: -14, z: 14, w: 11, h: 2.5, d: 8, mat: hillMat },
+          { x: -3, z: 16, w: 13, h: 3.2, d: 10, mat: hillMat },
+          { x: 10, z: 15, w: 12, h: 2.8, d: 9, mat: hillMat },
+          { x: 20, z: 13, w: 10, h: 2.0, d: 8, mat: hillMat },
+          // Stone cliff accents
+          { x: -4, z: 15, w: 6, h: 4.0, d: 5, mat: stoneMat },
+          { x: 9, z: -14, w: 5, h: 3.6, d: 5, mat: stoneMat }
+        ];
+
+        hillConfigs.forEach(h => {
+          const hillMesh = new THREE.Mesh(new THREE.BoxGeometry(h.w, h.h, h.d), h.mat);
+          hillMesh.position.set(h.x, h.h / 2 - 0.05, h.z);
+          hillMesh.receiveShadow = true;
+          this.scene.add(hillMesh);
+        });
+
+        // Distant Voxel Trees around horizon and forest edges
+        const forestTreeLocs = [
+          [-9, 6], [-7, 9], [7, 8], [11, 6],
+          [-12, 11], [-5, 12], [4, 13], [12, 11],
+          [-10, -7], [-6, -9], [8, -8], [12, -6],
+          [-14, 0], [14, 0], [-13, -4], [13, 4]
+        ];
+
+        const dTrunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3d1d, roughness: 0.9 });
+        const dLeafMat = new THREE.MeshStandardMaterial({ color: 0x2e8b22, roughness: 0.75 });
+
+        forestTreeLocs.forEach(([tx, tz]) => {
+          const tg = new THREE.Group();
+          tg.position.set(tx, 0, tz);
+
+          const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2.4, 0.5), dTrunkMat);
+          trunk.position.y = 1.2;
+          tg.add(trunk);
+
+          const leaves = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.6, 2.0), dLeafMat);
+          leaves.position.y = 2.8;
+          tg.add(leaves);
+
+          const leafCap = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 1.2), dLeafMat);
+          leafCap.position.y = 3.8;
+          tg.add(leafCap);
+
+          this.scene.add(tg);
+        });
+      }
+
+      _buildGrassTerrain() {
+        // Procedural Minecraft 16x16 Pixel Grass Block Texture - Soft Warm Meadow
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+
+        // Warm lush natural grass greens (Nintendo Mario Kart & Zelda inspired, no neon glare)
+        const greens = ['#5ea83b', '#68b444', '#529733', '#62aa3d', '#579d36'];
+        for (let x = 0; x < 16; x++) {
+          for (let y = 0; y < 16; y++) {
+            ctx.fillStyle = greens[Math.floor(Math.random() * greens.length)];
+            ctx.fillRect(x, y, 1, 1);
+          }
+        }
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+        ctx.fillRect(0, 15, 16, 1);
+        ctx.fillRect(15, 0, 1, 16);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.fillRect(0, 0, 16, 1);
+        ctx.fillRect(0, 0, 1, 16);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.NearestFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(14, 10);
+
+        const floorGeo = new THREE.PlaneGeometry(14, 10);
+        const floorMat = new THREE.MeshStandardMaterial({
+          map: texture,
+          roughness: 0.85,
+          metalness: 0.02
+        });
+
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        this.scene.add(floor);
+      }
+
+      _buildVillageDirtPath() {
+        // Winding Sunny Terracotta Clay Path
+        const pathCanvas = document.createElement('canvas');
+        pathCanvas.width = 16;
+        pathCanvas.height = 16;
+        const pCtx = pathCanvas.getContext('2d');
+        const dirtTones = ['#e8b070', '#dea464', '#f0b878', '#d59a5a', '#ebb374'];
+        for (let x = 0; x < 16; x++) {
+          for (let y = 0; y < 16; y++) {
+            pCtx.fillStyle = dirtTones[Math.floor(Math.random() * dirtTones.length)];
+            pCtx.fillRect(x, y, 1, 1);
+          }
+        }
+        pCtx.fillStyle = 'rgba(0, 0, 0, 0.10)';
+        pCtx.fillRect(0, 15, 16, 1);
+        pCtx.fillRect(15, 0, 1, 16);
+
+        const pathTex = new THREE.CanvasTexture(pathCanvas);
+        pathTex.magFilter = THREE.NearestFilter;
+        pathTex.minFilter = THREE.NearestFilter;
+        pathTex.wrapS = THREE.RepeatWrapping;
+        pathTex.wrapT = THREE.RepeatWrapping;
+        pathTex.repeat.set(8, 1);
+
+        // Figure-8 Line Curve using flat tile strips
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(-3.5, 0.005, -2.5),
+          new THREE.Vector3(-1.8, 0.005, -1.0),
+          new THREE.Vector3(0.0, 0.005, 0.0),
+          new THREE.Vector3(1.8, 0.005, 1.2),
+          new THREE.Vector3(3.5, 0.005, 2.5),
+          new THREE.Vector3(2.0, 0.005, 0.5),
+          new THREE.Vector3(0.5, 0.005, -1.2),
+          new THREE.Vector3(-1.5, 0.005, -2.2),
+          new THREE.Vector3(-3.5, 0.005, -2.5)
+        ]);
+
+        const points = curve.getPoints(80);
+        const pathMat = new THREE.MeshStandardMaterial({
+          map: pathTex,
+          roughness: 0.9,
+          metalness: 0.02
+        });
+
+        // Create segmented path tiles
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+          const len = p1.distanceTo(p2);
+          const angle = Math.atan2(p2.x - p1.x, p2.z - p1.z);
+
+          const tile = new THREE.Mesh(new THREE.PlaneGeometry(0.68, len + 0.06), pathMat);
+          tile.rotation.x = -Math.PI / 2;
+          tile.rotation.z = angle;
+          tile.position.set(mid.x, 0.005, mid.z);
+          tile.receiveShadow = true;
+          this.scene.add(tile);
+        }
+      }
+
+      _buildRaceKerbsAndGantry() {
+        // Red & White Checkered Racing Kerbs along track curves
+        const kerbRedMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.45 });
+        const kerbWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.45 });
+        const kerbGeo = new THREE.BoxGeometry(0.24, 0.05, 0.24);
+
+        const kerbCoords = [
+          [-3.8, -2.8], [-3.8, -2.5], [-3.8, -2.2], [-3.6, -1.9], [-3.3, -1.6],
+          [-1.5, -0.6], [-1.2, -0.4], [-0.9, -0.2],
+          [1.5, 0.8], [1.8, 1.0], [2.1, 1.2],
+          [3.8, 2.8], [3.8, 2.5], [3.8, 2.2], [3.6, 1.9], [3.3, 1.6],
+          [1.8, 0.2], [1.5, 0.0], [1.2, -0.2],
+          [-0.2, -1.4], [-0.5, -1.6], [-0.8, -1.8]
+        ];
+
+        kerbCoords.forEach(([kx, kz], idx) => {
+          const mat = (idx % 2 === 0) ? kerbRedMat : kerbWhiteMat;
+          const kMesh = new THREE.Mesh(kerbGeo, mat);
+          kMesh.position.set(kx, 0.025, kz);
+          kMesh.receiveShadow = true;
+          this.scene.add(kMesh);
+        });
+
+        // 2 Glowing Nitro Boost Pads (>>> BOOST >>>)
+        const boostConfigs = [
+          { x: -1.8, z: -1.0, rot: -0.6 },
+          { x: 1.8, z: 1.2, rot: 0.6 }
+        ];
+
+        boostConfigs.forEach(bc => {
+          const boostGroup = new THREE.Group();
+          boostGroup.position.set(bc.x, 0.015, bc.z);
+          boostGroup.rotation.y = bc.rot;
+
+          const padMat = new THREE.MeshStandardMaterial({
+            color: 0xf59e0b,
+            emissive: 0xf59e0b,
+            emissiveIntensity: 1.2,
+            roughness: 0.3
+          });
+          const padGeo = new THREE.BoxGeometry(0.72, 0.03, 0.46);
+          const padMesh = new THREE.Mesh(padGeo, padMat);
+          boostGroup.add(padMesh);
+
+          // Glowing Arrow chevrons
+          const arrowMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+          for (let a = -1; a <= 1; a++) {
+            const arr = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.035, 0.06), arrowMat);
+            arr.position.set(0, 0.02, a * 0.12);
+            boostGroup.add(arr);
+          }
+
+          this.scene.add(boostGroup);
+          this.boostPads.push({ x: bc.x, z: bc.z, cooldown: 0, mesh: boostGroup });
+        });
+
+        // Start / Finish Line Gantry Arch [-3.5, 0, -2.5]
+        // Start / Finish Line Gantry Arch [-3.5, 0, -2.5]
+        const gantryGroup = new THREE.Group();
+        gantryGroup.position.set(-3.5, 0, -2.5);
+        gantryGroup.rotation.y = 0.88; // Xoay chuẩn góc đường đua để robot chạy xuyên qua giữa
+
+        // Checkered banner canvas
+        const checkerCanvas = document.createElement('canvas');
+        checkerCanvas.width = 64;
+        checkerCanvas.height = 16;
+        const cCtx = checkerCanvas.getContext('2d');
+        for (let x = 0; x < 8; x++) {
+          for (let y = 0; y < 2; y++) {
+            cCtx.fillStyle = (x + y) % 2 === 0 ? '#0f172a' : '#ffffff';
+            cCtx.fillRect(x * 8, y * 8, 8, 8);
+          }
+        }
+        const checkerTex = new THREE.CanvasTexture(checkerCanvas);
+        checkerTex.magFilter = THREE.NearestFilter;
+        checkerTex.minFilter = THREE.NearestFilter;
+
+        const gantryMat = new THREE.MeshStandardMaterial({ map: checkerTex, roughness: 0.5 });
+        const postPillarMat = this.woodMat;
+        const baseStoneMat = this.cobbleMat;
+
+        // Cột trái và Cột phải đặt hai bên lề đường (rộng 2.0m, mở toang tầm nhìn)
+        const gPostL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.8, 0.24), postPillarMat);
+        gPostL.position.set(-1.05, 0.9, 0);
+        gPostL.castShadow = true;
+        const gBaseL = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.32, 0.32), baseStoneMat);
+        gBaseL.position.set(-1.05, 0.16, 0);
+        gBaseL.receiveShadow = true;
+
+        const gPostR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.8, 0.24), postPillarMat);
+        gPostR.position.set(1.05, 0.9, 0);
+        gPostR.castShadow = true;
+        const gBaseR = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.32, 0.32), baseStoneMat);
+        gBaseR.position.set(1.05, 0.16, 0);
+        gBaseR.receiveShadow = true;
+
+        // Xà ngang cờ ca-rô xuất phát
+        const gBeam = new THREE.Mesh(new THREE.BoxGeometry(2.34, 0.38, 0.16), gantryMat);
+        gBeam.position.set(0, 1.7, 0);
+        gBeam.castShadow = true;
+
+        // Đèn đuốc Redstone cổ vũ
+        const redTorchMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 1.5 });
+        const torchL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), redTorchMat);
+        torchL.position.set(-0.8, 1.48, 0.1);
+        const torchR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.14, 0.1), redTorchMat);
+        torchR.position.set(0.8, 1.48, 0.1);
+
+        gantryGroup.add(gPostL, gBaseL, gPostR, gBaseR, gBeam, torchL, torchR);
+        this.scene.add(gantryGroup);
+
+        // Đăng ký vị trí cột xoay trong collision world
+        const cosR = Math.cos(0.88), sinR = Math.sin(0.88);
+        this.collisionWorld.addCircle(-3.5 - 1.05 * cosR, -2.5 + 1.05 * sinR, 0.25, 'Cột Cổng Xuất Phát Trái');
+        this.collisionWorld.addCircle(-3.5 + 1.05 * cosR, -2.5 - 1.05 * sinR, 0.25, 'Cột Cổng Xuất Phát Phải');
+      }
+
+      _buildWoodenFence() {
+        // Minecraft Dark Oak Wood Fence Perimeter (12m x 8m)
+        const fenceGroup = new THREE.Group();
+        const postMat = new THREE.MeshStandardMaterial({ color: 0x5d3e1d, roughness: 0.85 });
+        const postGeo = new THREE.BoxGeometry(0.12, 0.7, 0.12);
+        const railGeoX = new THREE.BoxGeometry(1.5, 0.07, 0.05);
+        const railGeoZ = new THREE.BoxGeometry(0.05, 0.07, 1.5);
+
+        // Posts along X (Z = -4.0 and Z = +4.0)
+        for (let x = -6.0; x <= 6.0; x += 1.5) {
+          const postN = new THREE.Mesh(postGeo, postMat);
+          postN.position.set(x, 0.35, -4.0);
+          postN.receiveShadow = true;
+          fenceGroup.add(postN);
+
+          const postS = new THREE.Mesh(postGeo, postMat);
+          postS.position.set(x, 0.35, 4.0);
+          postS.receiveShadow = true;
+          fenceGroup.add(postS);
+
+          if (x < 6.0) {
+            const rN1 = new THREE.Mesh(railGeoX, postMat);
+            rN1.position.set(x + 0.75, 0.5, -4.0);
+            const rN2 = new THREE.Mesh(railGeoX, postMat);
+            rN2.position.set(x + 0.75, 0.25, -4.0);
+            fenceGroup.add(rN1, rN2);
+
+            const rS1 = new THREE.Mesh(railGeoX, postMat);
+            rS1.position.set(x + 0.75, 0.5, 4.0);
+            const rS2 = new THREE.Mesh(railGeoX, postMat);
+            rS2.position.set(x + 0.75, 0.25, 4.0);
+            fenceGroup.add(rS1, rS2);
+          }
+        }
+
+        // Posts along Z (X = -6.0 and X = +6.0)
+        for (let z = -4.0; z <= 4.0; z += 1.5) {
+          const postW = new THREE.Mesh(postGeo, postMat);
+          postW.position.set(-6.0, 0.35, z);
+          postW.receiveShadow = true;
+          fenceGroup.add(postW);
+
+          const postE = new THREE.Mesh(postGeo, postMat);
+          postE.position.set(6.0, 0.35, z);
+          postE.receiveShadow = true;
+          fenceGroup.add(postE);
+
+          if (z < 4.0) {
+            const rW1 = new THREE.Mesh(railGeoZ, postMat);
+            rW1.position.set(-6.0, 0.5, z + 0.75);
+            const rW2 = new THREE.Mesh(railGeoZ, postMat);
+            rW2.position.set(-6.0, 0.25, z + 0.75);
+            fenceGroup.add(rW1, rW2);
+
+            const rE1 = new THREE.Mesh(railGeoZ, postMat);
+            rE1.position.set(6.0, 0.5, z + 0.75);
+            const rE2 = new THREE.Mesh(railGeoZ, postMat);
+            rE2.position.set(6.0, 0.25, z + 0.75);
+            fenceGroup.add(rE1, rE2);
+          }
+        }
+
+        this.scene.add(fenceGroup);
+
+        // Solid Boundary Colliders
+        this.collisionWorld.addBox(-6.1, 6.1, -4.15, -3.85, 'Hàng rào Bắc');
+        this.collisionWorld.addBox(-6.1, 6.1, 3.85, 4.15, 'Hàng rào Nam');
+        this.collisionWorld.addBox(-6.15, -5.85, -4.1, 4.1, 'Hàng rào Tây');
+        this.collisionWorld.addBox(5.85, 6.15, -4.1, 4.1, 'Hàng rào Đông');
+      }
+
+      _buildOakTrees() {
+        // Voxel Oak Trees framing arena fence & corners
+        const treeLocations = [
+          [-2.6, 4.2],
+          [2.6, 4.2],
+          [-2.8, -4.2],
+          [2.8, -4.2],
+          [-5.8, -1.5],
+          [-5.8, 1.8],
+          [5.8, -1.5],
+          [5.8, 1.8],
+          [-4.6, -2.8],
+          [4.6, 2.8]
+        ];
+
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5d3e1d, roughness: 0.9 });
+        const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e8b22, roughness: 0.7 });
+
+        treeLocations.forEach(([tx, tz]) => {
+          const treeGroup = new THREE.Group();
+          treeGroup.position.set(tx, 0, tz);
+
+          // Trunk (0.4m x 1.8m x 0.4m)
+          const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.8, 0.4), trunkMat);
+          trunk.position.y = 0.9;
+          trunk.receiveShadow = true;
+          treeGroup.add(trunk);
+
+          // Foliage Level 1 (bottom cluster)
+          const leaf1 = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.7, 1.6), leafMat);
+          leaf1.position.y = 1.9;
+          leaf1.receiveShadow = true;
+          treeGroup.add(leaf1);
+
+          // Foliage Level 2 (middle cluster)
+          const leaf2 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.2), leafMat);
+          leaf2.position.y = 2.4;
+          leaf2.receiveShadow = true;
+          treeGroup.add(leaf2);
+
+          // Foliage Level 3 (top cap)
+          const leaf3 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.8), leafMat);
+          leaf3.position.y = 2.85;
+          leaf3.receiveShadow = true;
+          treeGroup.add(leaf3);
+
+          this.scene.add(treeGroup);
+
+          // Register Tree Solid Collider (trunk + lower branches)
+          this.collisionWorld.addCircle(tx, tz, 0.35, 'Cây Sồi Cổ Thụ');
+        });
+      }
+
+      _buildGoldSlalomPosts() {
+        // 5 Gold Slalom Posts along X = 3.0m
+        const goldMat = new THREE.MeshStandardMaterial({
+          color: 0xf5b82e,
+          metalness: 0.85,
+          roughness: 0.22
+        });
+        const redstoneTorchMat = new THREE.MeshStandardMaterial({
+          color: 0xef4444,
+          emissive: 0xef4444,
+          emissiveIntensity: 1.2
+        });
+
+        for (let i = 0; i < 5; i++) {
+          const zPos = -2.0 + i * 1.0;
+          const pylonGroup = new THREE.Group();
+          pylonGroup.position.set(3.0, 0, zPos);
+
+          // Gold Block base (0.35m x 0.35m x 0.35m)
+          const goldBlock = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), goldMat);
+          goldBlock.position.y = 0.175;
+          goldBlock.receiveShadow = true;
+          pylonGroup.add(goldBlock);
+
+          // Redstone torch post
+          const torchStick = new THREE.Mesh(
+            new THREE.BoxGeometry(0.06, 0.25, 0.06),
+            new THREE.MeshStandardMaterial({ color: 0x7a5223, roughness: 0.8 })
+          );
+          torchStick.position.y = 0.45;
+          pylonGroup.add(torchStick);
+
+          // Redstone torch head
+          const torchHead = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.1), redstoneTorchMat);
+          torchHead.position.y = 0.58;
+          pylonGroup.add(torchHead);
+
+          this.scene.add(pylonGroup);
+          this.slalomPylons.push({ mesh: pylonGroup, torchMat: redstoneTorchMat, x: 3.0, z: zPos, radius: 0.28 });
+
+          // Register Slalom Solid Collider
+          this.collisionWorld.addCircle(3.0, zPos, 0.28, `Cọc Slalom Vàng ${i + 1}`);
+        }
+      }
+
+      _buildVoxelBiomesAndBlocks() {
+        const addBlock = (type, x, y, z, w, h, d, mat, options = {}) => {
+          const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+          mesh.position.set(x, y + h / 2, z);
+          mesh.receiveShadow = true;
+          if (options.castShadow !== false) mesh.castShadow = true;
+          this.scene.add(mesh);
+
+          const blockObj = {
+            type,
+            minX: x - w / 2,
+            maxX: x + w / 2,
+            minY: y,
+            maxY: y + h,
+            minZ: z - d / 2,
+            maxZ: z + d / 2,
+            topY: y + h,
+            isSolid: (type !== 'water'),
+            isLiquid: (type === 'water'),
+            isBouncy: (type === 'slime'),
+            isSlippery: (type === 'ice'),
+            isTnt: (type === 'tnt'),
+            mesh,
+            ...options
+          };
+          this.blocks.push(blockObj);
+          return blockObj;
+        };
+
+        // 1. ĐỒI CỎ BẬC THANG (Stepped Grass Plateau: Tầng 1 & Tầng 2)
+        // Tầng 1 (Y: 0 đến 0.38m)
+        addBlock('grass', -3.6, 0, 2.2, 3.2, 0.38, 3.2, this.grassCubeMats);
+        // Tầng 2 (Y: 0.38m đến 0.76m)
+        addBlock('grass', -3.7, 0.38, 2.4, 2.4, 0.38, 2.4, this.grassCubeMats);
+        // Bậc thang tiếp cận (Auto-step test: Nửa phiến đá Y = 0 đến 0.20m)
+        addBlock('grass', -3.6, 0, 0.4, 1.2, 0.20, 0.4, this.grassCubeMats, { castShadow: false });
+
+        // 2. CẦU GỖ SỒI TREO (Oak Wood Sky Bridge qua hẻm núi tại Y = 0.76m)
+        addBlock('wood', -0.7, 0.62, 2.2, 2.6, 0.14, 0.9, this.woodMat);
+        // Trụ đỡ cầu gỗ bên dưới
+        addBlock('wood', -1.4, 0, 2.2, 0.18, 0.62, 0.18, this.woodMat, { castShadow: false });
+        addBlock('wood', 0.0, 0, 2.2, 0.18, 0.62, 0.18, this.woodMat, { castShadow: false });
+
+        // 3. THÁP ĐÁ QUAN SÁT (Cobblestone Observation Tower Y = 0 đến 0.76m)
+        addBlock('stone', 1.2, 0, 2.2, 1.2, 0.76, 1.2, this.cobbleMat);
+
+        // 4. SÂN NHÚN SLIME (Slime Trampoline Park: Siêu đàn hồi Bouncy)
+        // Đệm lót Slime sàn (topY = 0.08m)
+        addBlock('slime', 3.2, 0, 2.2, 3.0, 0.08, 3.0, this.slimeMat, { castShadow: false });
+        // Khối Slime nhún trung tâm (topY = 0.24m)
+        addBlock('slime', 3.2, 0, 2.2, 1.2, 0.24, 1.2, this.slimeMat);
+
+        // 5. HỒ BĂNG CỰC BẮC (Ice Lake Drift Arena: Ma sát cực thấp)
+        // Mặt băng trong suốt (topY = 0.04m)
+        addBlock('ice', 3.4, 0, -2.3, 3.6, 0.06, 3.0, this.iceMat, { castShadow: false });
+        // Bờ đá bao quanh hồ băng
+        addBlock('stone', 3.4, 0, -3.9, 3.8, 0.14, 0.24, this.cobbleMat, { castShadow: false });
+        addBlock('stone', 3.4, 0, -0.7, 3.8, 0.14, 0.24, this.cobbleMat, { castShadow: false });
+        addBlock('stone', 5.3, 0, -2.3, 0.24, 0.14, 3.2, this.cobbleMat, { castShadow: false });
+
+        // 6. KÊNH NƯỚC BƠI NỔI (Water Canal & Pool: Lực cản + Lực đẩy Archimedes)
+        // Lòng kênh nước trong suốt (topY = 0.18m)
+        addBlock('water', -0.3, 0, -1.7, 1.8, 0.18, 3.8, this.waterMat, { castShadow: false });
+        // Bờ đá kênh nước
+        addBlock('stone', -1.3, 0, -1.7, 0.24, 0.24, 3.8, this.cobbleMat, { castShadow: false });
+        addBlock('stone', 0.7, 0, -1.7, 0.24, 0.24, 3.8, this.cobbleMat, { castShadow: false });
+
+        // 7. KHỐI TNT TƯƠNG TÁC (Interactive Exploding TNT)
+        // Cụm TNT 1 (Góc bờ rào phía bắc: X = -0.3, Z = -3.8)
+        addBlock('tnt', -0.3, 0, -3.8, 0.38, 0.38, 0.38, this.tntMats);
+        // Cụm TNT 2 (Đỉnh đồi cỏ bậc thang: X = -4.6, Z = 3.3)
+        addBlock('tnt', -4.6, 0.76, 3.3, 0.38, 0.38, 0.38, this.tntMats);
+      }
+
+      _buildPortalAndArchGates() {
+        // Gate 1: Minecraft Nether Portal on return loop [0.6, 0, -1.2]
+        const portalGroup = new THREE.Group();
+        const pX = 0.6, pZ = -1.2, pRot = Math.PI * 0.28;
+        portalGroup.position.set(pX, 0, pZ);
+        portalGroup.rotation.y = pRot;
+
+        const obsidianMat = new THREE.MeshStandardMaterial({
+          color: 0x1f1433,
+          roughness: 0.3,
+          metalness: 0.8
+        });
+
+        // 4x5 block obsidian frame
+        const obsPostGeo = new THREE.BoxGeometry(0.24, 1.4, 0.24);
+        const obsBeamGeo = new THREE.BoxGeometry(1.6, 0.24, 0.24);
+
+        const postL = new THREE.Mesh(obsPostGeo, obsidianMat);
+        postL.position.set(-0.7, 0.7, 0);
+        const postR = new THREE.Mesh(obsPostGeo, obsidianMat);
+        postR.position.set(0.7, 0.7, 0);
+        const beamTop = new THREE.Mesh(obsBeamGeo, obsidianMat);
+        beamTop.position.set(0, 1.35, 0);
+
+        // Purple swirling portal curtain
+        const portalCurtainMat = new THREE.MeshBasicMaterial({
+          color: 0x9333ea,
+          transparent: true,
+          opacity: 0.6,
+          side: THREE.DoubleSide
+        });
+        const portalCurtain = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.15), portalCurtainMat);
+        portalCurtain.position.set(0, 0.7, 0);
+
+        portalGroup.add(postL, postR, beamTop, portalCurtain);
+        this.scene.add(portalGroup);
+
+        this.checkpointGates.push({
+          group: portalGroup, x: pX, z: pZ,
+          colorHex: 0x9333ea, label: 'NETHER PORTAL',
+          triggerCooldown: 0
+        });
+
+        // Register Nether Portal Post Colliders
+        const cosR = Math.cos(pRot), sinR = Math.sin(pRot);
+        this.collisionWorld.addCircle(pX - 0.7 * cosR, pZ - 0.7 * sinR, 0.22, 'Cột Cổng Nether Trái');
+        this.collisionWorld.addCircle(pX + 0.7 * cosR, pZ + 0.7 * sinR, 0.22, 'Cột Cổng Nether Phải');
+
+        // Gate 2: Minecraft Emerald Beacon Arch [+3.5, 0, +2.5]
+        const emeraldGroup = new THREE.Group();
+        emeraldGroup.position.set(3.5, 0, 2.5);
+
+        const emeraldMat = new THREE.MeshStandardMaterial({
+          color: 0x10b981,
+          emissive: 0x10b981,
+          emissiveIntensity: 0.6,
+          metalness: 0.5,
+          roughness: 0.3
+        });
+
+        const emPostL = new THREE.Mesh(obsPostGeo, emeraldMat);
+        emPostL.position.set(-0.6, 0.65, 0);
+        const emPostR = new THREE.Mesh(obsPostGeo, emeraldMat);
+        emPostR.position.set(0.6, 0.65, 0);
+        const emBeam = new THREE.Mesh(obsBeamGeo, emeraldMat);
+        emBeam.position.set(0, 1.25, 0);
+
+        // Glowing Beacon Ray
+        const beaconBeam = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.12, 0.12, 8.0, 12),
+          new THREE.MeshBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.4 })
+        );
+        beaconBeam.position.set(0, 4.0, 0);
+
+        emeraldGroup.add(emPostL, emPostR, emBeam, beaconBeam);
+        this.scene.add(emeraldGroup);
+
+        this.checkpointGates.push({
+          group: emeraldGroup, x: 3.5, z: 2.5,
+          colorHex: 0x10b981, label: 'EMERALD ARCH',
+          triggerCooldown: 0
+        });
+
+        // Register Emerald Arch Post Colliders
+        this.collisionWorld.addCircle(3.5 - 0.6, 2.5, 0.25, 'Cột Cổng Emerald Trái');
+        this.collisionWorld.addCircle(3.5 + 0.6, 2.5, 0.25, 'Cột Cổng Emerald Phải');
+      }
+
+      _buildVoxelGems() {
+        // 6 Minecraft Diamonds & Emeralds đặt tại các vùng địa hình Voxel
+        const coords = [
+          { x: -2.0, y: 0.28, z: -1.5 }, // 1. Đường xuất phát
+          { x: -3.7, y: 1.05, z: 2.4 },  // 2. Đỉnh đồi cỏ bậc thang
+          { x: -0.7, y: 1.05, z: 2.2 },  // 3. Giữa cầu gỗ sồi treo
+          { x: 3.2, y: 0.85, z: 2.2 },   // 4. Lơ lửng trên sân nhún Slime (cần bật nhảy để lấy!)
+          { x: 3.4, y: 0.28, z: -2.3 },  // 5. Giữa hồ băng drift
+          { x: -0.3, y: 0.35, z: -1.7 }   // 6. Giữa kênh nước bơi nổi
+        ];
+
+        coords.forEach((cfg, idx) => {
+          const isDiamond = (idx % 2 === 0);
+          const gemMat = new THREE.MeshStandardMaterial({
+            color: isDiamond ? 0x22d3ee : 0x10b981,
+            emissive: isDiamond ? 0x00f0ff : 0x10b981,
+            emissiveIntensity: 0.9,
+            metalness: 0.6,
+            roughness: 0.1
+          });
+
+          // Octahedron shaped gem like Minecraft diamond
+          const gemGeo = new THREE.OctahedronGeometry(0.15, 0);
+          const gemMesh = new THREE.Mesh(gemGeo, gemMat);
+          gemMesh.position.set(cfg.x, cfg.y, cfg.z);
+          gemMesh.receiveShadow = true;
+          this.scene.add(gemMesh);
+
+          this.crystals.push({ mesh: gemMesh, x: cfg.x, y: cfg.y, z: cfg.z, baseY: cfg.y, active: true });
+        });
+      }
+
+      _buildVoxelFlowers() {
+        // Soft pastel wildflowers scattered gracefully in the meadow
+        const flowerCoords = [
+          [-1.0, 2.2, 0xf472b6], [1.2, -2.2, 0xfef08a],
+          [-2.8, -1.0, 0xc084fc], [2.8, 1.5, 0xfef08a],
+          [-4.5, 0.5, 0xf472b6], [4.5, -1.0, 0xc084fc],
+          [-0.8, -3.2, 0xfef08a], [0.8, 3.2, 0xf472b6]
+        ];
+
+        flowerCoords.forEach(([fx, fz, colorHex]) => {
+          const flowerGroup = new THREE.Group();
+          flowerGroup.position.set(fx, 0, fz);
+
+          // Green stem
+          const stem = new THREE.Mesh(
+            new THREE.BoxGeometry(0.02, 0.14, 0.02),
+            new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.8 })
+          );
+          stem.position.y = 0.07;
+          flowerGroup.add(stem);
+
+          // Soft rounded petal blossom
+          const petals = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.06, 0.08),
+            new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.4 })
+          );
+          petals.position.y = 0.14;
+          flowerGroup.add(petals);
+
+          this.scene.add(flowerGroup);
+        });
+      }
+
+      update(time, dt, robotPos, onCrystalCollect, onGateTrigger) {
+        // Drift Clouds across the sky
+        this.clouds.forEach(cloud => {
+          cloud.position.x += 0.35 * dt;
+          if (cloud.position.x > 14) cloud.position.x = -14;
+        });
+
+        // Boost pads cooldown tick
+        this.boostPads.forEach(bp => {
+          if (bp.cooldown > 0) bp.cooldown -= dt;
+        });
+
+        // Rotate & Bob Diamonds / Emeralds
+        this.crystals.forEach(c => {
+          if (!c.active) return;
+          c.mesh.rotation.y += 2.0 * dt;
+          c.mesh.rotation.x += 1.0 * dt;
+          const baseY = c.baseY || 0.28;
+          c.mesh.position.y = baseY + Math.sin(time * 3.5 + c.x) * 0.06;
+
+          // 3D Pickup detection (khoảng cách cầu 3 chiều 0.45m)
+          const robY = robotPos.y !== undefined ? robotPos.y : 0;
+          const dist = Math.hypot(robotPos.x - c.x, robY - c.mesh.position.y, robotPos.z - c.z);
+          if (dist < 0.45) {
+            c.active = false;
+            c.mesh.visible = false;
+            this.score++;
+            if (onCrystalCollect) onCrystalCollect(this.score);
+          }
+        });
+
+        // Gate Trigger Detection
+        this.checkpointGates.forEach(g => {
+          if (g.triggerCooldown > 0) g.triggerCooldown -= dt;
+          const dist = Math.hypot(robotPos.x - g.x, robotPos.z - g.z);
+          if (dist < 0.65 && g.triggerCooldown <= 0) {
+            g.triggerCooldown = 3.0;
+            if (onGateTrigger) onGateTrigger(g);
+          }
+        });
+
+        // Slalom Redstone Torch Pulse on near approach
+        this.slalomPylons.forEach(p => {
+          const dist = Math.hypot(robotPos.x - p.x, robotPos.z - p.z);
+          if (dist < 0.55) {
+            p.torchMat.emissiveIntensity = 3.2;
+          } else {
+            p.torchMat.emissiveIntensity = 1.5;
+          }
+        });
+      }
+
+      getGroundInfo(x, z, currentY = 0, maxStepUp = 0.40) {
+        let highestGround = 0.0;
+        let groundBlock = 'grass';
+        let isSlippery = false;
+        let isBouncy = false;
+        let isLiquid = false;
+        let inWater = false;
+
+        for (let i = 0; i < this.blocks.length; i++) {
+          const b = this.blocks[i];
+          if (b.isLiquid) {
+            if (x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ) {
+              if (currentY <= b.topY + 0.12) {
+                inWater = true;
+                groundBlock = 'water';
+              }
+            }
+          } else if (b.isSolid) {
+            // Kiểm tra (x, z) có nằm trong diện tích của khối
+            if (x >= b.minX - 0.05 && x <= b.maxX + 0.05 && z >= b.minZ - 0.05 && z <= b.maxZ + 0.05) {
+              if (b.topY <= currentY + maxStepUp + 0.05) {
+                if (b.topY >= highestGround) {
+                  highestGround = b.topY;
+                  groundBlock = b.type;
+                  isSlippery = !!b.isSlippery;
+                  isBouncy = !!b.isBouncy;
+                }
+              }
+            }
+          }
+        }
+
+        return {
+          groundY: highestGround,
+          blockType: inWater ? 'water' : groundBlock,
+          isSlippery,
+          isBouncy,
+          isLiquid,
+          inWater
+        };
+      }
+
+      resolveHorizontal(px, pz, robotRadius, currentY, robotHeight = 0.12) {
+        let hit = false;
+        let collidedName = '';
+        let hitTnt = false;
+        let tntBlock = null;
+
+        // 1. Kiểm tra va chạm với các khối tường cao (cao hơn chân robot + ngưỡng auto-step)
+        for (let i = 0; i < this.blocks.length; i++) {
+          const b = this.blocks[i];
+          if (!b.isSolid) continue;
+          if (b.topY > currentY + 0.38 && b.minY < currentY + robotHeight) {
+            const closestX = Math.max(b.minX, Math.min(px, b.maxX));
+            const closestZ = Math.max(b.minZ, Math.min(pz, b.maxZ));
+            const dx = px - closestX;
+            const dz = pz - closestZ;
+            const dist = Math.hypot(dx, dz);
+            if (dist < robotRadius) {
+              if (dist > 0.0001) {
+                const overlap = robotRadius - dist;
+                px += (dx / dist) * overlap;
+                pz += (dz / dist) * overlap;
+              } else {
+                const dl = Math.abs(px - b.minX);
+                const dr = Math.abs(b.maxX - px);
+                const dt = Math.abs(pz - b.minZ);
+                const db = Math.abs(b.maxZ - pz);
+                const minD = Math.min(dl, dr, dt, db);
+                if (minD === dl) px = b.minX - robotRadius;
+                else if (minD === dr) px = b.maxX + robotRadius;
+                else if (minD === dt) pz = b.minZ - robotRadius;
+                else pz = b.maxZ + robotRadius;
+              }
+              hit = true;
+              collidedName = b.type;
+              if (b.isTnt) {
+                hitTnt = true;
+                tntBlock = b;
+              }
+            }
+          }
+        }
+
+        // 2. Kiểm tra cọc tiêu, cây cối, cột cổng
+        for (let i = 0; i < this.collisionWorld.circles.length; i++) {
+          const c = this.collisionWorld.circles[i];
+          const dx = px - c.x;
+          const dz = pz - c.z;
+          const dist = Math.hypot(dx, dz);
+          const minDist = c.r + robotRadius;
+          if (dist < minDist && dist > 0.0001) {
+            const overlap = minDist - dist;
+            px += (dx / dist) * overlap;
+            pz += (dz / dist) * overlap;
+            hit = true;
+            collidedName = c.name;
+          }
+        }
+
+        // 3. Kiểm tra hàng rào bao quanh
+        for (let i = 0; i < this.collisionWorld.boxes.length; i++) {
+          const bb = this.collisionWorld.boxes[i];
+          const closestX = Math.max(bb.minX, Math.min(px, bb.maxX));
+          const closestZ = Math.max(bb.minZ, Math.min(pz, bb.maxZ));
+          const dx = px - closestX;
+          const dz = pz - closestZ;
+          const dist = Math.hypot(dx, dz);
+          if (dist < robotRadius) {
+            if (dist > 0.0001) {
+              const overlap = robotRadius - dist;
+              px += (dx / dist) * overlap;
+              pz += (dz / dist) * overlap;
+            }
+            hit = true;
+            collidedName = bb.name;
+          }
+        }
+
+        return { x: px, z: pz, hit, name: collidedName, hitTnt, tntBlock };
+      }
+
+      getTerrainHeight(x, z) {
+        return this.getGroundInfo(x, z, 10.0, 10.0).groundY;
+      }
+    }
+
+    /* =========================================================================
+     * 5. MAIN APPLICATION ORCHESTRATOR
+     * Three.js Scene, Solid Physics, Input, Arcade HUD & Camera Integration
+     * ========================================================================= */
+    let scene, camera, renderer, orbitControls;
+    let rody, arena, audioSynth, voiceStudio;
+    let clock;
+
+    // Kinematics & Motion State (Minecraft 3D Voxel World)
+    let robotX = -3.5, robotY = 0.0, robotZ = -2.5;
+    let robotYaw = 0.88; // In radians facing forward
+    let robotPitch = 0, robotRoll = 0;
+    let linearVel = 0; // m/s
+    let angularVel = 0; // rad/s
+    let verticalVel = 0; // m/s (Minecraft gravity & jumping)
+    let lateralVel = 0; // m/s (Minecraft ice drifting)
+    let isOnGround = true;
+    let inWater = false;
+    let currentBlockType = 'grass';
+    let targetLinear = 0;
+    let targetAngular = 0;
+    let isTurbo = false;
+    let turboTimer = 0;
+    let dizzyTimer = 0;
+    let cameraShake = 0;
+    let tntCooldown = 0;
+    let lapTimer = 0;
+    let collectedDiamonds = 0;
+    let gateCount = 0;
+    let isHeadlightsOn = true;
+    let currentCameraMode = 'chase';
+    let currentDriveMode = 'manual';
+    let isCameraInitialized = false;
+
+    // Gesture & Pointer Orbit Follow Camera
+    let cameraOrbitYaw = 0;          // Azimuth relative to robot heading (0 = behind robot)
+    let cameraOrbitPitch = 0.32;      // Pitch angle in radians above ground (~18 deg)
+    let cameraDistance = 1.35;        // Follow distance in meters
+    let targetOrbitYaw = 0;
+    let targetOrbitPitch = 0.32;
+    let targetDistance = 1.35;
+    const defaultCamDistance = 1.35;
+    const defaultCamPitch = 0.32;
+
+    function resetCameraOrbit(smooth = true) {
+      targetOrbitYaw = 0;
+      targetOrbitPitch = defaultCamPitch;
+      targetDistance = (window.innerWidth < window.innerHeight) ? 1.65 : defaultCamDistance;
+      if (!smooth) {
+        cameraOrbitYaw = targetOrbitYaw;
+        cameraOrbitPitch = targetOrbitPitch;
+        cameraDistance = targetDistance;
+      }
+      showFloatingBanner('🎥 GÓC NHÌN ĐUA (Sau xe)', '#06b6d4');
+      if (typeof audioSynth !== 'undefined' && audioSynth.playConfirmBeep) {
+        audioSynth.playConfirmBeep();
+      }
+    }
+
+    function triggerJump() {
+      audioSynth.init();
+      audioSynth.resume();
+      if (inWater) {
+        verticalVel = 3.6;
+        audioSynth.playWaterSplash();
+        showFloatingBanner('💧 BƠI NỔI LÊN MẶT NƯỚC!', '#38bdf8');
+      } else if (isOnGround) {
+        verticalVel = 5.6; // Minecraft jump impulse -> nhảy cao ~0.72m
+        isOnGround = false;
+        audioSynth.playJumpSound();
+        rody.setEmotion('happy');
+        showFloatingBanner('🦘 NHẢY CAO MINECRAFT JUMP!', '#38bdf8');
+      }
+    }
+
+    // Telemetry odometry accumulation
+    let totalPulsesL = 0;
+    let totalPulsesR = 0;
+    let fpsFrames = 0, lastFpsTime = performance.now();
+
+    // Input States
+    const keys = { w: false, s: false, a: false, d: false, space: false, shift: false };
+
+    function init() {
+      clock = new THREE.Clock();
+
+      // Audio & Speech
+      audioSynth = new ProceduralAudioSynthesizer();
+      voiceStudio = new VoiceCommandStudio(handleVoiceCommand, handleVoiceVolume);
+
+      // WebGL Renderer
+      const canvas = document.getElementById('webgl-canvas');
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // Scene & Lighting: Warm Nintendo/Pixar Stylized Daylight Sun & Sky
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xbbe1fa); // Soft radiant sky blue
+      scene.fog = new THREE.Fog(0xbbe1fa, 35, 90);
+
+      // Soft natural ambient: Sky blue upper, warm earthy ground bounce (no neon green tint)
+      const hemiLight = new THREE.HemisphereLight(0xe0f2fe, 0x857564, 0.65);
+      hemiLight.position.set(0, 20, 0);
+      scene.add(hemiLight);
+
+      // Crisp Direct Sunlight with soft PCF shadows
+      const dirLight = new THREE.DirectionalLight(0xfff8eb, 1.25);
+      dirLight.position.set(16, 26, 18);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      dirLight.shadow.bias = -0.0005;
+      dirLight.shadow.camera.near = 0.5;
+      dirLight.shadow.camera.far = 55;
+      dirLight.shadow.camera.left = -15;
+      dirLight.shadow.camera.right = 15;
+      dirLight.shadow.camera.top = 15;
+      dirLight.shadow.camera.bottom = -15;
+      scene.add(dirLight);
+
+      // Gentle Sky Fill Light for soft shadow details
+      const fillLight = new THREE.DirectionalLight(0xbae6fd, 0.45);
+      fillLight.position.set(-16, 20, -14);
+      scene.add(fillLight);
+
+      // Camera (Adaptive FOV for portrait mobile vs landscape)
+      const isNarrow = window.innerWidth < window.innerHeight;
+      camera = new THREE.PerspectiveCamera(isNarrow ? 62 : 55, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(-3.5, 2.5, -4.5);
+
+      orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+      orbitControls.enableDamping = true;
+      orbitControls.dampingFactor = 0.08;
+      orbitControls.maxPolarAngle = Math.PI / 2 - 0.02;
+      orbitControls.enabled = false; // Initially in chase mode
+
+      // Instantiate Minecraft Daylight Arena
+      arena = new MinecraftDaylightArena(scene);
+
+      // Instantiate Official HP Robots Otto Starter 3D Model
+      rody = new OttoRobot3D({ theme: 'white', enableLights: true });
+      rody.root.scale.set(0.022, 0.022, 0.022);
+      scene.add(rody.root);
+
+      // Underglow Pointlight under Rody
+      const underglow = new THREE.PointLight(0x00f0ff, 1.8, 1.2);
+      underglow.position.set(0, 0.05, 0);
+      rody.root.add(underglow);
+
+      // Setup Event Listeners
+      setupInputListeners();
+      setupHUDControls();
+
+      // Window Resize Listener
+      window.addEventListener('resize', onWindowResize);
+
+      // Start Render Loop
+      requestAnimationFrame(renderLoop);
+
+      // Welcome voice chime after user gesture
+      window.addEventListener('click', () => {
+        audioSynth.init();
+        audioSynth.resume();
+      }, { once: true });
+    }
+
+    function setupInputListeners() {
+      window.addEventListener('keydown', (e) => {
+        audioSynth.init();
+        audioSynth.resume();
+
+        switch (e.code) {
+          case 'KeyW': case 'ArrowUp': keys.w = true; break;
+          case 'KeyS': case 'ArrowDown': keys.s = true; break;
+          case 'KeyA': case 'ArrowLeft': keys.a = true; break;
+          case 'KeyD': case 'ArrowRight': keys.d = true; break;
+          case 'Space':
+            triggerJump();
+            break;
+          case 'ShiftLeft': case 'ShiftRight':
+            if (!isTurbo) {
+              isTurbo = true;
+              turboTimer = 3.0;
+              audioSynth.playTurboWhoosh();
+              showFloatingBanner('🔥 NITRO BOOST TĂNG TỐC!', '#f59e0b');
+            }
+            break;
+          case 'KeyH':
+            audioSynth.playHorn();
+            rody.setEmotion('happy');
+            showFloatingBanner('📢 BÍP BÍP! CHÀO BẠN!', '#10b981');
+            break;
+          case 'KeyP':
+            toggleDriveMode('dance');
+            showFloatingBanner('💃 VŨ ĐIỆU CHIẾN THẮNG!', '#ec4899');
+            break;
+          case 'KeyL':
+            toggleHeadlights();
+            break;
+          case 'KeyR':
+            restartGame();
+            break;
+          case 'KeyQ':
+            targetOrbitYaw += 0.16; // Xoay góc quay sang trái quanh robot
+            break;
+          case 'KeyE':
+            targetOrbitYaw -= 0.16; // Xoay góc quay sang phải quanh robot
+            break;
+          case 'KeyC':
+            resetCameraOrbit(); // Tái định tâm góc nhìn ngay sau xe
+            break;
+          case 'KeyZ':
+            targetDistance = Math.max(0.65, targetDistance - 0.25); // Phóng to
+            break;
+          case 'KeyX':
+            targetDistance = Math.min(4.8, targetDistance + 0.25); // Thu nhỏ
+            break;
+          case 'Digit1': toggleDriveMode('manual'); break;
+          case 'Digit2': toggleDriveMode('avoid'); break;
+          case 'Digit3': toggleDriveMode('line'); break;
+          case 'Digit4': toggleDriveMode('dance'); break;
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        switch (e.code) {
+          case 'KeyW': case 'ArrowUp': keys.w = false; break;
+          case 'KeyS': case 'ArrowDown': keys.s = false; break;
+          case 'KeyA': case 'ArrowLeft': keys.a = false; break;
+          case 'KeyD': case 'ArrowRight': keys.d = false; break;
+          case 'Space': keys.space = false; break;
+          case 'ShiftLeft': case 'ShiftRight':
+            if (turboTimer <= 0) isTurbo = false;
+            break;
+        }
+      });
+
+      // --- CỬ CHỈ CHUỘT, TRACKPAD & ĐA CHẠM 3D (MOUSE / TRACKPAD / MULTI-TOUCH) ---
+      let isPointerDragging = false;
+      let activePointerId = null;
+      let lastPointerX = 0;
+      let lastPointerY = 0;
+      let pointerMovedDist = 0;
+      let lastTapTime = 0;
+
+      // 1. Kéo chuột / 1 ngón tay trên màn hình để xoay 360 độ quanh robot
+      window.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('button, input, select, textarea, .glass-card:not(#arcade-touch-overlay), .dev-drawer, .victory-dialog, .modal-dialog, .game-touch-btn, .game-pill-btn, .game-icon-btn')) {
+          return;
+        }
+        isPointerDragging = true;
+        activePointerId = e.pointerId;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+        pointerMovedDist = 0;
+      }, { passive: true });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isPointerDragging || e.pointerId !== activePointerId) return;
+        const dx = e.clientX - lastPointerX;
+        const dy = e.clientY - lastPointerY;
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+        pointerMovedDist += Math.hypot(dx, dy);
+
+        if (pointerMovedDist > 3) {
+          const sensitivity = 0.0055;
+          targetOrbitYaw -= dx * sensitivity;
+          targetOrbitPitch = Math.max(0.04, Math.min(1.42, targetOrbitPitch + dy * (sensitivity * 0.85)));
+        }
+      }, { passive: true });
+
+      const finishPointer = (e) => {
+        if (e.pointerId === activePointerId) {
+          isPointerDragging = false;
+          activePointerId = null;
+          // Nhấp đúp chuột / chạm 2 lần liên tiếp để đưa camera về ngay sau xe
+          if (pointerMovedDist < 8) {
+            const now = performance.now();
+            if (now - lastTapTime < 320) {
+              resetCameraOrbit();
+            }
+            lastTapTime = now;
+          }
+        }
+      };
+      window.addEventListener('pointerup', finishPointer, { passive: true });
+      window.addEventListener('pointercancel', finishPointer, { passive: true });
+
+      // 2. Trackpad 2 ngón & Lăn chuột (Trackpad swipe / pinch / mouse wheel)
+      window.addEventListener('wheel', (e) => {
+        if (e.target.closest('#terminal-logs, .terminal-logs, .dev-drawer')) {
+          return;
+        }
+        e.preventDefault();
+
+        // Mac Trackpad Pinch-to-Zoom (ctrlKey = true)
+        if (e.ctrlKey) {
+          targetDistance = Math.max(0.65, Math.min(4.8, targetDistance + e.deltaY * 0.008));
+          return;
+        }
+
+        // Vuốt 2 ngón tay sang ngang trên Trackpad -> Xoay camera
+        if (Math.abs(e.deltaX) > 0.5) {
+          targetOrbitYaw -= e.deltaX * 0.0035;
+        }
+
+        // Lăn dọc / vuốt 2 ngón lên xuống
+        if (Math.abs(e.deltaY) > 0.5) {
+          if (Math.abs(e.deltaX) > 0.5 || e.shiftKey) {
+            // Trackpad vuốt chéo / 2 chiều: chỉnh độ cao góc ngẩng camera
+            targetOrbitPitch = Math.max(0.04, Math.min(1.42, targetOrbitPitch - e.deltaY * 0.003));
+          } else {
+            // Lăn chuột dọc đơn thuần: Phóng to / Thu nhỏ (Zoom)
+            targetDistance = Math.max(0.65, Math.min(4.8, targetDistance + e.deltaY * 0.0022));
+          }
+        }
+      }, { passive: false });
+
+      // 3. Multi-Touch Chụm / Mở 2 ngón tay (Pinch-to-zoom trên iPad / Mobile)
+      let touchPinchStartDist = 0;
+      let touchPinchStartTargetDist = 1.35;
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          touchPinchStartDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          touchPinchStartTargetDist = targetDistance;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && touchPinchStartDist > 0) {
+          const curDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          if (curDist > 10) {
+            const ratio = touchPinchStartDist / curDist;
+            targetDistance = Math.max(0.65, Math.min(4.8, touchPinchStartTargetDist * ratio));
+          }
+        }
+      }, { passive: true });
+    }
+
+    function setupHUDControls() {
+      // 0. Unified In-Game Pause / Settings Menu Modal
+      const menuBackdrop = document.getElementById('game-menu-backdrop');
+      const btnOpenMenu = document.getElementById('btn-open-menu');
+      const btnCloseMenu = document.getElementById('btn-close-menu');
+      const btnMenuResume = document.getElementById('btn-menu-resume');
+
+      const openGameMenu = () => {
+        if (!menuBackdrop) return;
+        audioSynth.init();
+        audioSynth.resume();
+        audioSynth.playConfirmBeep();
+        menuBackdrop.classList.add('open');
+      };
+
+      const closeGameMenu = () => {
+        if (!menuBackdrop) return;
+        audioSynth.playConfirmBeep();
+        menuBackdrop.classList.remove('open');
+      };
+
+      if (btnOpenMenu) btnOpenMenu.addEventListener('click', openGameMenu);
+      if (btnCloseMenu) btnCloseMenu.addEventListener('click', closeGameMenu);
+      if (btnMenuResume) btnMenuResume.addEventListener('click', closeGameMenu);
+      if (menuBackdrop) {
+        menuBackdrop.addEventListener('click', (e) => {
+          if (e.target === menuBackdrop) closeGameMenu();
+        });
+      }
+
+      window.addEventListener('keydown', (e) => {
+        if ((e.key === 'm' || e.key === 'M') && (!document.activeElement || document.activeElement.tagName !== 'INPUT')) {
+          if (menuBackdrop && menuBackdrop.classList.contains('open')) closeGameMenu();
+          else openGameMenu();
+        } else if (e.key === 'Escape') {
+          if (menuBackdrop && menuBackdrop.classList.contains('open')) closeGameMenu();
+        }
+      });
+
+      // Menu Camera Presets
+      document.querySelectorAll('[data-menu-cam]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const mode = btn.dataset.menuCam;
+          document.querySelectorAll('[data-menu-cam]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentCameraMode = (mode === 'pov' || mode === 'top') ? mode : 'chase';
+          if (mode === 'top') {
+            targetOrbitYaw = 0; targetOrbitPitch = 1.40; targetDistance = 3.5;
+            showFloatingBanner('🗺️ GÓC NHÌN TRÊN CAO', '#06b6d4');
+          } else if (mode === 'pov') {
+            targetOrbitYaw = 0; targetOrbitPitch = 0.15; targetDistance = 0.5;
+            showFloatingBanner('🏎️ GÓC NHÌN NGƯỜI LÁI (POV)', '#06b6d4');
+          } else if (mode === 'orbit') {
+            targetOrbitYaw = 0.78; targetOrbitPitch = 0.52; targetDistance = 2.0;
+            showFloatingBanner('🦅 GÓC NHÌN TOÀN CẢNH (ORBIT)', '#06b6d4');
+          } else {
+            targetOrbitYaw = 0; targetOrbitPitch = 0.32; targetDistance = 1.35;
+            showFloatingBanner('📷 GÓC NHÌN SAU XE (CHASE)', '#06b6d4');
+          }
+          audioSynth.playConfirmBeep();
+        });
+      });
+
+      // Menu Camera Reset
+      const btnMenuCamReset = document.getElementById('btn-menu-cam-reset');
+      if (btnMenuCamReset) {
+        btnMenuCamReset.addEventListener('click', () => {
+          resetCameraOrbit();
+          audioSynth.playConfirmBeep();
+          showFloatingBanner('🎯 ĐÃ ĐẶT LẠI GÓC XOAY CAMERA', '#38bdf8');
+          document.querySelectorAll('[data-menu-cam]').forEach(b => {
+            b.classList.toggle('active', b.dataset.menuCam === 'chase');
+          });
+        });
+      }
+
+      // Menu Toggle: SFX
+      const btnMenuToggleSfx = document.getElementById('btn-menu-toggle-sfx');
+      if (btnMenuToggleSfx) {
+        btnMenuToggleSfx.addEventListener('click', () => {
+          audioSynth.enabled = !audioSynth.enabled;
+          btnMenuToggleSfx.textContent = audioSynth.enabled ? 'BẬT' : 'TẮT';
+          btnMenuToggleSfx.classList.toggle('active', audioSynth.enabled);
+          if (audioSynth.enabled) audioSynth.playBootChime();
+          showFloatingBanner(audioSynth.enabled ? '🔊 ÂM THANH: BẬT' : '🔇 ÂM THANH: TẮT', '#10b981');
+        });
+      }
+
+      // Menu Toggle: Radar
+      const btnMenuToggleRadar = document.getElementById('btn-menu-toggle-radar');
+      const radarCard = document.querySelector('.arcade-radar-card');
+      if (btnMenuToggleRadar && radarCard) {
+        btnMenuToggleRadar.addEventListener('click', () => {
+          const isShown = radarCard.classList.toggle('force-show');
+          btnMenuToggleRadar.textContent = isShown ? 'HIỆN' : 'ẨN';
+          btnMenuToggleRadar.classList.toggle('active', isShown);
+          audioSynth.playConfirmBeep();
+          showFloatingBanner(isShown ? '🗺️ SA BÀN: HIỆN' : '🗺️ SA BÀN: ẨN', '#38bdf8');
+        });
+      }
+
+      // Menu Toggle: F3 & Timer
+      const btnMenuToggleF3 = document.getElementById('btn-menu-toggle-f3');
+      const pillF3 = document.getElementById('pill-f3');
+      const pillTimer = document.getElementById('pill-timer');
+      if (btnMenuToggleF3) {
+        btnMenuToggleF3.addEventListener('click', () => {
+          const isShown = (pillF3 && pillF3.style.display !== 'none');
+          const nextShown = !isShown;
+          if (pillF3) pillF3.style.display = nextShown ? 'flex' : 'none';
+          if (pillTimer) pillTimer.style.display = nextShown ? 'flex' : 'none';
+          btnMenuToggleF3.textContent = nextShown ? 'HIỆN' : 'ẨN';
+          btnMenuToggleF3.classList.toggle('active', nextShown);
+          audioSynth.playConfirmBeep();
+          showFloatingBanner(nextShown ? '📊 TỌA ĐỘ F3 & TIMER: HIỆN' : '📊 TỌA ĐỘ F3 & TIMER: ẨN', '#a855f7');
+        });
+      }
+
+      // Menu Toggle: Headlights
+      const btnMenuToggleLights = document.getElementById('btn-menu-toggle-lights');
+      if (btnMenuToggleLights) {
+        btnMenuToggleLights.addEventListener('click', () => {
+          toggleHeadlights();
+          btnMenuToggleLights.textContent = isHeadlightsOn ? 'BẬT' : 'TẮT';
+          btnMenuToggleLights.classList.toggle('active', isHeadlightsOn);
+          audioSynth.playConfirmBeep();
+          showFloatingBanner(isHeadlightsOn ? '💡 ĐÈN PHA: BẬT' : '💡 ĐÈN PHA: TẮT', '#f59e0b');
+        });
+      }
+
+      // Menu Action: Replay
+      const btnMenuReplay = document.getElementById('btn-menu-replay');
+      if (btnMenuReplay) {
+        btnMenuReplay.addEventListener('click', () => {
+          closeGameMenu();
+          restartGame();
+        });
+      }
+
+      // Menu Action: Help
+      const btnMenuHelp = document.getElementById('btn-menu-help');
+      const modalHelp = document.getElementById('modal-help');
+      if (btnMenuHelp && modalHelp) {
+        btnMenuHelp.addEventListener('click', () => {
+          closeGameMenu();
+          modalHelp.classList.add('open');
+        });
+      }
+
+      // Menu Action: Dev Drawer
+      const btnMenuDev = document.getElementById('btn-menu-dev');
+      const devDrawer = document.getElementById('dev-drawer');
+      if (btnMenuDev && devDrawer) {
+        btnMenuDev.addEventListener('click', () => {
+          closeGameMenu();
+          devDrawer.classList.add('open');
+          audioSynth.playConfirmBeep();
+        });
+      }
+
+      // 1. Arcade Top Bar Camera Preset Switcher (Fallback / Legacy)
+      const btnCam = document.getElementById('btn-quick-cam');
+      if (btnCam) {
+        const presets = [
+          { mode: 'chase', icon: '🎥', label: '🎥 GÓC NHÌN ĐUA (Sau xe)', yaw: 0, pitch: 0.32, dist: 1.35 },
+          { mode: 'selfie', icon: '🤳', label: '🤳 TRỰC DIỆN (Xem biểu cảm)', yaw: Math.PI, pitch: 0.22, dist: 1.20 },
+          { mode: 'side', icon: '📐', label: '📐 GÓC NGHIÊNG 45°', yaw: 0.78, pitch: 0.52, dist: 1.85 },
+          { mode: 'top', icon: '🗺️', label: '🗺️ TRÊN CAO (Toàn cảnh)', yaw: 0, pitch: 1.40, dist: 3.5 },
+          { mode: 'pov', icon: '👀', label: '👀 MẮT ROBOT (POV)', yaw: 0, pitch: 0.32, dist: 1.35 }
+        ];
+        let presetIdx = 0;
+
+        btnCam.addEventListener('click', () => {
+          presetIdx = (presetIdx + 1) % presets.length;
+          const p = presets[presetIdx];
+          currentCameraMode = (p.mode === 'pov' || p.mode === 'top') ? p.mode : 'chase';
+          targetOrbitYaw = p.yaw;
+          targetOrbitPitch = p.pitch;
+          targetDistance = p.dist;
+
+          btnCam.innerHTML = p.icon;
+          btnCam.title = `${p.label} (Kéo chuột / trackpad để xoay 360°)`;
+          showFloatingBanner(p.label, '#06b6d4');
+          logTerminal(`[cam] ${p.label}`);
+        });
+      }
+
+      // Dev Drawer Slide-Over Toggle
+      const btnToggleDev = document.getElementById('btn-toggle-dev');
+      const btnCloseDev = document.getElementById('btn-close-dev');
+      if (btnToggleDev && devDrawer) {
+        btnToggleDev.addEventListener('click', () => {
+          devDrawer.classList.toggle('open');
+          audioSynth.playConfirmBeep();
+        });
+      }
+      if (btnCloseDev && devDrawer) {
+        btnCloseDev.addEventListener('click', () => {
+          devDrawer.classList.remove('open');
+        });
+      }
+
+      // 2. Kids Keybar Buttons
+      const btnQuickTurbo = document.getElementById('btn-quick-turbo');
+      if (btnQuickTurbo) {
+        btnQuickTurbo.addEventListener('click', () => {
+          isTurbo = !isTurbo;
+          if (isTurbo) {
+            turboTimer = 3.0;
+            audioSynth.playTurboWhoosh();
+            showFloatingBanner('🔥 NITRO BOOST KÍCH HOẠT!', '#f59e0b');
+          }
+        });
+      }
+
+      const btnQuickJump = document.getElementById('btn-quick-jump');
+      if (btnQuickJump) {
+        btnQuickJump.addEventListener('click', () => {
+          triggerJump();
+        });
+      }
+
+      const btnCamHint = document.getElementById('btn-cam-orbit-hint');
+      if (btnCamHint) {
+        btnCamHint.addEventListener('click', () => {
+          resetCameraOrbit();
+        });
+      }
+
+      const btnQuickHorn = document.getElementById('btn-quick-horn');
+      if (btnQuickHorn) {
+        btnQuickHorn.addEventListener('click', () => {
+          audioSynth.playHorn();
+          rody.setEmotion('happy');
+          showFloatingBanner('📢 BÍP BÍP! CHÀO BẠN!', '#10b981');
+        });
+      }
+
+      const btnQuickDance = document.getElementById('btn-quick-dance');
+      if (btnQuickDance) {
+        btnQuickDance.addEventListener('click', () => {
+          toggleDriveMode('dance');
+          showFloatingBanner('💃 VŨ ĐIỆU CHIẾN THẮNG!', '#ec4899');
+        });
+      }
+
+      const btnArcadeMic = document.getElementById('btn-arcade-mic');
+      if (btnArcadeMic) {
+        btnArcadeMic.addEventListener('click', () => {
+          audioSynth.init();
+          audioSynth.resume();
+          voiceStudio.toggle();
+          showFloatingBanner(voiceStudio.isListening ? '🎙️ ĐANG LẮNG NGHE BẠN...' : '🔇 ĐÃ TẮT MIC', '#38bdf8');
+        });
+      }
+
+      const btnReplay = document.getElementById('btn-replay');
+      if (btnReplay) {
+        btnReplay.addEventListener('click', restartGame);
+      }
+
+      const btnVicRestart = document.getElementById('btn-vic-restart');
+      if (btnVicRestart) {
+        btnVicRestart.addEventListener('click', () => {
+          const vic = document.getElementById('modal-victory');
+          if (vic) vic.classList.remove('open');
+          restartGame();
+        });
+      }
+
+      // Radar 2D Map Toggle (Mobile friendly fallback)
+      const btnToggleRadar = document.getElementById('btn-toggle-radar');
+      if (btnToggleRadar && radarCard) {
+        btnToggleRadar.addEventListener('click', () => {
+          radarCard.classList.toggle('force-show');
+          audioSynth.playConfirmBeep();
+        });
+      }
+
+      // 3. Mobile / Tablet Touch Controls (Robust Multi-Touch with Pointer Capture)
+      const bindTouchKey = (btnId, keyProp) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+
+        let activePointerId = null;
+
+        const press = (e) => {
+          if (e.cancelable) e.preventDefault();
+          audioSynth.init();
+          audioSynth.resume();
+          if (navigator.vibrate) {
+            try { navigator.vibrate(12); } catch (_) {}
+          }
+          keys[keyProp] = true;
+          btn.classList.add('active');
+          if (e.pointerId !== undefined && btn.setPointerCapture) {
+            activePointerId = e.pointerId;
+            try { btn.setPointerCapture(e.pointerId); } catch (_) {}
+          }
+        };
+
+        const release = (e) => {
+          if (e.cancelable) e.preventDefault();
+          keys[keyProp] = false;
+          btn.classList.remove('active');
+          if (activePointerId !== null && btn.releasePointerCapture) {
+            try { btn.releasePointerCapture(activePointerId); } catch (_) {}
+            activePointerId = null;
+          }
+        };
+
+        if (window.PointerEvent) {
+          btn.addEventListener('pointerdown', press, { passive: false });
+          btn.addEventListener('pointerup', release, { passive: false });
+          btn.addEventListener('pointercancel', release, { passive: false });
+        } else {
+          btn.addEventListener('touchstart', press, { passive: false });
+          btn.addEventListener('touchend', release, { passive: false });
+          btn.addEventListener('touchcancel', release, { passive: false });
+          btn.addEventListener('mousedown', press);
+          btn.addEventListener('mouseup', release);
+        }
+      };
+
+      bindTouchKey('touch-gas', 'w');
+      bindTouchKey('touch-brake', 's');
+      bindTouchKey('touch-left', 'a');
+      bindTouchKey('touch-right', 'd');
+
+      const btnTouchJump = document.getElementById('touch-jump');
+      if (btnTouchJump) {
+        const triggerTouchJump = (e) => {
+          if (e.cancelable) e.preventDefault();
+          if (navigator.vibrate) try { navigator.vibrate(18); } catch (_) {}
+          triggerJump();
+          btnTouchJump.classList.add('active');
+          setTimeout(() => btnTouchJump.classList.remove('active'), 200);
+        };
+        btnTouchJump.addEventListener('pointerdown', triggerTouchJump, { passive: false });
+        btnTouchJump.addEventListener('click', triggerTouchJump);
+      }
+
+      const btnTouchTurbo = document.getElementById('touch-turbo');
+      if (btnTouchTurbo) {
+        const triggerTurbo = (e) => {
+          if (e.cancelable) e.preventDefault();
+          audioSynth.init();
+          audioSynth.resume();
+          if (navigator.vibrate) try { navigator.vibrate(22); } catch (_) {}
+          isTurbo = true;
+          turboTimer = 2.5;
+          audioSynth.playTurboWhoosh();
+          showFloatingBanner('🔥 NITRO BOOST!', '#f59e0b');
+          btnTouchTurbo.classList.add('active');
+          setTimeout(() => btnTouchTurbo.classList.remove('active'), 250);
+        };
+        btnTouchTurbo.addEventListener('pointerdown', triggerTurbo, { passive: false });
+        btnTouchTurbo.addEventListener('click', triggerTurbo);
+      }
+
+      const btnTouchHorn = document.getElementById('touch-horn');
+      if (btnTouchHorn) {
+        const triggerHorn = (e) => {
+          if (e.cancelable) e.preventDefault();
+          audioSynth.init();
+          audioSynth.resume();
+          if (navigator.vibrate) try { navigator.vibrate(14); } catch (_) {}
+          audioSynth.playHorn();
+          rody.setEmotion('happy');
+          showFloatingBanner('📢 BÍP BÍP!', '#10b981');
+          btnTouchHorn.classList.add('active');
+          setTimeout(() => btnTouchHorn.classList.remove('active'), 200);
+        };
+        btnTouchHorn.addEventListener('pointerdown', triggerHorn, { passive: false });
+        btnTouchHorn.addEventListener('click', triggerHorn);
+      }
+
+      // Quick Mic Toggle (Top Header, Keybar, & Mobile)
+      const setupMicToggle = (elemId) => {
+        const btn = document.getElementById(elemId);
+        if (!btn) return;
+        const toggleMic = (e) => {
+          if (e.cancelable) e.preventDefault();
+          audioSynth.init();
+          audioSynth.resume();
+          if (navigator.vibrate) try { navigator.vibrate(18); } catch (_) {}
+          voiceStudio.toggle();
+          const isListening = voiceStudio.isListening;
+          showFloatingBanner(isListening ? '🎙️ ĐANG LẮNG NGHE BẠN...' : '🔇 ĐÃ TẮT MIC', '#38bdf8');
+          document.querySelectorAll('#btn-quick-mic, #btn-arcade-mic, #btn-mic').forEach(b => {
+            if (isListening) b.classList.add('listening');
+            else b.classList.remove('listening');
+          });
+        };
+        btn.addEventListener('pointerdown', toggleMic, { passive: false });
+        btn.addEventListener('click', toggleMic);
+      };
+      setupMicToggle('btn-quick-mic');
+      setupMicToggle('btn-arcade-mic');
+
+      // 4. Dev Drawer Controls (preserved for engineering & makers)
+      document.querySelectorAll('.cam-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentCameraMode = btn.dataset.cam;
+          if (currentCameraMode === 'chase') {
+            targetOrbitYaw = 0; targetOrbitPitch = 0.32; targetDistance = 1.35;
+          } else if (currentCameraMode === 'top') {
+            targetOrbitYaw = 0; targetOrbitPitch = 1.40; targetDistance = 3.5;
+          } else if (currentCameraMode === 'orbit') {
+            targetOrbitYaw = 0.78; targetOrbitPitch = 0.52; targetDistance = 2.0;
+          }
+          logTerminal(`[cam] Chuyển góc nhìn: ${btn.textContent.trim()}`);
+        });
+      });
+
+      document.querySelectorAll('.mode-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          toggleDriveMode(btn.dataset.mode);
+        });
+      });
+
+      document.querySelectorAll('.btn-emo').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.btn-emo').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          rody.setEmotion(btn.dataset.emo);
+          audioSynth.playConfirmBeep();
+          logTerminal(`[face] Biểu cảm: ${btn.dataset.emo}`);
+        });
+      });
+
+      document.querySelectorAll('.color-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          rody.setChassisColor(chip.dataset.color);
+          audioSynth.playConfirmBeep();
+          logTerminal(`[theme] Đổi màu vỏ: ${chip.dataset.color}`);
+        });
+      });
+
+      const btnSfx = document.getElementById('btn-toggle-sfx');
+      if (btnSfx) {
+        btnSfx.addEventListener('click', () => {
+          audioSynth.enabled = !audioSynth.enabled;
+          document.getElementById('sfx-icon').textContent = audioSynth.enabled ? '🔊' : '🔇';
+          document.getElementById('sfx-text').textContent = audioSynth.enabled ? 'SFX BẬT' : 'SFX TẮT';
+          logTerminal(`[audio] SFX: ${audioSynth.enabled ? 'ON' : 'OFF'}`);
+        });
+      }
+
+      const btnMic = document.getElementById('btn-mic');
+      if (btnMic) {
+        btnMic.addEventListener('click', () => {
+          audioSynth.init();
+          audioSynth.resume();
+          voiceStudio.toggle();
+        });
+      }
+
+      document.querySelectorAll('.chip-btn').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          audioSynth.init();
+          audioSynth.resume();
+          voiceStudio._processVoiceTranscript(chip.dataset.voice);
+        });
+      });
+
+      const btnTurbo = document.getElementById('btn-turbo');
+      if (btnTurbo) {
+        btnTurbo.addEventListener('click', () => {
+          isTurbo = !isTurbo;
+          if (isTurbo) audioSynth.playTurboWhoosh();
+          btnTurbo.style.borderColor = isTurbo ? 'var(--cyan)' : 'var(--border)';
+        });
+      }
+
+      const btnHorn = document.getElementById('btn-horn');
+      if (btnHorn) {
+        btnHorn.addEventListener('click', () => {
+          audioSynth.playHorn();
+          rody.setEmotion('happy');
+        });
+      }
+
+      const btnHeadlight = document.getElementById('btn-headlight');
+      if (btnHeadlight) {
+        btnHeadlight.addEventListener('click', toggleHeadlights);
+      }
+
+      // Terminal input
+      const termInput = document.getElementById('terminal-input');
+      const termSend = document.getElementById('terminal-send');
+      if (termInput && termSend) {
+        const executeTermCmd = () => {
+          const cmd = termInput.value.trim().toLowerCase();
+          if (!cmd) return;
+          termInput.value = '';
+          logTerminal(`> ${cmd}`);
+          if (cmd === 'help') {
+            logTerminal('Lệnh: speed [val], dance, happy, dizzy, stop, clear');
+          } else if (cmd === 'dance') {
+            toggleDriveMode('dance');
+          } else if (cmd === 'clear') {
+            document.getElementById('terminal-logs').innerHTML = '';
+          } else if (cmd.startsWith('speed')) {
+            const val = parseFloat(cmd.split(' ')[1]) || 50;
+            logTerminal(`Tốc độ đặt: ${val}`);
+          } else {
+            rody.setEmotion(cmd);
+          }
+        };
+        termSend.addEventListener('click', executeTermCmd);
+        termInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeTermCmd(); });
+      }
+
+      // Help Modal
+      const btnHelp = document.getElementById('btn-help');
+      const modalClose = document.getElementById('modal-close');
+      if (modalHelp && btnHelp) {
+        btnHelp.addEventListener('click', () => modalHelp.classList.add('open'));
+      }
+      if (modalHelp && modalClose) {
+        modalClose.addEventListener('click', () => modalHelp.classList.remove('open'));
+      }
+      if (modalHelp) {
+        modalHelp.addEventListener('click', (e) => { if (e.target === modalHelp) modalHelp.classList.remove('open'); });
+      }
+    }
+
+    function toggleDriveMode(mode) {
+      currentDriveMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      audioSynth.playConfirmBeep();
+      logTerminal(`[mode] Chuyển chế độ: ${mode.toUpperCase()}`);
+
+      if (mode === 'dance') {
+        rody.setEmotion('happy');
+        audioSynth.playHappyChirp();
+      }
+    }
+
+    function toggleHeadlights() {
+      isHeadlightsOn = !isHeadlightsOn;
+      if (rody.headlightsGroup) {
+        rody.headlightsGroup.visible = isHeadlightsOn;
+      }
+      logTerminal(`[light] Đèn pha: ${isHeadlightsOn ? 'ON' : 'OFF'}`);
+    }
+
+    function restartGame() {
+      robotX = -3.5;
+      robotY = 0.0;
+      robotZ = -2.5;
+      robotYaw = 0.88;
+      robotPitch = 0;
+      robotRoll = 0;
+      linearVel = 0;
+      angularVel = 0;
+      verticalVel = 0;
+      lateralVel = 0;
+      isOnGround = true;
+      inWater = false;
+      targetLinear = 0;
+      targetAngular = 0;
+      lapTimer = 0;
+      collectedDiamonds = 0;
+      gateCount = 0;
+      currentDriveMode = 'manual';
+
+      // Reactivate all diamonds
+      if (arena && arena.crystals) {
+        arena.crystals.forEach(c => {
+          c.active = true;
+          c.mesh.visible = true;
+        });
+        arena.score = 0;
+      }
+
+      const elDiam = document.getElementById('quest-diamonds');
+      if (elDiam) elDiam.textContent = '0 / 6';
+      const elGate = document.getElementById('quest-gates');
+      if (elGate) elGate.textContent = '0 / 2';
+      const elTimer = document.getElementById('racer-timer');
+      if (elTimer) elTimer.textContent = '00:00.0';
+
+      rody.setEmotion('idle');
+      audioSynth.playBootChime();
+      showFloatingBanner('🏁 CUỘC ĐUA MỚI BẮT ĐẦU!', '#10b981');
+      logTerminal('[sys] Khởi động vòng đua mới!');
+    }
+
+    function resetRobotPosition() {
+      restartGame();
+    }
+
+    function handleVoiceCommand(cmd, originalText) {
+      audioSynth.playConfirmBeep();
+
+      switch (cmd) {
+        case 'forward':
+          targetLinear = 0.35;
+          targetAngular = 0;
+          rody.setEmotion('drive_fwd');
+          showFloatingBanner('🚗 TIẾN LÊN PHÍA TRƯỚC!', '#38bdf8');
+          setTimeout(() => { if (currentDriveMode === 'manual') targetLinear = 0; }, 1800);
+          break;
+        case 'backward':
+          targetLinear = -0.3;
+          targetAngular = 0;
+          rody.setEmotion('drive_rev');
+          showFloatingBanner('⬅️ LÙI LẠI PHÍA SAU!', '#f59e0b');
+          setTimeout(() => { if (currentDriveMode === 'manual') targetLinear = 0; }, 1600);
+          break;
+        case 'left':
+          targetAngular = 2.2;
+          rody.setEmotion('turn_left');
+          showFloatingBanner('🔄 RẼ TRÁI!', '#a855f7');
+          setTimeout(() => { targetAngular = 0; }, 900);
+          break;
+        case 'right':
+          targetAngular = -2.2;
+          rody.setEmotion('turn_right');
+          showFloatingBanner('🔄 RẼ PHẢI!', '#a855f7');
+          setTimeout(() => { targetAngular = 0; }, 900);
+          break;
+        case 'stop':
+          targetLinear = 0;
+          targetAngular = 0;
+          keys.w = keys.s = keys.a = keys.d = false;
+          rody.setEmotion('idle');
+          audioSynth.playImpactThump();
+          showFloatingBanner('🛑 DỪNG LẠI!', '#f43f5e');
+          break;
+        case 'spin':
+          targetAngular = 4.5;
+          rody.setEmotion('dizzy');
+          showFloatingBanner('🌀 XOAY TRÒN CHÓNG MẶT!', '#ec4899');
+          setTimeout(() => { targetAngular = 0; rody.setEmotion('idle'); }, 2000);
+          break;
+        case 'jump':
+          triggerJump();
+          break;
+        case 'dance':
+          toggleDriveMode('dance');
+          showFloatingBanner('💃 NHẢY MÚA!', '#ec4899');
+          break;
+        case 'hello':
+        case 'happy':
+          rody.setEmotion('happy');
+          audioSynth.playHappyChirp();
+          showFloatingBanner('😄 XIN CHÀO BẠN NHỎ!', '#10b981');
+          break;
+        case 'sleep':
+          rody.setEmotion('sleepy');
+          showFloatingBanner('😴 ĐI NGỦ THÔI...', '#94a3b8');
+          break;
+        case 'light':
+          toggleHeadlights();
+          break;
+      }
+    }
+
+    function handleVoiceVolume(volume) {
+      const bars = document.querySelectorAll('.eq-bar');
+      const norm = Math.min(volume / 128, 1.0);
+      bars.forEach((bar, idx) => {
+        const height = Math.max(4, norm * 18 * (0.4 + Math.sin(idx * 0.8) * 0.6));
+        bar.style.height = `${height}px`;
+      });
+    }
+
+    function logTerminal(msg) {
+      const logs = document.getElementById('terminal-logs');
+      if (!logs) return;
+      const row = document.createElement('div');
+      row.textContent = msg;
+      logs.appendChild(row);
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function showFloatingBanner(text, color = '#22c55e') {
+      const banner = document.getElementById('racer-banner');
+      if (!banner) return;
+      banner.textContent = text;
+      banner.style.color = color;
+      banner.classList.add('show');
+      clearTimeout(banner._timeout);
+      banner._timeout = setTimeout(() => {
+        banner.classList.remove('show');
+      }, 1600);
+    }
+
+    function triggerCameraShake(duration = 0.22) {
+      cameraShake = duration;
+    }
+
+    function triggerTntExplosion(tntBlock) {
+      audioSynth.playTntFuse();
+      showFloatingBanner('🧨 CẢNH BÁO: TNT ĐANG CHÁY NGÒI!', '#ef4444');
+      rody.setEmotion('obstacle');
+
+      let flashes = 0;
+      const origMat = tntBlock.mesh.material;
+      const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const flashInterval = setInterval(() => {
+        flashes++;
+        tntBlock.mesh.material = (flashes % 2 === 1) ? flashMat : origMat;
+        if (flashes >= 6) {
+          clearInterval(flashInterval);
+          tntBlock.mesh.material = origMat;
+          audioSynth.playTntExplode();
+          triggerCameraShake(0.5);
+          showFloatingBanner('💥 BOOM! TNT ĐÃ NỔ TUNG! 🚀', '#ef4444');
+          verticalVel = 8.5; // Blast upward launch
+          linearVel = -3.2; // Recoil
+          isOnGround = false;
+          rody.setEmotion('dizzy');
+          dizzyTimer = 2.5;
+        }
+      }, 100);
+    }
+
+    /* =========================================================================
+     * 6. MINECRAFT 3D PHYSICS & KINEMATICS ENGINE (60 FPS)
+     * Real Gravity, Voxel Collision, Auto-Step, Materials (Ice, Slime, Water, TNT)
+     * ========================================================================= */
+    function updatePhysics(dt) {
+      const maxSpeed = isTurbo ? 3.8 : 2.2;
+      const accel = 6.0;
+      const turnRate = 3.6;
+
+      // 1. Process Autonomous Modes or Keyboard Input
+      if (currentDriveMode === 'manual') {
+        if (keys.w) targetLinear = maxSpeed;
+        else if (keys.s) targetLinear = -maxSpeed * 0.65;
+        else targetLinear = 0;
+
+        if (keys.a) targetAngular = turnRate;
+        else if (keys.d) targetAngular = -turnRate;
+        else targetAngular = 0;
+      } else if (currentDriveMode === 'avoid') {
+        const aheadDist = checkSonarAhead(robotX, robotZ, robotYaw);
+        if (aheadDist < 0.85) {
+          targetLinear = 0.5;
+          targetAngular = turnRate;
+          rody.setEmotion('obstacle');
+        } else {
+          targetLinear = 1.6;
+          targetAngular = Math.sin(clock.getElapsedTime() * 0.8) * 0.8;
+          rody.setEmotion('drive_fwd');
+        }
+      } else if (currentDriveMode === 'dance') {
+        const t = clock.getElapsedTime() * 6;
+        targetLinear = Math.sin(t) * 0.6;
+        targetAngular = Math.cos(t * 0.7) * 4.2;
+        if (Math.floor(t) % 12 === 0) rody.setEmotion('happy');
+      }
+
+      // 2. Query Ground info & Materials at current position
+      const groundInfo = arena.getGroundInfo(robotX, robotZ, robotY, 0.40);
+      currentBlockType = groundInfo.blockType;
+      inWater = groundInfo.inWater;
+      const onIce = (currentBlockType === 'ice');
+      const onSlime = (currentBlockType === 'slime');
+
+      // Material physics adjustments
+      let actualTargetLinear = targetLinear;
+      let accelFactor = accel;
+
+      if (inWater) {
+        actualTargetLinear *= 0.45; // Water drag reduces speed
+        accelFactor = 2.8;
+      } else if (onIce) {
+        accelFactor = 1.2; // Low friction on ice -> high inertia
+      }
+
+      // Smooth velocity interpolation
+      linearVel += (actualTargetLinear - linearVel) * Math.min(accelFactor * dt, 1.0);
+      const angAccel = onIce ? 2.2 : 6.0;
+      angularVel += (targetAngular - angularVel) * Math.min(angAccel * dt, 1.0);
+
+      // Ice Drift Lateral Physics (Centrifugal sliding)
+      if (onIce) {
+        lateralVel += Math.sin(angularVel) * Math.abs(linearVel) * 0.35;
+        lateralVel *= Math.pow(0.96, dt * 60);
+        if (Math.abs(lateralVel) > 0.3 && Math.random() < 0.15) {
+          rody.setEmotion('dizzy');
+        }
+      } else {
+        lateralVel *= Math.pow(0.5, dt * 60);
+      }
+
+      // Integrate Horizontal Movement
+      robotYaw += angularVel * dt;
+      let moveX = Math.sin(robotYaw) * linearVel * dt + Math.cos(robotYaw) * lateralVel * dt;
+      let moveZ = Math.cos(robotYaw) * linearVel * dt - Math.sin(robotYaw) * lateralVel * dt;
+      let nextX = robotX + moveX;
+      let nextZ = robotZ + moveZ;
+
+      // 3. Auto-Step & Ground Query at target position
+      const nextGround = arena.getGroundInfo(nextX, nextZ, robotY, 0.40);
+
+      // Auto-step smoothly onto higher slab if height diff <= 0.40m
+      if (nextGround.groundY > robotY && nextGround.groundY <= robotY + 0.40) {
+        robotY = Math.min(robotY + 7.5 * dt, nextGround.groundY);
+        isOnGround = true;
+      }
+
+      // 4. Horizontal Collision Resolution (Wall Blocks, Trees, TNT)
+      const col = arena.resolveHorizontal(nextX, nextZ, 0.085, robotY, 0.12);
+      if (col.hit) {
+        robotX = col.x;
+        robotZ = col.z;
+        if (col.hitTnt && col.tntBlock && tntCooldown <= 0) {
+          tntCooldown = 3.5;
+          triggerTntExplosion(col.tntBlock);
+        } else if (Math.abs(linearVel) > 0.15) {
+          linearVel = -linearVel * 0.35;
+          audioSynth.playImpactThump();
+          triggerCameraShake(0.22);
+          rody.setEmotion('dizzy');
+          dizzyTimer = 1.2;
+          showFloatingBanner(`💥 VA CHẠM: ${col.name.toUpperCase()}!`, '#f43f5e');
+        }
+      } else {
+        robotX = nextX;
+        robotZ = nextZ;
+      }
+
+      // 5. Gravity & Vertical Dynamics (Minecraft g = 22.0 m/s^2)
+      const GRAVITY = 22.0;
+      const TERMINAL_VEL = -25.0;
+
+      if (inWater) {
+        // Archimedes Buoyancy
+        const targetWaterY = 0.18;
+        if (robotY < targetWaterY) {
+          verticalVel += 14.0 * dt;
+          if (verticalVel > 2.0) verticalVel = 2.0;
+        } else {
+          verticalVel -= 9.8 * dt;
+        }
+        isOnGround = false;
+      } else {
+        // Air / Ground Free-fall
+        if (!isOnGround) {
+          verticalVel -= GRAVITY * dt;
+          if (verticalVel < TERMINAL_VEL) verticalVel = TERMINAL_VEL;
+        }
+      }
+
+      // Integrate Vertical Position
+      robotY += verticalVel * dt;
+
+      // Ground check at finalized (robotX, robotZ)
+      const finalGround = arena.getGroundInfo(robotX, robotZ, robotY, 0.10);
+      if (robotY <= finalGround.groundY) {
+        robotY = finalGround.groundY;
+
+        // Slime Trampoline Super Bounce!
+        if (finalGround.isBouncy && verticalVel < -1.2) {
+          verticalVel = -verticalVel * 0.85;
+          isOnGround = false;
+          audioSynth.playSlimeBounce();
+          triggerCameraShake(0.18);
+          rody.setEmotion('happy');
+          showFloatingBanner('🟢 SLIME BOING! BẬT NẢY SIÊU CẤP! 🦘', '#10b981');
+        } else {
+          // Landing sound
+          if (!isOnGround && verticalVel < -3.5) {
+            audioSynth.playLandingSound(finalGround.blockType);
+            triggerCameraShake(0.16);
+          }
+          verticalVel = 0;
+          isOnGround = true;
+        }
+      } else if (robotY > finalGround.groundY + 0.08) {
+        // Robot stepped off an edge or jumped
+        isOnGround = false;
+      }
+
+      // 6. NITRO BOOST PADS ROLL-OVER
+      arena.boostPads.forEach(bp => {
+        if (Math.hypot(robotX - bp.x, robotZ - bp.z) < 0.38 && bp.cooldown <= 0) {
+          bp.cooldown = 2.5;
+          isTurbo = true;
+          turboTimer = 2.6;
+          audioSynth.playTurboWhoosh();
+          showFloatingBanner('⚡ NITRO BOOST TĂNG TỐC! 🚀', '#f59e0b');
+          rody.setEmotion('happy');
+        }
+      });
+
+      // Timers decay
+      if (turboTimer > 0) {
+        turboTimer -= dt;
+        if (turboTimer <= 0 && !keys.shift) isTurbo = false;
+      }
+
+      if (dizzyTimer > 0) {
+        dizzyTimer -= dt;
+        if (dizzyTimer <= 0 && currentDriveMode === 'manual') rody.setEmotion('idle');
+      }
+
+      if (tntCooldown > 0) {
+        tntCooldown -= dt;
+      }
+
+      // 7. Dynamic Pitch & Roll Tilt (Suspension & Jump Arch)
+      const targetPitch = verticalVel * 0.035 - (linearVel / 2.2) * 0.06;
+      const targetRoll = -angularVel * 0.08;
+      robotPitch = THREE.MathUtils.lerp(robotPitch, targetPitch, 0.15);
+      robotRoll = THREE.MathUtils.lerp(robotRoll, targetRoll, 0.15);
+
+      rody.root.position.set(robotX, robotY, robotZ);
+      rody.root.rotation.set(robotPitch, robotYaw, robotRoll);
+
+      // Differential Wheel Rigging
+      const trackWidth = 0.10;
+      const wheelRadius = 0.021;
+      const vL = linearVel - (angularVel * trackWidth / 2);
+      const vR = linearVel + (angularVel * trackWidth / 2);
+
+      // Convert m/s to percentage -100 to +100 for OttoRobot3D
+      const speedPctL = (vL / 2.2) * 100;
+      const speedPctR = (vR / 2.2) * 100;
+      rody.setSpeed(speedPctL, speedPctR);
+      rody.update(dt);
+
+      // Audio Servo Whine
+      audioSynth.updateServoSpeed(linearVel / 2.2);
+
+      // Odometry Accumulation
+      const pulsesPerMeter = 20 / (2 * Math.PI * wheelRadius);
+      totalPulsesL += Math.abs(vL * dt * pulsesPerMeter);
+      totalPulsesR += Math.abs(vR * dt * pulsesPerMeter);
+
+      // Telemetry updates
+      updateTelemetry(linearVel, vL, vR, robotYaw);
+
+      // Arcade HUD updates (Speedometer, Mini-map, Kids Lap Timer)
+      updateArcadeHUD(linearVel, dt);
+
+      // Minecraft F3 Chip Update (Real-time Coordinates & Block Material)
+      const elF3Pos = document.getElementById('f3-pos');
+      if (elF3Pos) elF3Pos.textContent = `XYZ: ${robotX.toFixed(1)} / ${robotY.toFixed(1)} / ${robotZ.toFixed(1)}`;
+      const elF3Block = document.getElementById('f3-block');
+      if (elF3Block) {
+        const blockNames = {
+          grass: '🌱 GRASS',
+          ice: '🧊 ICE (DRIFT)',
+          slime: '🟢 SLIME (BOUNCE)',
+          water: '💧 WATER',
+          wood: '🪵 WOOD',
+          stone: '🪨 STONE',
+          tnt: '🧨 TNT'
+        };
+        elF3Block.textContent = blockNames[currentBlockType] || `🧱 ${currentBlockType.toUpperCase()}`;
+      }
+    }
+
+    function checkSonarAhead(x, z, yaw) {
+      for (let dist = 0.15; dist <= 2.5; dist += 0.1) {
+        const rayX = x + Math.sin(yaw) * dist;
+        const rayZ = z + Math.cos(yaw) * dist;
+        if (Math.abs(rayX) >= 5.75 || Math.abs(rayZ) >= 3.75) return dist;
+        for (let p of arena.slalomPylons) {
+          if (Math.hypot(rayX - p.x, rayZ - p.z) < 0.25) return dist;
+        }
+      }
+      return 2.5;
+    }
+
+    /* =========================================================================
+     * 7. ARCADE HUD RENDERING (Speedometer, Mini-Map Radar, Face)
+     * ========================================================================= */
+    function updateArcadeHUD(speed, dt) {
+      // 1. Kids Friendly Speed (0 to ~80 km/h)
+      const speedKmh = Math.round(Math.abs(speed) * 20);
+      const gearStr = speed > 0.05 ? 'D' : (speed < -0.05 ? 'R' : 'N');
+
+      const elSpeed = document.getElementById('racer-speed-num');
+      if (elSpeed) elSpeed.textContent = speedKmh;
+
+      const elHudSpeed = document.getElementById('hud-speed-num');
+      if (elHudSpeed) elHudSpeed.textContent = speedKmh;
+
+      const elGear = document.getElementById('racer-gear');
+      if (elGear) elGear.textContent = gearStr;
+
+      const elHudGear = document.getElementById('hud-gear');
+      if (elHudGear) elHudGear.textContent = gearStr;
+
+      // Arc gauge (stroke-dasharray 210)
+      const arc = document.getElementById('speedo-arc') || document.getElementById('racer-speed-arc');
+      if (arc) {
+        const fraction = Math.min(speedKmh / 75, 1.0);
+        arc.style.strokeDashoffset = (210 - fraction * 210).toString();
+      }
+
+      // Gear indicator [D] [N] [R]
+      const gD = document.getElementById('gear-d');
+      const gN = document.getElementById('gear-n');
+      const gR = document.getElementById('gear-r');
+      if (gD && gN && gR) {
+        gD.classList.remove('active');
+        gN.classList.remove('active');
+        gR.classList.remove('active');
+        if (speed > 0.02) gD.classList.add('active');
+        else if (speed < -0.02) gR.classList.add('active');
+        else gN.classList.add('active');
+      }
+
+      // Nitro bar
+      const elNitro = document.getElementById('racer-nitro-bar');
+      if (elNitro) {
+        if (isTurbo) {
+          elNitro.style.width = '100%';
+          elNitro.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+        } else {
+          elNitro.style.width = '70%';
+          elNitro.style.background = 'linear-gradient(90deg, #f59e0b, #10b981)';
+        }
+      }
+
+      // 2. Lap Timer accumulation
+      lapTimer += dt;
+      const mins = Math.floor(lapTimer / 60).toString().padStart(2, '0');
+      const secs = Math.floor(lapTimer % 60).toString().padStart(2, '0');
+      const ms = Math.floor((lapTimer % 1) * 10).toString();
+      const elTimer = document.getElementById('racer-timer');
+      if (elTimer) elTimer.textContent = `${mins}:${secs}.${ms}`;
+
+      // 3. Mini-Map 2D Radar (smooth 30 FPS update to eliminate lag)
+      if (typeof window.miniMapTick === 'undefined') window.miniMapTick = 0;
+      window.miniMapTick++;
+      if (window.miniMapTick % 2 === 0) {
+        drawMiniMap();
+      }
+
+      // 4. Mini Face Reaction (only redrawn on emotion change or periodic tick)
+      const currentEmo = (rody && rody.currentEmotion) ? rody.currentEmotion : 'idle';
+      if (window.lastHudEmotion !== currentEmo || window.miniMapTick % 30 === 0) {
+        drawRacerFace();
+        window.lastHudEmotion = currentEmo;
+      }
+    }
+
+    function drawMiniMap() {
+      const canvas = document.getElementById('radar-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Background
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
+      ctx.fillRect(0, 0, w, h);
+
+      // Coordinate converter: [-6.5, 6.5] x [-4.5, 4.5] -> [0, w] x [0, h]
+      const worldToCanvas = (wx, wz) => {
+        const cx = ((wx + 6.5) / 13.0) * (w - 12) + 6;
+        const cy = ((wz + 4.5) / 9.0) * (h - 12) + 6;
+        return { cx, cy };
+      };
+
+      // Dirt Path figure-8
+      ctx.strokeStyle = 'rgba(180, 130, 80, 0.45)';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      const pathPts = [
+        [-3.5, -2.5], [-1.8, -1.0], [0.0, 0.0], [1.8, 1.2],
+        [3.5, 2.5], [2.0, 0.5], [0.5, -1.2], [-1.5, -2.2], [-3.5, -2.5]
+      ];
+      pathPts.forEach((pt, i) => {
+        const p = worldToCanvas(pt[0], pt[1]);
+        if (i === 0) ctx.moveTo(p.cx, p.cy);
+        else ctx.lineTo(p.cx, p.cy);
+      });
+      ctx.stroke();
+
+      // Fence boundary
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.lineWidth = 1.2;
+      const fTL = worldToCanvas(-6.0, -4.0);
+      const fBR = worldToCanvas(6.0, 4.0);
+      ctx.strokeRect(fTL.cx, fTL.cy, fBR.cx - fTL.cx, fBR.cy - fTL.cy);
+
+      // Trees (green dots)
+      ctx.fillStyle = '#22c55e';
+      const treeLocs = [
+        [-2.6, 4.2], [2.6, 4.2], [-2.8, -4.2], [2.8, -4.2],
+        [-5.8, -1.5], [-5.8, 1.8], [5.8, -1.5], [5.8, 1.8],
+        [-4.6, -2.8], [4.6, 2.8]
+      ];
+      treeLocs.forEach(([tx, tz]) => {
+        const p = worldToCanvas(tx, tz);
+        ctx.beginPath();
+        ctx.arc(p.cx, p.cy, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Gates (purple and emerald squares)
+      const g1 = worldToCanvas(-3.5, -2.5);
+      ctx.fillStyle = '#a855f7';
+      ctx.fillRect(g1.cx - 2.5, g1.cy - 2.5, 5, 5);
+
+      const g2 = worldToCanvas(3.5, 2.5);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(g2.cx - 2.5, g2.cy - 2.5, 5, 5);
+
+      // Boost Pads (amber circles)
+      if (arena && arena.boostPads) {
+        ctx.fillStyle = '#f59e0b';
+        arena.boostPads.forEach(bp => {
+          const p = worldToCanvas(bp.x, bp.z);
+          ctx.beginPath();
+          ctx.arc(p.cx, p.cy, 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // Diamonds (pulsing cyan diamonds)
+      if (arena && arena.crystals) {
+        ctx.fillStyle = '#06b6d4';
+        arena.crystals.forEach(c => {
+          if (!c.active) return;
+          const p = worldToCanvas(c.x, c.z);
+          ctx.beginPath();
+          ctx.moveTo(p.cx, p.cy - 3);
+          ctx.lineTo(p.cx + 2.5, p.cy);
+          ctx.lineTo(p.cx, p.cy + 3);
+          ctx.lineTo(p.cx - 2.5, p.cy);
+          ctx.closePath();
+          ctx.fill();
+        });
+      }
+
+      // Rody Robot (heading triangle)
+      const rPos = worldToCanvas(robotX, robotZ);
+      ctx.save();
+      ctx.translate(rPos.cx, rPos.cy);
+      ctx.rotate(-robotYaw + Math.PI);
+
+      // Outer glow pulse
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.35)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Heading triangle
+      ctx.fillStyle = '#ef4444';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, 5.5);
+      ctx.lineTo(3.5, -3.5);
+      ctx.lineTo(-3.5, -3.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawRacerFace() {
+      const canvas = document.getElementById('racer-face-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, w, h);
+
+      const emo = (rody && rody.currentEmotion) ? rody.currentEmotion : 'idle';
+
+      if (emo === 'dizzy') {
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText('@', 6, 26);
+        ctx.fillText('@', 24, 26);
+      } else if (emo === 'happy') {
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(14, 20, 5, Math.PI, 0);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(30, 20, 5, Math.PI, 0);
+        ctx.stroke();
+        // Smile mouth
+        ctx.beginPath();
+        ctx.arc(22, 26, 4, 0, Math.PI);
+        ctx.stroke();
+      } else {
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(14, 20, 4, 0, Math.PI * 2);
+        ctx.arc(30, 20, 4, 0, Math.PI * 2);
+        ctx.fill();
+        // Line mouth
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(18, 30);
+        ctx.lineTo(26, 30);
+        ctx.stroke();
+      }
+    }
+
+    function updateTelemetry(speed, vL, vR, yaw) {
+      const speedCms = (Math.abs(speed) * 100).toFixed(1);
+      const teleSpeed = document.getElementById('tele-speed');
+      if (teleSpeed) teleSpeed.textContent = speedCms;
+      const fillPct = Math.min((Math.abs(speed) / 0.42) * 100, 100);
+      const teleSpeedBar = document.getElementById('tele-speed-bar');
+      if (teleSpeedBar) teleSpeedBar.style.width = `${fillPct}%`;
+
+      const telePulL = document.getElementById('tele-pul-l');
+      if (telePulL) telePulL.textContent = `${Math.floor(totalPulsesL)} pul`;
+      const telePulR = document.getElementById('tele-pul-r');
+      if (telePulR) telePulR.textContent = `${Math.floor(totalPulsesR)} pul`;
+
+      const sonarM = checkSonarAhead(robotX, robotZ, yaw);
+      const sonarCm = Math.round(sonarM * 100);
+      const elSonar = document.getElementById('tele-sonar-dist');
+      if (elSonar) elSonar.textContent = `${sonarCm} cm`;
+      const fillSonar = Math.min((sonarCm / 200) * 100, 100);
+      const elFill = document.getElementById('tele-sonar-fill');
+      if (elFill) elFill.style.width = `${fillSonar}%`;
+
+      let deg = ((yaw * 180 / Math.PI) % 360 + 360) % 360;
+      let cardinal = 'N';
+      if (deg >= 45 && deg < 135) cardinal = 'E';
+      else if (deg >= 135 && deg < 225) cardinal = 'S';
+      else if (deg >= 225 && deg < 315) cardinal = 'W';
+      const teleHeading = document.getElementById('tele-heading');
+      if (teleHeading) teleHeading.textContent = `${deg.toFixed(1)}° ${cardinal}`;
+    }
+
+    function updateCamera(dt) {
+      if (currentCameraMode === 'pov') {
+        const eyeX = robotX + Math.sin(robotYaw) * 0.08;
+        const eyeZ = robotZ + Math.cos(robotYaw) * 0.08;
+        const eyeY = rody.root.position.y + 0.17;
+        camera.position.set(eyeX, eyeY, eyeZ);
+
+        const lookTarget = new THREE.Vector3(
+          eyeX + Math.sin(robotYaw) * 1.5,
+          eyeY,
+          eyeZ + Math.cos(robotYaw) * 1.5
+        );
+        camera.lookAt(lookTarget);
+      } else if (currentCameraMode === 'top') {
+        camera.position.set(robotX, rody.root.position.y + 8.5, robotZ + 0.01);
+        camera.lookAt(robotX, rody.root.position.y, robotZ);
+      } else {
+        // Unified Dynamic Gesture Orbit Follow Camera (Chase / Free Orbit)
+        const lerpFactor = Math.min(1, dt * 14);
+        cameraOrbitYaw += (targetOrbitYaw - cameraOrbitYaw) * lerpFactor;
+        cameraOrbitPitch += (targetOrbitPitch - cameraOrbitPitch) * lerpFactor;
+        cameraDistance += (targetDistance - cameraDistance) * lerpFactor;
+
+        const isNarrow = window.innerWidth < window.innerHeight;
+        const effectiveDist = cameraDistance * (isNarrow ? 1.25 : 1.0);
+
+        const totalYaw = robotYaw + cameraOrbitYaw;
+        const horizDist = effectiveDist * Math.cos(cameraOrbitPitch);
+        const vertDist = effectiveDist * Math.sin(cameraOrbitPitch);
+
+        const targetCamX = robotX - Math.sin(totalYaw) * horizDist;
+        const targetCamZ = robotZ - Math.cos(totalYaw) * horizDist;
+        const targetCamY = rody.root.position.y + vertDist + 0.12;
+
+        if (!isCameraInitialized) {
+          camera.position.set(targetCamX, targetCamY, targetCamZ);
+          isCameraInitialized = true;
+        } else {
+          camera.position.lerp(new THREE.Vector3(targetCamX, targetCamY, targetCamZ), 0.18);
+        }
+
+        const lookTarget = new THREE.Vector3(
+          robotX + Math.sin(totalYaw) * (horizDist * 0.18),
+          rody.root.position.y + 0.14,
+          robotZ + Math.cos(totalYaw) * (horizDist * 0.18)
+        );
+        camera.lookAt(lookTarget);
+      }
+
+      // Camera Shake
+      if (cameraShake > 0) {
+        cameraShake -= dt;
+        const shake = cameraShake * 0.08;
+        camera.position.x += (Math.random() - 0.5) * shake;
+        camera.position.y += (Math.random() - 0.5) * shake;
+        camera.position.z += (Math.random() - 0.5) * shake;
+      }
+    }
+
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+
+      const dt = Math.min(clock.getDelta(), 0.1);
+      const time = clock.getElapsedTime();
+
+      // FPS Counter
+      fpsFrames++;
+      if (performance.now() - lastFpsTime >= 1000) {
+        const elFps = document.getElementById('stat-fps');
+        if (elFps) elFps.textContent = `${fpsFrames} FPS`;
+        fpsFrames = 0;
+        lastFpsTime = performance.now();
+      }
+
+      // Physics & Logic update
+      updatePhysics(dt);
+
+      // Arena animation & triggers
+      arena.update(time, dt, { x: robotX, y: robotY, z: robotZ }, (newScore) => {
+        collectedDiamonds = newScore;
+        const elDiam = document.getElementById('quest-diamonds');
+        if (elDiam) elDiam.textContent = `${newScore} / 6`;
+        const elStat = document.getElementById('stat-score');
+        if (elStat) elStat.textContent = `${newScore} / 6`;
+
+        audioSynth.playCheckpointChime();
+        rody.setEmotion('happy');
+        showFloatingBanner(`💎 +1 KIM CƯƠNG! (${newScore}/6)`, '#06b6d4');
+        logTerminal(`[quest] Thu thập Kim Cương! (${newScore}/6)`);
+
+        // VICTORY DETECTION
+        if (newScore >= 6) {
+          setTimeout(() => {
+            const mins = Math.floor(lapTimer / 60).toString().padStart(2, '0');
+            const secs = Math.floor(lapTimer % 60).toString().padStart(2, '0');
+            const ms = Math.floor((lapTimer % 1) * 10).toString();
+            const elVicTime = document.getElementById('vic-time');
+            if (elVicTime) elVicTime.textContent = `${mins}:${secs}.${ms}`;
+
+            const vicModal = document.getElementById('modal-victory');
+            if (vicModal) vicModal.classList.add('open');
+
+            audioSynth.playHappyChirp();
+            toggleDriveMode('dance');
+            showFloatingBanner('🏆 BẠN ĐÃ CHIẾN THẮNG!', '#ec4899');
+          }, 400);
+        }
+      }, (gate) => {
+        audioSynth.playCheckpointChime();
+        gateCount++;
+        const elGate = document.getElementById('quest-gates');
+        if (elGate) elGate.textContent = `${Math.min(gateCount, 2)} / 2`;
+        showFloatingBanner(`🚩 QUA CỔNG: ${gate.label}!`, '#a855f7');
+        logTerminal(`[gate] Vượt qua ${gate.label}!`);
+      });
+
+      // Camera view update with shake
+      updateCamera(dt);
+
+      // Render Scene
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      if (!camera || !renderer) return;
+      const isNarrow = window.innerWidth < window.innerHeight;
+      camera.fov = isNarrow ? 62 : 55;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // Start everything on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      init();
+      if (window.location.hash.includes('drive')) {
+        setTimeout(() => { keys.w = true; }, 500);
+      }
+      if (window.location.hash.includes('jump')) {
+        setTimeout(() => { if (typeof triggerJump === 'function') triggerJump(); }, 1200);
+      }
+      if (window.location.hash.includes('orbit')) {
+        setTimeout(() => {
+          targetOrbitYaw = 1.35; // Xoay 77 độ góc nghiêng trước mặt
+          targetOrbitPitch = 0.42;
+          targetDistance = 1.6;
+        }, 600);
+      }
+      if (window.location.hash.includes('camtop')) {
+        setTimeout(() => {
+          const btn = document.getElementById('btn-quick-cam');
+          if (btn) {
+            btn.click(); // selfie
+            btn.click(); // side
+            btn.click(); // top
+          }
+        }, 600);
+      }
+      if (window.location.hash.includes('menu')) {
+        const m = document.getElementById('game-menu-backdrop');
+        if (m) m.classList.add('open');
+      }
+    });
+  </script>
+</body>
+</html>

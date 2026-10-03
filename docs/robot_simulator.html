@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07090e">
+  <title>Rody S3 Simulator – Trải Nghiệm Robot Biểu Cảm & Giọng Nói AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --surface: #0f141f;
+      --surface-elevated: #182030;
+      --surface-card: #131a27;
+      --border: #222d42;
+      --border-accent: #2c3a54;
+      --fg: #f1f5f9;
+      --fg-muted: #94a3b8;
+      --fg-subtle: #64748b;
+      
+      --cyan: #22d3ee;
+      --cyan-glow: rgba(34, 211, 238, 0.35);
+      --mint: #34d399;
+      --mint-glow: rgba(52, 211, 153, 0.3);
+      --amber: #fbbf24;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+      --blue: #3b82f6;
+
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+      padding-bottom: 0px;
+    }
+
+    button, .btn-emotion, .btn-sfx, .chip, .dpad-btn, .voice-main-btn, .mobile-nav-btn {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Header Nav */
+    header {
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--cyan-glow);
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-wrap: balance;
+    }
+    .tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      background: rgba(34, 211, 238, 0.15);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      color: var(--cyan);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .status-pill {
+      font-size: 12px;
+      color: var(--fg-muted);
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 8px var(--mint);
+      animation: pulse-dot 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.9); }
+    }
+
+    /* Main Grid Layout */
+    .app-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 360px 1fr 380px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .panel-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--fg);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-wrap: balance;
+    }
+    .panel-title svg { color: var(--cyan); flex-shrink: 0; }
+
+    /* TFT 1.54" Screen Container */
+    .screen-wrapper {
+      position: relative;
+      background: #000;
+      border: 6px solid #1a2233;
+      border-radius: 28px;
+      padding: 8px;
+      box-shadow: 0 16px 40px -10px rgba(0,0,0,0.8), 0 0 0 1px #2a354c, inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 272px;
+    }
+    .screen-bezel-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--fg-subtle);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    #tft-canvas {
+      width: 100%;
+      max-width: 240px;
+      aspect-ratio: 1 / 1;
+      height: auto;
+      border-radius: 18px;
+      background: #000;
+      box-shadow: 0 0 25px rgba(34, 211, 238, 0.15);
+      image-rendering: pixelated;
+    }
+    .speaker-slots {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .speaker-slot {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+      background: #2a354c;
+    }
+
+    /* Emotion Selectors */
+    .section-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .grid-emotions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .btn-emotion {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      min-height: 48px;
+      padding: 8px 6px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+    }
+    .btn-emotion:active {
+      transform: scale(0.95);
+    }
+    .btn-emotion.active {
+      background: rgba(34, 211, 238, 0.15);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
+    }
+    .btn-emotion span.icon { font-size: 18px; line-height: 1; }
+
+    /* SFX Buttons */
+    .grid-sfx {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .btn-sfx {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      min-height: 46px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .btn-sfx:active {
+      transform: scale(0.95);
+      background: var(--surface-elevated);
+      border-color: var(--mint);
+      color: var(--mint);
+    }
+
+    /* Arena & Simulation Workspace */
+    .arena-container {
+      position: relative;
+      background: #090e17;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      aspect-ratio: 16 / 10;
+      min-height: 220px;
+      width: 100%;
+      box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+    }
+    #arena-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .arena-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      pointer-events: none;
+    }
+    .arena-pill {
+      background: rgba(15, 20, 31, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--fg-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Drive D-Pad Controls */
+    .dpad-wrapper {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .dpad-container {
+      display: grid;
+      grid-template-columns: repeat(3, 62px);
+      grid-template-rows: repeat(3, 62px);
+      gap: 10px;
+      justify-content: center;
+    }
+    .dpad-btn {
+      background: var(--surface-elevated);
+      border: 1.5px solid var(--border-accent);
+      color: var(--fg);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 22px;
+      transition: all 0.12s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      width: 62px;
+      height: 62px;
+    }
+    .dpad-btn:active {
+      transform: scale(0.92);
+      background: var(--cyan);
+      color: #000;
+      box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .dpad-btn.stop {
+      color: var(--rose);
+      border-color: rgba(244, 63, 94, 0.45);
+      background: rgba(244, 63, 94, 0.08);
+    }
+    .dpad-btn.stop:active {
+      background: var(--rose);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.6);
+    }
+
+    /* Voice Control Studio */
+    .voice-studio {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .voice-main-btn {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      border: none;
+      color: #fff;
+      min-height: 52px;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
+    }
+    .voice-main-btn:active {
+      transform: scale(0.97);
+    }
+    .voice-main-btn.listening {
+      background: linear-gradient(135deg, #ef4444, #f43f5e);
+      box-shadow: 0 0 24px rgba(239, 68, 68, 0.6);
+      animation: pulse-mic 1.5s infinite;
+    }
+    @keyframes pulse-mic {
+      0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+      50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); }
+    }
+    .voice-meter-bar {
+      height: 8px;
+      background: #080c14;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .voice-meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--mint), var(--rose));
+      transition: width 0.08s ease;
+    }
+    .voice-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      font-size: 12px;
+      font-weight: 600;
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .chip:active {
+      transform: scale(0.95);
+      background: var(--surface-elevated);
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    /* Serial Monitor Console */
+    .console-box {
+      background: #060910;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      height: 220px;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scrollbar-width: thin;
+    }
+    .log-line {
+      display: flex;
+      gap: 8px;
+      word-break: break-all;
+    }
+    .log-time { color: var(--fg-subtle); flex-shrink: 0; }
+    .log-rx { color: var(--mint); }
+    .log-tx { color: var(--cyan); }
+    .log-info { color: var(--amber); }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .telemetry-label { color: var(--fg-muted); }
+    .telemetry-val { font-weight: 700; color: var(--fg); font-family: 'JetBrains Mono', monospace; }
+
+    /* Mobile Bottom Navigation Bar (Fitts's Law) */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      z-index: 1000;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.5);
+    }
+    .mobile-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--fg-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 10px;
+      min-width: 68px;
+      min-height: 48px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+    }
+    .mobile-nav-btn svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.15s ease;
+    }
+    .mobile-nav-btn.active {
+      color: var(--cyan);
+    }
+    .mobile-nav-btn.active svg {
+      transform: scale(1.12);
+      color: var(--cyan);
+      filter: drop-shadow(0 0 6px var(--cyan-glow));
+    }
+
+    /* Responsive Adaptation for Mobile & Tablet */
+    @media (max-width: 900px) {
+      body {
+        padding-bottom: 74px; /* Space for bottom nav */
+      }
+      .mobile-bottom-nav {
+        display: flex;
+      }
+      .app-container {
+        display: block !important;
+        padding: 12px;
+      }
+      .tab-panel {
+        display: none !important;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .tab-panel.active {
+        display: flex !important;
+      }
+      header {
+        padding: 10px 14px;
+      }
+      .status-pill {
+        display: none;
+      }
+      .brand-title {
+        font-size: 14px;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--fg-subtle);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><rect x="4" y="8" width="16" height="12" rx="4"/><circle cx="9" cy="13" r="1.5" fill="#fff"/><circle cx="15" cy="13" r="1.5" fill="#fff"/><path d="M10 17h4"/></svg>
+      </div>
+      <div class="brand-title">
+        <span>Rody S3 Simulator</span>
+        <span class="tag whitespace-nowrap shrink-0">Mochi AI Edition</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="rody_3d_game.html" class="chip whitespace-nowrap shrink-0" style="background: rgba(34, 211, 238, 0.2); border-color: var(--cyan); color: var(--cyan); text-decoration: none; font-weight: 700; box-shadow: 0 0 12px var(--cyan-glow);" title="Mở Rody 3D Cyber-Arena Game">🚀 Rody 3D Game</a>
+      <div class="status-pill">
+        <span class="status-dot"></span>
+        <span id="header-status">ESP32-S3 Sẵn Sàng</span>
+      </div>
+      <button class="chip whitespace-nowrap shrink-0" onclick="resetSimulator()" title="Khởi động lại mô phỏng">🔄 Reset</button>
+    </div>
+  </header>
+
+  <!-- App Main Layout (4 Tab Panels for Mobile, 3 Columns for Desktop) -->
+  <main class="app-container">
+
+    <!-- Panel 1: TFT 1.54" Screen & Emotion Studio (Tab: face) -->
+    <section class="panel tab-panel active" id="panel-face">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>Màn Hình TFT 1.54" ST7789</span>
+        </div>
+        <span class="tag whitespace-nowrap shrink-0" id="current-fps">60 FPS</span>
+      </div>
+
+      <!-- TFT Hardware Frame Mockup -->
+      <div class="screen-wrapper">
+        <span class="screen-bezel-label">RODY S3 • 240x240 RGB</span>
+        <canvas id="tft-canvas" width="240" height="240"></canvas>
+        <div class="speaker-slots">
+          <div class="speaker-slot"></div>
+          <div class="speaker-slot"></div>
+          <div class="speaker-slot"></div>
+        </div>
+      </div>
+
+      <!-- Emotion Selectors -->
+      <div>
+        <div class="section-title">12 Trạng Thái Cảm Xúc Mochi / Xiaozhi</div>
+        <div class="grid-emotions">
+          <button class="btn-emotion active" onclick="setEmotion('idle')" id="btn-emo-idle">
+            <span class="icon">👀</span><span>Quan Sát</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('happy')" id="btn-emo-happy">
+            <span class="icon">😄</span><span>Vui Vẻ</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('listening')" id="btn-emo-listening">
+            <span class="icon">👂</span><span>Lắng Nghe</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('thinking')" id="btn-emo-thinking">
+            <span class="icon">🤔</span><span>Suy Nghĩ</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('speaking')" id="btn-emo-speaking">
+            <span class="icon">🗣️</span><span>Nói Chuyện</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('drive_fwd')" id="btn-emo-drive_fwd">
+            <span class="icon">🚀</span><span>Tiến Tới</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('drive_rev')" id="btn-emo-drive_rev">
+            <span class="icon">🔙</span><span>Lùi Lại</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('turn_left')" id="btn-emo-turn_left">
+            <span class="icon">👈</span><span>Liếc Trái</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('turn_right')" id="btn-emo-turn_right">
+            <span class="icon">👉</span><span>Liếc Phải</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('dizzy')" id="btn-emo-dizzy">
+            <span class="icon">🌀</span><span>Chóng Mặt</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('obstacle')" id="btn-emo-obstacle">
+            <span class="icon">🛑</span><span>Vật Cản</span>
+          </button>
+          <button class="btn-emotion" onclick="setEmotion('sleepy')" id="btn-emo-sleepy">
+            <span class="icon">💤</span><span>Ngủ Say</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Speaker SFX Panel -->
+      <div>
+        <div class="section-title">Loa MAX98357A • Hiệu Ứng Robot SFX</div>
+        <div class="grid-sfx">
+          <button class="btn-sfx" onclick="playSfx('boot')">🔊 Khởi Động</button>
+          <button class="btn-sfx" onclick="playSfx('beep')">🔔 Xác Nhận Bíp</button>
+          <button class="btn-sfx" onclick="playSfx('happy')">🎵 Hót R2-D2</button>
+          <button class="btn-sfx" onclick="playSfx('listen')">✨ Chuông Nghe</button>
+          <button class="btn-sfx" onclick="playSfx('obstacle')">🚨 Còi Báo Động</button>
+          <button class="btn-sfx" onclick="playSfx('error')">⚡ Tiếng Lỗi</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 2: 2D Robot Arena & Virtual Gamepad (Tab: drive) -->
+    <section class="panel tab-panel" id="panel-drive" style="gap: 16px;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/><line x1="16" y1="12" x2="12" y2="12"/></svg>
+          <span>Sân Chạy & Gamepad Robot</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="chip" onclick="setMode('manual')" id="mode-manual">Thủ Công</button>
+          <button class="chip" onclick="setMode('avoid')" id="mode-avoid">Tự Né Cản</button>
+          <button class="chip" onclick="setMode('line')" id="mode-line">Dò Line</button>
+        </div>
+      </div>
+
+      <!-- 2D Arena Canvas -->
+      <div class="arena-container">
+        <canvas id="arena-canvas"></canvas>
+        <div class="arena-overlay">
+          <span class="arena-pill whitespace-nowrap shrink-0" id="arena-pos">X: 0cm • Y: 0cm</span>
+          <span class="arena-pill whitespace-nowrap shrink-0" id="arena-speed">V: 0 cm/s</span>
+          <span class="arena-pill whitespace-nowrap shrink-0" id="arena-dist">Cự ly vật cản: &gt; 100cm</span>
+        </div>
+      </div>
+
+      <!-- Thumb D-Pad Directly Below Arena -->
+      <div class="dpad-wrapper">
+        <div class="section-title" style="margin: 0; text-align: center;">Bàn Phím Điều Hướng Gamepad</div>
+        <div class="dpad-container">
+          <div></div>
+          <button class="dpad-btn" id="dpad-up" title="Tiến">⬆️</button>
+          <div></div>
+          <button class="dpad-btn" id="dpad-left" title="Rẽ trái">⬅️</button>
+          <button class="dpad-btn stop" id="dpad-stop" title="Dừng">⏹️</button>
+          <button class="dpad-btn" id="dpad-right" title="Rẽ phải">➡️</button>
+          <div></div>
+          <button class="dpad-btn" id="dpad-down" title="Lùi">⬇️</button>
+          <div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 3: Voice Control Studio (Tab: voice) -->
+    <section class="panel tab-panel" id="panel-voice">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <span>Ra Lệnh Giọng Nói AI (Mic INMP441)</span>
+        </div>
+        <span class="tag whitespace-nowrap shrink-0" id="voice-status">Sẵn Sàng</span>
+      </div>
+
+      <div class="voice-studio">
+        <button class="voice-main-btn" id="btn-mic-toggle" onclick="toggleVoiceRecording()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          <span id="mic-btn-label">Bật Mic Nhận Lệnh</span>
+        </button>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: var(--fg-subtle); margin-bottom: 4px;">
+            <span>Độ nhạy Mic thời gian thực</span>
+            <span id="mic-level-pct">0%</span>
+          </div>
+          <div class="voice-meter-bar">
+            <div class="voice-meter-fill" id="mic-level-bar"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">Chạm nhanh để ra lệnh mô phỏng:</div>
+          <div class="voice-chips">
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('rody')">🤖 "Rody ơi"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('tien')">🚀 "Tiến lên"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('lui')">🔙 "Lùi lại"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('trai')">↩️ "Rẽ trái"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('phai')">↪️ "Rẽ phải"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('dung')">🛑 "Dừng lại"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('quay')">🌀 "Quay vòng"</button>
+            <button class="chip whitespace-nowrap shrink-0" onclick="simulateVoice('vui')">✨ "Vui vẻ"</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 4: Telemetry & Serial Console (Tab: console) -->
+    <section class="panel tab-panel" id="panel-console">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span>Thông Số & Cổng Serial</span>
+        </div>
+        <span class="tag whitespace-nowrap shrink-0">115200 Baud</span>
+      </div>
+
+      <!-- Telemetry Info -->
+      <div>
+        <div class="section-title">Thông Số Kỹ Thuật Robot Rody S3 (ESP32-S3)</div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Vi xử lý & Bộ nhớ</span>
+          <span class="telemetry-val">S3 Dual-Core • 8MB PSRAM</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Driver Động cơ</span>
+          <span class="telemetry-val">PCA9685 I2C (0x40) • 2x MG90S</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Màn hình ST7789</span>
+          <span class="telemetry-val">GPIO 42, 41, 40, 39, 38</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Âm thanh Loa + Mic</span>
+          <span class="telemetry-val">I2S1 (Loa) + I2S0 (Mic INMP441)</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Dò Line / Vòng quay</span>
+          <span class="telemetry-val">GPIO 10 & 11 (ISR Tachometer)</span>
+        </div>
+      </div>
+
+      <!-- Live Serial Console -->
+      <div>
+        <div class="section-title">Nhật Ký Cổng Nối Tiếp (JSON Protocol)</div>
+        <div class="console-box" id="console-log">
+          <!-- Live log lines injected by JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar (Fitts's Law thumb reach) -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" onclick="switchTab('face')" id="nav-btn-face">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span>Biểu Cảm</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchTab('drive')" id="nav-btn-drive">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="12 8 8 12 12 16 12 8"/><line x1="16" y1="12" x2="12" y2="12"/></svg>
+      <span>Lái Xe</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchTab('voice')" id="nav-btn-voice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <span>Giọng Nói</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="switchTab('console')" id="nav-btn-console">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Thông Số</span>
+    </button>
+  </nav>
+
+  <footer>
+    Dự án Robot Thông Minh Rody S3 (Mochi AI Edition) • Giao Diện Đã Tối Ưu Toàn Diện Cho Điện Thoại Di Động & Máy Tính Bảng.
+  </footer>
+
+  <script>
+    /* =========================================================================
+       0. HAPTIC FEEDBACK HELPER (Mobile Vibration)
+       ========================================================================= */
+    function haptic(ms = 16) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate(ms); } catch (e) {}
+      }
+    }
+
+    /* =========================================================================
+       1. MOBILE TAB SWITCHING (Seamless Instant App Feel)
+       ========================================================================= */
+    let activeTab = 'face';
+
+    function switchTab(tabId) {
+      haptic(18);
+      activeTab = tabId;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+
+      const targetPanel = document.getElementById(`panel-${tabId}`);
+      const targetBtn = document.getElementById(`nav-btn-${tabId}`);
+      if (targetPanel) targetPanel.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+
+      if (tabId === 'drive') {
+        resizeArena();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* =========================================================================
+       2. WEB AUDIO API SYNTHESIZER (Matching src/audio_player.cpp exactly)
+       ========================================================================= */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, durationMs, volume = 0.4, type = 'sine') {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        gain.gain.setValueAtTime(volume, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (durationMs / 1000));
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + (durationMs / 1000));
+      } catch (e) {
+        console.warn('Audio play blocked:', e);
+      }
+    }
+
+    function playSfx(type) {
+      haptic(20);
+      logSerial(`sfx ${type}`, 'tx');
+      const ctx = getAudioContext();
+
+      switch(type) {
+        case 'boot':
+          playTone(440, 90, 0.35);
+          setTimeout(() => playTone(659, 100, 0.4), 110);
+          setTimeout(() => playTone(880, 180, 0.5), 230);
+          break;
+
+        case 'beep':
+          playTone(987, 70, 0.4);
+          setTimeout(() => playTone(1318, 100, 0.5), 90);
+          break;
+
+        case 'happy':
+          for (let f = 600, i = 0; f < 1700; f += 90, i++) {
+            setTimeout(() => playTone(f, 25, 0.35), i * 22);
+          }
+          setTimeout(() => playTone(1760, 120, 0.45), 320);
+          break;
+
+        case 'listen':
+          playTone(523, 90, 0.35);
+          setTimeout(() => playTone(784, 140, 0.45), 110);
+          break;
+
+        case 'think':
+          playTone(700, 50, 0.25);
+          setTimeout(() => playTone(740, 50, 0.25), 60);
+          break;
+
+        case 'ack':
+          playTone(1046, 60, 0.4);
+          setTimeout(() => playTone(1567, 90, 0.5), 80);
+          break;
+
+        case 'obstacle':
+          for (let k = 0; k < 2; k++) {
+            setTimeout(() => playTone(1200, 90, 0.5, 'triangle'), k * 220);
+            setTimeout(() => playTone(600, 110, 0.5, 'triangle'), k * 220 + 90);
+          }
+          break;
+
+        case 'error':
+          playTone(220, 140, 0.5, 'sawtooth');
+          setTimeout(() => playTone(180, 200, 0.5, 'sawtooth'), 160);
+          break;
+      }
+      logSerial(`{"cmd":"sfx","ok":true,"played":"${type}"}`, 'rx');
+    }
+
+    /* =========================================================================
+       3. PROCEDURAL 240x240 MOCHI / XIAOZHI TFT RENDERER (src/emotion_gfx.cpp)
+       ========================================================================= */
+    const tftCanvas = document.getElementById('tft-canvas');
+    const tftCtx = tftCanvas.getContext('2d');
+
+    let currentEmotion = 'idle';
+    let animFrame = 0;
+    let isBlinking = false;
+    let blinkProgress = 0;
+    let nextBlinkTime = Date.now() + 2000;
+    let pupilOffsetX = 0;
+    let pupilOffsetY = 0;
+
+    function setEmotion(emo, silent = false) {
+      haptic(14);
+      currentEmotion = emo;
+      animFrame = 0;
+      document.querySelectorAll('.btn-emotion').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-emo-${emo}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (!silent) {
+        logSerial(`face ${emo}`, 'tx');
+        logSerial(`{"cmd":"face","ok":true,"emotion":"${emo}"}`, 'rx');
+      }
+    }
+
+    function drawEye(cx, cy, w, h, r, color) {
+      tftCtx.save();
+      if (h <= 4) {
+        tftCtx.fillStyle = color;
+        tftCtx.beginPath();
+        tftCtx.roundRect(cx - w / 2, cy - 2, w, 4, 2);
+        tftCtx.fill();
+        tftCtx.restore();
+        return;
+      }
+
+      tftCtx.fillStyle = color;
+      tftCtx.beginPath();
+      tftCtx.roundRect(cx - w / 2, cy - h / 2, w, h, r);
+      tftCtx.fill();
+
+      if (h > 24) {
+        tftCtx.fillStyle = '#ffffff';
+        tftCtx.beginPath();
+        tftCtx.arc(cx + w / 4, cy - h / 4, 6, 0, Math.PI * 2);
+        tftCtx.fill();
+
+        tftCtx.beginPath();
+        tftCtx.arc(cx + w / 4 - 9, cy - h / 4 + 11, 3, 0, Math.PI * 2);
+        tftCtx.fill();
+      }
+      tftCtx.restore();
+    }
+
+    function renderTft() {
+      animFrame++;
+      tftCtx.fillStyle = '#000000';
+      tftCtx.fillRect(0, 0, 240, 240);
+
+      const eyeW = 54;
+      const eyeH = 74;
+      const eyeR = 26;
+      let eyeColor = '#22d3ee';
+
+      const leftX = 72 + pupilOffsetX;
+      const leftY = 120 + pupilOffsetY;
+      const rightX = 168 + pupilOffsetX;
+      const rightY = 120 + pupilOffsetY;
+
+      if (currentEmotion === 'idle') {
+        const now = Date.now();
+        if (!isBlinking && now >= nextBlinkTime) {
+          isBlinking = true;
+          blinkProgress = 0;
+        }
+        if (isBlinking) {
+          blinkProgress += 0.22;
+          if (blinkProgress >= 1.0) {
+            isBlinking = false;
+            nextBlinkTime = now + 2400 + Math.random() * 2000;
+            const r = Math.floor(Math.random() * 4);
+            if (r === 0) pupilOffsetX = -12;
+            else if (r === 1) pupilOffsetX = 12;
+            else pupilOffsetX = 0;
+          }
+        }
+      } else {
+        isBlinking = false;
+        pupilOffsetX = 0;
+        pupilOffsetY = 0;
+      }
+
+      switch (currentEmotion) {
+        case 'idle': {
+          let curH = eyeH;
+          if (isBlinking) {
+            curH = Math.max(4, Math.floor(eyeH * (1.0 - blinkProgress)));
+          }
+          drawEye(leftX, leftY, eyeW, curH, eyeR, eyeColor);
+          drawEye(rightX, rightY, eyeW, curH, eyeR, eyeColor);
+          break;
+        }
+
+        case 'happy': {
+          eyeColor = '#34d399';
+          const bounce = (animFrame % 16 < 8) ? 3 : 0;
+          tftCtx.fillStyle = eyeColor;
+          tftCtx.beginPath();
+          tftCtx.roundRect(leftX - 30, leftY - 24 + bounce, 60, 48, 22);
+          tftCtx.fill();
+          tftCtx.fillStyle = '#000';
+          tftCtx.beginPath();
+          tftCtx.arc(leftX, leftY + 14 + bounce, 24, 0, Math.PI * 2);
+          tftCtx.fill();
+
+          tftCtx.fillStyle = eyeColor;
+          tftCtx.beginPath();
+          tftCtx.roundRect(rightX - 30, rightY - 24 + bounce, 60, 48, 22);
+          tftCtx.fill();
+          tftCtx.fillStyle = '#000';
+          tftCtx.beginPath();
+          tftCtx.arc(rightX, rightY + 14 + bounce, 24, 0, Math.PI * 2);
+          tftCtx.fill();
+
+          tftCtx.fillStyle = '#f472b6';
+          tftCtx.beginPath();
+          tftCtx.arc(leftX - 16, leftY + 42, 8, 0, Math.PI * 2);
+          tftCtx.arc(rightX + 16, rightY + 42, 8, 0, Math.PI * 2);
+          tftCtx.fill();
+          break;
+        }
+
+        case 'listening': {
+          eyeColor = '#60a5fa';
+          drawEye(72, 108, 62, 82, 30, eyeColor);
+          drawEye(168, 108, 62, 82, 30, eyeColor);
+
+          tftCtx.fillStyle = '#38bdf8';
+          for (let i = 0; i < 7; i++) {
+            const barH = Math.max(4, Math.floor(6 + 18 * Math.sin(animFrame * 0.25 + i * 0.8)));
+            tftCtx.beginPath();
+            tftCtx.roundRect(78 + i * 12, 195 - barH / 2, 6, barH, 3);
+            tftCtx.fill();
+          }
+          break;
+        }
+
+        case 'thinking': {
+          eyeColor = '#fbbf24';
+          drawEye(72 + 12, 120 - 14, 52, 68, 24, eyeColor);
+          drawEye(168 + 12, 120 - 14, 52, 68, 24, eyeColor);
+
+          const angle = animFrame * 0.12;
+          const dotX = 120 + 22 * Math.cos(angle);
+          const dotY = 190 + 8 * Math.sin(angle);
+          tftCtx.fillStyle = '#ffffff';
+          tftCtx.beginPath();
+          tftCtx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+          tftCtx.fill();
+          break;
+        }
+
+        case 'speaking': {
+          eyeColor = '#a78bfa';
+          drawEye(72, 110, eyeW, eyeH, eyeR, eyeColor);
+          drawEye(168, 110, eyeW, eyeH, eyeR, eyeColor);
+
+          const mouthH = 6 + (animFrame % 6) * 4;
+          tftCtx.fillStyle = '#f472b6';
+          tftCtx.beginPath();
+          tftCtx.roundRect(100, 182 - mouthH / 2, 40, mouthH, 6);
+          tftCtx.fill();
+          break;
+        }
+
+        case 'drive_fwd': {
+          eyeColor = '#38bdf8';
+          drawEye(72, 120, 56, 70, 20, eyeColor);
+          drawEye(168, 120, 56, 70, 20, eyeColor);
+          tftCtx.strokeStyle = eyeColor;
+          tftCtx.lineWidth = 3;
+          const dashOffset = (animFrame * 4) % 20;
+          tftCtx.beginPath();
+          tftCtx.moveTo(110, 185 + dashOffset);
+          tftCtx.lineTo(130, 185 + dashOffset);
+          tftCtx.stroke();
+          break;
+        }
+
+        case 'drive_rev': {
+          eyeColor = '#fb923c';
+          drawEye(72 - 12, 120 + 8, 50, 64, 20, eyeColor);
+          drawEye(168 - 12, 120 + 8, 50, 64, 20, eyeColor);
+          break;
+        }
+
+        case 'turn_left': {
+          eyeColor = '#38bdf8';
+          drawEye(72 - 20, 120, 54, 74, 24, eyeColor);
+          drawEye(168 - 20, 120, 54, 74, 24, eyeColor);
+          break;
+        }
+
+        case 'turn_right': {
+          eyeColor = '#38bdf8';
+          drawEye(72 + 20, 120, 54, 74, 24, eyeColor);
+          drawEye(168 + 20, 120, 54, 74, 24, eyeColor);
+          break;
+        }
+
+        case 'dizzy': {
+          eyeColor = '#f43f5e';
+          tftCtx.strokeStyle = eyeColor;
+          tftCtx.lineWidth = 3;
+          for (let r = 8; r <= 28; r += 7) {
+            const rot = animFrame * 0.15;
+            tftCtx.beginPath();
+            tftCtx.arc(72, 120, r, rot, rot + 4.5);
+            tftCtx.stroke();
+            tftCtx.beginPath();
+            tftCtx.arc(168, 120, r, -rot, -rot + 4.5);
+            tftCtx.stroke();
+          }
+          break;
+        }
+
+        case 'obstacle': {
+          eyeColor = '#ef4444';
+          tftCtx.strokeStyle = eyeColor;
+          tftCtx.lineWidth = 6;
+          tftCtx.lineCap = 'round';
+          tftCtx.beginPath();
+          tftCtx.moveTo(48, 96); tftCtx.lineTo(96, 144);
+          tftCtx.moveTo(48, 144); tftCtx.lineTo(96, 96);
+          tftCtx.stroke();
+          tftCtx.beginPath();
+          tftCtx.moveTo(144, 96); tftCtx.lineTo(192, 144);
+          tftCtx.moveTo(144, 144); tftCtx.lineTo(192, 96);
+          tftCtx.stroke();
+          break;
+        }
+
+        case 'sleepy': {
+          eyeColor = '#94a3b8';
+          tftCtx.fillStyle = eyeColor;
+          tftCtx.beginPath();
+          tftCtx.roundRect(72 - 25, 125, 50, 14, 6);
+          tftCtx.roundRect(168 - 25, 125, 50, 14, 6);
+          tftCtx.fill();
+
+          const zY = 80 - ((animFrame * 1.5) % 40);
+          tftCtx.fillStyle = '#38bdf8';
+          tftCtx.font = 'bold 16px monospace';
+          tftCtx.fillText('z', 160, zY + 20);
+          tftCtx.font = 'bold 20px monospace';
+          tftCtx.fillText('Z', 175, zY + 8);
+          tftCtx.font = 'bold 26px monospace';
+          tftCtx.fillText('Z', 192, zY - 8);
+          break;
+        }
+      }
+
+      requestAnimationFrame(renderTft);
+    }
+    requestAnimationFrame(renderTft);
+
+    /* =========================================================================
+       4. 2D ARENA ROBOT MOTION SIMULATOR
+       ========================================================================= */
+    const arenaCanvas = document.getElementById('arena-canvas');
+    const arenaCtx = arenaCanvas.getContext('2d');
+
+    function resizeArena() {
+      if (arenaCanvas && arenaCanvas.parentElement) {
+        arenaCanvas.width = arenaCanvas.parentElement.clientWidth;
+        arenaCanvas.height = arenaCanvas.parentElement.clientHeight || 220;
+      }
+    }
+    window.addEventListener('resize', resizeArena);
+    setTimeout(resizeArena, 100);
+
+    const robot = {
+      x: 150,
+      y: 130,
+      heading: 0,
+      speedL: 0,
+      speedR: 0,
+      radius: 26,
+      mode: 'manual',
+      trail: []
+    };
+
+    const obstacle = {
+      x: 280,
+      y: 110,
+      width: 48,
+      height: 48
+    };
+
+    function setMode(m) {
+      haptic(16);
+      robot.mode = m;
+      document.querySelectorAll('#mode-manual, #mode-avoid, #mode-line').forEach(el => el.style.borderColor = '');
+      document.getElementById(`mode-${m}`).style.borderColor = 'var(--cyan)';
+      logSerial(`mode ${m}`, 'tx');
+      logSerial(`{"cmd":"mode","ok":true,"mode":"${m}"}`, 'rx');
+    }
+
+    function sendDrive(l, r, durationMs, emo = 'drive_fwd') {
+      haptic(22);
+      robot.speedL = l * 0.05;
+      robot.speedR = r * 0.05;
+      setEmotion(emo);
+      playSfx('ack');
+      logSerial(`drive ${l} ${r} ${durationMs}`, 'tx');
+      logSerial(`{"cmd":"drive","ok":true}`, 'rx');
+
+      if (durationMs > 0) {
+        setTimeout(() => {
+          sendStop(true);
+        }, durationMs);
+      }
+    }
+
+    function sendStop(quiet = false) {
+      haptic(15);
+      robot.speedL = 0;
+      robot.speedR = 0;
+      setEmotion('idle', true);
+      if (!quiet) {
+        playSfx('beep');
+        logSerial(`stop`, 'tx');
+        logSerial(`{"cmd":"stop","ok":true}`, 'rx');
+      }
+    }
+
+    function updatePhysics() {
+      const v = (robot.speedL + robot.speedR) / 2;
+      const omega = (robot.speedR - robot.speedL) / 30;
+
+      robot.heading += omega;
+      robot.x += v * Math.cos(robot.heading);
+      robot.y += v * Math.sin(robot.heading);
+
+      const w = arenaCanvas.width || 340;
+      const h = arenaCanvas.height || 220;
+      robot.x = Math.max(robot.radius, Math.min(w - robot.radius, robot.x));
+      robot.y = Math.max(robot.radius, Math.min(h - robot.radius, robot.y));
+
+      const dx = (obstacle.x + obstacle.width / 2) - robot.x;
+      const dy = (obstacle.y + obstacle.height / 2) - robot.y;
+      const dist = Math.hypot(dx, dy) - robot.radius;
+
+      document.getElementById('arena-pos').innerText = `X: ${Math.round(robot.x)}cm • Y: ${Math.round(robot.y)}cm`;
+      document.getElementById('arena-speed').innerText = `V: ${(Math.abs(v) * 20).toFixed(0)} cm/s`;
+      document.getElementById('arena-dist').innerText = `Cự ly vật cản: ${Math.max(0, Math.round(dist))}cm`;
+
+      if (robot.mode === 'avoid') {
+        if (dist < 45) {
+          setEmotion('obstacle');
+          playSfx('obstacle');
+          robot.speedL = -1.2;
+          robot.speedR = 1.2;
+        } else {
+          robot.speedL = 1.6;
+          robot.speedR = 1.6;
+          setEmotion('drive_fwd');
+        }
+      }
+
+      if (Math.abs(v) > 0.05 && animFrame % 4 === 0) {
+        robot.trail.push({ x: robot.x, y: robot.y });
+        if (robot.trail.length > 40) robot.trail.shift();
+      }
+    }
+
+    function renderArena() {
+      updatePhysics();
+      arenaCtx.clearRect(0, 0, arenaCanvas.width, arenaCanvas.height);
+
+      // Grid Lines
+      arenaCtx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      arenaCtx.lineWidth = 1;
+      for (let x = 0; x < arenaCanvas.width; x += 36) {
+        arenaCtx.beginPath(); arenaCtx.moveTo(x, 0); arenaCtx.lineTo(x, arenaCanvas.height); arenaCtx.stroke();
+      }
+      for (let y = 0; y < arenaCanvas.height; y += 36) {
+        arenaCtx.beginPath(); arenaCtx.moveTo(0, y); arenaCtx.lineTo(arenaCanvas.width, y); arenaCtx.stroke();
+      }
+
+      // Guide Line Track for LINE mode
+      arenaCtx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      arenaCtx.lineWidth = 14;
+      arenaCtx.lineCap = 'round';
+      arenaCtx.beginPath();
+      arenaCtx.ellipse(arenaCanvas.width / 2, arenaCanvas.height / 2, arenaCanvas.width * 0.36, arenaCanvas.height * 0.32, 0, 0, Math.PI * 2);
+      arenaCtx.stroke();
+
+      // Motion Trail
+      if (robot.trail.length > 1) {
+        arenaCtx.strokeStyle = 'rgba(34, 211, 238, 0.25)';
+        arenaCtx.lineWidth = 3;
+        arenaCtx.beginPath();
+        arenaCtx.moveTo(robot.trail[0].x, robot.trail[0].y);
+        for (let i = 1; i < robot.trail.length; i++) {
+          arenaCtx.lineTo(robot.trail[i].x, robot.trail[i].y);
+        }
+        arenaCtx.stroke();
+      }
+
+      // Obstacle Box
+      arenaCtx.fillStyle = '#ef4444';
+      arenaCtx.beginPath();
+      arenaCtx.roundRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8);
+      arenaCtx.fill();
+      arenaCtx.fillStyle = '#fff';
+      arenaCtx.font = 'bold 10px sans-serif';
+      arenaCtx.textAlign = 'center';
+      arenaCtx.fillText('VẬT CẢN', obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2 + 4);
+
+      // Robot Body
+      arenaCtx.save();
+      arenaCtx.translate(robot.x, robot.y);
+      arenaCtx.rotate(robot.heading);
+
+      // Wheels
+      arenaCtx.fillStyle = '#475569';
+      arenaCtx.fillRect(-16, -robot.radius - 6, 32, 7);
+      arenaCtx.fillRect(-16, robot.radius - 1, 32, 7);
+
+      // Chassis
+      arenaCtx.fillStyle = '#1e293b';
+      arenaCtx.strokeStyle = 'var(--cyan)';
+      arenaCtx.lineWidth = 2.5;
+      arenaCtx.beginPath();
+      arenaCtx.roundRect(-robot.radius, -robot.radius, robot.radius * 2, robot.radius * 2, 12);
+      arenaCtx.fill();
+      arenaCtx.stroke();
+
+      // Front Pointer
+      arenaCtx.fillStyle = 'var(--cyan)';
+      arenaCtx.beginPath();
+      arenaCtx.moveTo(robot.radius - 4, -7);
+      arenaCtx.lineTo(robot.radius + 7, 0);
+      arenaCtx.lineTo(robot.radius - 4, 7);
+      arenaCtx.closePath();
+      arenaCtx.fill();
+
+      // Center LED
+      arenaCtx.fillStyle = currentEmotion === 'obstacle' ? '#ef4444' : '#22d3ee';
+      arenaCtx.shadowColor = arenaCtx.fillStyle;
+      arenaCtx.shadowBlur = 8;
+      arenaCtx.beginPath();
+      arenaCtx.arc(0, 0, 6, 0, Math.PI * 2);
+      arenaCtx.fill();
+
+      arenaCtx.restore();
+      requestAnimationFrame(renderArena);
+    }
+    requestAnimationFrame(renderArena);
+
+    // D-Pad Touch & Mouse continuous steering bindings
+    function bindDpad(btnId, l, r, emo) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      let driveInterval = null;
+
+      const start = (e) => {
+        e.preventDefault();
+        haptic(20);
+        sendDrive(l, r, 0, emo);
+        if (driveInterval) clearInterval(driveInterval);
+        driveInterval = setInterval(() => {
+          robot.speedL = l * 0.05;
+          robot.speedR = r * 0.05;
+        }, 80);
+      };
+
+      const stop = (e) => {
+        e.preventDefault();
+        if (driveInterval) {
+          clearInterval(driveInterval);
+          driveInterval = null;
+        }
+        sendStop(true);
+      };
+
+      btn.addEventListener('mousedown', start);
+      btn.addEventListener('mouseup', stop);
+      btn.addEventListener('mouseleave', stop);
+      btn.addEventListener('touchstart', start, { passive: false });
+      btn.addEventListener('touchend', stop, { passive: false });
+    }
+
+    bindDpad('dpad-up', 50, 50, 'drive_fwd');
+    bindDpad('dpad-down', -40, -40, 'drive_rev');
+    bindDpad('dpad-left', -35, 35, 'turn_left');
+    bindDpad('dpad-right', 35, -35, 'turn_right');
+    const stopBtn = document.getElementById('dpad-stop');
+    if (stopBtn) {
+      stopBtn.addEventListener('click', () => sendStop());
+    }
+
+    /* =========================================================================
+       5. VOICE CONTROL STUDIO & WEB SPEECH RECOGNITION
+       ========================================================================= */
+    let recognition = null;
+    let isRecording = false;
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'vi-VN';
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('btn-mic-toggle').classList.add('listening');
+        document.getElementById('mic-btn-label').innerText = 'Đang Lắng Nghe...';
+        document.getElementById('voice-status').innerText = 'Mic Bật';
+        setEmotion('listening');
+        playSfx('listen');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+        logSerial(`[mic] Nghe thấy: "${transcript}"`, 'info');
+        processVoiceCommandText(transcript);
+      };
+
+      recognition.onerror = (err) => {
+        console.warn('Speech err:', err);
+        stopVoiceRecording();
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          try { recognition.start(); } catch(e){}
+        }
+      };
+    }
+
+    function toggleVoiceRecording() {
+      haptic(25);
+      if (!recognition) {
+        alert('Trình duyệt của bạn chưa hỗ trợ Web Speech API. Bạn có thể chạm các nút khẩu lệnh mẫu bên dưới!');
+        return;
+      }
+      if (isRecording) {
+        stopVoiceRecording();
+      } else {
+        getAudioContext();
+        try { recognition.start(); } catch(e){}
+      }
+    }
+
+    function stopVoiceRecording() {
+      isRecording = false;
+      if (recognition) {
+        try { recognition.stop(); } catch(e){}
+      }
+      document.getElementById('btn-mic-toggle').classList.remove('listening');
+      document.getElementById('mic-btn-label').innerText = 'Bật Mic Nhận Lệnh';
+      document.getElementById('voice-status').innerText = 'Sẵn Sàng';
+      setEmotion('idle');
+    }
+
+    function processVoiceCommandText(txt) {
+      if (txt.includes('tiến') || txt.includes('thẳng') || txt.includes('forward')) {
+        simulateVoice('tien');
+      } else if (txt.includes('lùi') || txt.includes('backward')) {
+        simulateVoice('lui');
+      } else if (txt.includes('trái') || txt.includes('left')) {
+        simulateVoice('trai');
+      } else if (txt.includes('phải') || txt.includes('right')) {
+        simulateVoice('phai');
+      } else if (txt.includes('dừng') || txt.includes('stop')) {
+        simulateVoice('dung');
+      } else if (txt.includes('quay') || txt.includes('múa') || txt.includes('spin')) {
+        simulateVoice('quay');
+      } else if (txt.includes('vui') || txt.includes('happy')) {
+        simulateVoice('vui');
+      }
+    }
+
+    function simulateVoice(cmd) {
+      haptic(20);
+      logSerial(`voice ${cmd}`, 'tx');
+      animateMicMeter();
+
+      switch(cmd) {
+        case 'tien':
+          sendDrive(55, 55, 1500, 'drive_fwd');
+          playSfx('ack');
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"forward"}`, 'rx');
+          break;
+        case 'lui':
+          sendDrive(-45, -45, 1200, 'drive_rev');
+          playSfx('ack');
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"backward"}`, 'rx');
+          break;
+        case 'trai':
+          sendDrive(-40, 40, 750, 'turn_left');
+          playSfx('ack');
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"left"}`, 'rx');
+          break;
+        case 'phai':
+          sendDrive(40, -40, 750, 'turn_right');
+          playSfx('ack');
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"right"}`, 'rx');
+          break;
+        case 'dung':
+          sendStop();
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"stop"}`, 'rx');
+          break;
+        case 'quay':
+          sendDrive(60, -60, 1800, 'dizzy');
+          playSfx('happy');
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"spin"}`, 'rx');
+          break;
+        case 'vui':
+          setEmotion('happy');
+          playSfx('happy');
+          logSerial(`{"cmd":"voice","ok":true,"triggered":"happy"}`, 'rx');
+          break;
+      }
+    }
+
+    function animateMicMeter() {
+      const bar = document.getElementById('mic-level-bar');
+      const pct = document.getElementById('mic-level-pct');
+      bar.style.width = '85%';
+      pct.innerText = '85%';
+      setTimeout(() => {
+        bar.style.width = '35%';
+        pct.innerText = '35%';
+      }, 200);
+      setTimeout(() => {
+        bar.style.width = '0%';
+        pct.innerText = '0%';
+      }, 500);
+    }
+
+    /* =========================================================================
+       6. KEYBOARD SHORTCUTS & SERIAL CONSOLE LOGGING
+       ========================================================================= */
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'ArrowUp' || e.key === 'w')    { e.preventDefault(); sendDrive(50, 50, 600, 'drive_fwd'); }
+      if (e.key === 'ArrowDown' || e.key === 's')  { e.preventDefault(); sendDrive(-40, -40, 600, 'drive_rev'); }
+      if (e.key === 'ArrowLeft' || e.key === 'a')  { e.preventDefault(); sendDrive(-35, 35, 450, 'turn_left'); }
+      if (e.key === 'ArrowRight' || e.key === 'd') { e.preventDefault(); sendDrive(35, -35, 450, 'turn_right'); }
+      if (e.key === ' ' || e.key === 'Escape')     { e.preventDefault(); sendStop(); }
+    });
+
+    const consoleBox = document.getElementById('console-log');
+    function logSerial(msg, type = 'rx') {
+      const now = new Date().toTimeString().split(' ')[0];
+      const div = document.createElement('div');
+      div.className = 'log-line';
+
+      let prefix = '';
+      if (type === 'tx') prefix = `<span class="log-tx">&gt; ${msg}</span>`;
+      else if (type === 'info') prefix = `<span class="log-info"># ${msg}</span>`;
+      else prefix = `<span class="log-rx">&lt; ${msg}</span>`;
+
+      div.innerHTML = `<span class="log-time">[${now}]</span>${prefix}`;
+      consoleBox.appendChild(div);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function resetSimulator() {
+      haptic(25);
+      robot.x = (arenaCanvas.width || 300) / 2;
+      robot.y = (arenaCanvas.height || 220) / 2;
+      robot.speedL = 0;
+      robot.speedR = 0;
+      robot.heading = 0;
+      robot.trail = [];
+      setEmotion('idle', true);
+      playSfx('boot');
+      logSerial(`info`, 'tx');
+      logSerial(`{"cmd":"info","ok":true,"fw":"0.2.0-mochi","flash":16777216,"psram":8388608,"heap":298400}`, 'rx');
+    }
+
+    setTimeout(() => {
+      resetSimulator();
+    }, 400);
+  </script>
+</body>
+</html>
