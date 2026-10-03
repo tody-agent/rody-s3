@@ -11,7 +11,7 @@
 | # | Linh kiện | Thông số kỹ thuật | Số lượng | Giá ước tính | Vai trò trong Rody S3 Pet Edition |
 |:---:|:---|:---|:---:|:---:|:---|
 | 1 | **ESP32-S3 DevKit N16R8** | 40-Pin, 16MB Flash, 8MB PSRAM (Octal), 2 cổng Type-C | 1 | ~135.000đ | Bộ não AI xử lý đa giác quan (Thị giác, Thính giác, Xúc giác, Thăng bằng) |
-| 2 | **Cảm biến Gia Tốc & Con Quay MPU6050 (GY-521)** | 6-DOF IMU, $\pm 8g$, $\pm 1000^\circ/\text{s}$, giao tiếp I2C `0x68` | 1 | ~18.000đ | **[MỚI]** Cảm giác thăng bằng: phát hiện rơi tự do, ngửa bụng, lắc liên tục, gõ cơ học |
+| 2 | **Cảm biến Gia Tốc & Con Quay MPU6050 (GY-521) / GY-6500 / GY-9250** | 6-DOF / 9-DOF IMU, $\pm 8g$, $\pm 1000^\circ/\text{s}$, I2C `0x68` hoặc `0x69` | 1 | ~18.000đ – 35.000đ | **[MỚI]** Cảm giác thăng bằng: phát hiện rơi tự do, ngửa bụng, lắc liên tục, gõ cơ học (GY-9250 tích hợp thêm La bàn số AK8963) |
 | 3 | **Cảm biến Chạm Điện Dung TTP223** | Module mini 15x11mm, ngõ ra số HIGH khi chạm, hoặc lá nhôm | 1 | ~5.000đ | **[MỚI]** Xúc giác đỉnh đầu: cảm nhận vuốt ve, xoa đầu âu yếm |
 | 4 | **Màn hình TFT 1.54" ST7789** | IPS 240x240 pixel, giao tiếp SPI (8 pin), góc nhìn 178° | 1 | ~58.000đ | Khuôn mặt cảm xúc sống động 60 FPS (mắt cún Mochi, chớp mắt, liếc, trái tim) |
 | 5 | **Microphone I2S INMP441** | MEMS kỹ thuật số 24-bit, độ nhạy cao, ngõ ra I2S0 | 1 | ~38.000đ | Thính giác: thu âm giọng nói, đo cường độ tiếng ồn xung quanh |
@@ -123,25 +123,35 @@ Mặt trước bo mạch (Anten Wi-Fi phía trên, 2 cổng USB-C phía dưới)
 
 ## 5. Hướng Dẫn Nối Dây Chi Tiết Theo Phân Hệ
 
-### Phân Hệ 1: Cảm Biến Gia Tốc & Con Quay MPU6050 (GY-521)
-*Được gắn phẳng ở đáy robot, giữa 2 bánh xe. Chia sẻ chung đường I2C với PCA9685.*
+### Phân Hệ 1: Cảm Biến Gia Tốc & Quán Tính IMU MPU6050 (GY-521) / GY-6500 / GY-9250
+*Được gắn phẳng ở đáy robot, giữa 2 bánh xe. Chia sẻ chung đường I2C (SDA=IO8, SCL=IO9) với PCA9685.*
 
-| Chân MPU6050 | Nối Tới ESP32-S3 / Nguồn | Loại Tín Hiệu | Màu Dây | Ghi Chú Kỹ Thuật |
+| Chân Module | Nối Tới ESP32-S3 / Nguồn | Loại Tín Hiệu | Màu Dây | Ghi Chú Kỹ Thuật Cho GY-521 / GY-6500 / GY-9250 |
 |:---:|:---:|:---:|:---:|:---|
-| **VCC** | **Chân 1 (3V3)** | Nguồn 3.3V | Trắng | Lấy nguồn sạch từ LDO của ESP32 |
-| **GND** | **Chân 20 (GND)**| Mass | Đen | Nối mass chung |
+| **VCC** | **Chân 1 (3V3)** | Nguồn 3.3V | Trắng | **BẮT BUỘC dùng 3.3V**: Cấp từ LDO sạch của ESP32. Tuyệt đối không nối 5V để tránh rò áp 5V vào chân I2C của ESP32. |
+| **GND** | **Chân 20 (GND)**| Mass | Đen | Nối mass chung toàn mạch |
 | **SCL** | **Chân 14 (IO9)**| I2C Clock | Tím | Chung đường I2C SCL với PCA9685 |
 | **SDA** | **Chân 11 (IO8)**| I2C Data | Vàng | Chung đường I2C SDA với PCA9685 |
-| **AD0** | **Chân GND MPU6050** | Cấu hình địa chỉ | Đen ngắn | Kéo xuống GND để đặt địa chỉ I2C cố định là `0x68` |
+| **AD0** | **Chân GND (hoặc để hở)** | Cấu hình địa chỉ | Đen ngắn | Nối GND để có địa chỉ `0x68`. Nếu để hở/kéo cao địa chỉ sẽ là `0x69`. **Firmware tự động quét (Auto-probe) cả 2 địa chỉ!** |
 | **INT** | Để hở | Ngắt | - | Firmware đọc dữ liệu polling 50Hz qua FreeRTOS |
+| **EDA / ECL** | Để hở | I2C Aux | - | Bus phụ của IMU, không nối vào ESP32 |
 
 > [!TIP]
-> **Quy ước trục MPU6050:**
-> - Trục **$X$** hướng về phía trước mui xe.
-> - Trục **$Y$** hướng sang sườn phải.
-> - Trục **$Z$** hướng thẳng đứng lên trời ($\approx +1.0g$ khi robot đứng yên).
-> - Khi bị lật ngửa bụng: $a_z < -0.5g$ ➔ Kích hoạt ngay trạng thái giãy giụa và kêu cứu!
-> - Khi rơi tự do: $|a| = \sqrt{a_x^2 + a_y^2 + a_z^2} < 0.25g$ ➔ Mắt nhắm tịt la hét hoảng loạn!
+> **Điểm khác biệt quan trọng giữa MPU6050, GY-6500 và GY-9250:**
+> 1. **Mã nhận diện chip (`WHO_AM_I` thanh ghi 0x75):**
+>    - **MPU6050 (GY-521):** Trả về `0x68`.
+>    - **MPU6500 (GY-6500):** Trả về `0x70`.
+>    - **MPU9250 (GY-9250):** Trả về `0x71` (với bản MPU9255 là `0x73`).
+>    - 👉 Firmware Rody S3 tự động nhận diện cả 3 dòng chip, tự gán bộ lọc gia tốc DLPF phù hợp.
+> 2. **La bàn số 3 trục AK8963 (Chỉ có trên GY-9250):**
+>    - Chip MPU-9250 tích hợp sẵn cảm biến từ trường AK8963 (Magnetometer).
+>    - Firmware Rody tự động kích hoạt **I2C Bypass Mode** (`INT_PIN_CFG = 0x02`), mở đường cho AK8963 lộ diện trực tiếp tại địa chỉ I2C **`0x0C`**. Công cụ chẩn đoán I2C Scanner và Self-test của robot sẽ báo nhận diện thành công 9-DOF.
+> 3. **Quy ước trục cảm biến:**
+>    - Trục **$X$** hướng về phía trước mui xe.
+>    - Trục **$Y$** hướng sang sườn phải.
+>    - Trục **$Z$** hướng thẳng đứng lên trời ($\approx +1.0g$ khi robot đứng yên).
+>    - Khi bị lật ngửa bụng: $a_z < -0.5g$ ➔ Kích hoạt ngay trạng thái giãy giụa và kêu cứu!
+>    - Khi rơi tự do: $|a| = \sqrt{a_x^2 + a_y^2 + a_z^2} < 0.25g$ ➔ Mắt nhắm tịt hoảng loạn!
 
 ---
 
@@ -347,15 +357,17 @@ Trước khi bật công tắc lần đầu tiên, hãy dùng đồng hồ VOM �
 | **M5** | Đo áp tại chân `5V` của ESP32 (sau Diode 1N5819) | **4.75V – 4.95V** | Diode bị cắm ngược chiều, đảo lại vạch trắng bạc về phía chân 5V ESP32 |
 | **M6** | Đo áp tại chân `3V3` của ESP32 | **3.25V – 3.35V** | LDO onboard của ESP32 hoạt động hoàn hảo |
 | **M7** | Đo cực tính ngõ ra Loa trên MAX98357A | **Không chạm GND** | Cực SPK- tuyệt đối không được tiếp xúc với vỏ robot hay mass chung |
-| **M8** | Đo thông mạch SDA/SCL giữa ESP32, PCA9685 và MPU6050 | **0 Ω (Thông mạch)** | Bus I2C đã liên kết hoàn chỉnh 2 thiết bị 0x40 và 0x68 |
+| **M8** | Đo thông mạch SDA/SCL giữa ESP32, PCA9685 và IMU (MPU6050/6500/9250) | **0 Ω (Thông mạch)** | Bus I2C đã liên kết hoàn chỉnh PCA9685 (0x40) và IMU (0x68 hoặc 0x69) |
 
 ---
 
 ## 9. Khắc Phục Sự Cố Nhanh (Troubleshooting)
 
-1. **Khởi động robot báo lỗi `MPU6050 not detected` trên Serial Monitor:**
-   - Kiểm tra chân AD0 của MPU6050 đã nối đất (GND) chưa. Nếu AD0 để lơ lửng, địa chỉ có thể nhảy sang `0x69`.
-   - Kiểm tra dây SDA (GPIO 8) và SCL (GPIO 9) có bị cắm chéo nhau không.
+1. **Khởi động robot báo lỗi `IMU not detected` trên Serial Monitor:**
+   - Kiểm tra thông mạch dây SDA (GPIO 8) và SCL (GPIO 9) xem có bị lỏng hoặc cắm chéo nhau không.
+   - Kiểm tra chân VCC cảm biến: Đã nối đúng nguồn **3.3V** chưa (đèn LED đỏ trên module GY-521/6500/9250 phải sáng).
+   - Kiểm tra chân AD0: Nếu nối GND, địa chỉ là `0x68`; nếu nối 3.3V hoặc thả nổi (trên một số bo GY-6500/GY-9250 có trở kéo lên), địa chỉ là `0x69`. Firmware mới tự động nhận diện cả 2 địa chỉ, nhưng nếu lỏng chân tín hiệu SDA/SCL thì chip sẽ không phản hồi.
+   - Nếu dùng GY-9250, vào Web Diagnostic Center bấm **Quét Ngay** I2C: Bạn sẽ thấy xuất hiện cả `0x68` (hoặc `0x69`) kèm la bàn số `0x0C` (AK8963).
 2. **Vuốt ve đầu nhưng robot không có phản ứng:**
    - Kiểm tra dây tín hiệu từ TTP223 có cắm đúng chân `GPIO 2` không.
    - Nếu dùng cảm ứng điện dung trực tiếp bằng lá nhôm, hãy mở Serial Monitor xem giá trị `touchRead(2)` khi chạm và khi không chạm để căn chỉnh ngưỡng nhạy trong file `src/touch_sensor.cpp`.

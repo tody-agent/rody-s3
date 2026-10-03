@@ -14,7 +14,7 @@
 
 | # | Linh kiện | Thông số kỹ thuật | Giá tham khảo | Vai trò |
 |---|-----------|-------------------|:-------------:|---------|
-| 1 | **Module MPU6050 (GY-521)** | Gia tốc 3 trục $\pm 8g$ + Con quay 3 trục $\pm 1000^\circ/\text{s}$, I2C 0x68 | ~15.000đ – 22.000đ | Nhận biết rơi ngã, lật ngửa bụng, lắc liên tục, gõ mạnh |
+| 1 | **Module IMU MPU6050 (GY-521) / GY-6500 / GY-9250** | Gia tốc 3 trục $\pm 8g$ + Con quay 3 trục $\pm 1000^\circ/\text{s}$, I2C 0x68 / 0x69 | ~15.000đ – 35.000đ | Nhận biết rơi ngã, lật ngửa bụng, lắc liên tục, gõ mạnh (GY-9250 kèm la bàn AK8963) |
 | 2 | **Module Cảm biến Chạm TTP223** *(Hoặc dùng giấy bạc)* | Cảm ứng điện dung mini (15x11mm), ngõ ra số HIGH khi chạm | ~4.000đ – 7.000đ | Nhận biết vuốt ve đầu, chạm nhẹ âu yếm |
 | 3 | **Dây Jumper Cái-Cái** | 20cm, nhiều màu | ~5.000đ | Cắm nối các module |
 
@@ -25,22 +25,23 @@
 ## 2. Điểm Đột Phá: Chia Sẻ Bus I2C – Không Tốn Thêm Chân!
 
 - **PCA9685** có địa chỉ I2C là `0x40`.
-- **MPU6050** có địa chỉ I2C mặc định là `0x68` (khi chân AD0 nối GND).
-👉 Hai module này **chạy chung trên cùng đường truyền I2C (GPIO 8 SDA, GPIO 9 SCL)** mà không hề xung đột, giúp giữ nguyên toàn bộ chân GPIO khác cho Màn hình SPI, Loa I2S và Micro I2S!
+- **IMU (MPU6050 / GY-6500 / GY-9250)** có địa chỉ I2C mặc định là `0x68` (khi chân AD0 nối GND) hoặc `0x69` (khi AD0 nối 3.3V / kéo cao).
+- **AK8963 (La bàn trên GY-9250)** tự động xuất hiện ở địa chỉ `0x0C` qua chế độ I2C Bypass.
+👉 Các module này **chạy chung trên cùng đường truyền I2C (GPIO 8 SDA, GPIO 9 SCL)** mà không hề xung đột, giúp giữ nguyên toàn bộ chân GPIO khác cho Màn hình SPI, Loa I2S và Micro I2S!
 
 ---
 
 ## 3. Bảng Đấu Dây Mở Rộng
 
-### 🔹 Module 1: MPU6050 (GY-521)
-| Chân MPU6050 | Nối vào ESP32-S3 | Ghi chú |
+### 🔹 Module 1: MPU6050 (GY-521) / GY-6500 / GY-9250
+| Chân Module IMU | Nối vào ESP32-S3 | Ghi chú |
 | :---: | :---: | :---|
-| **VCC** | **3.3V** | Cấp nguồn 3.3V từ bo ESP32-S3 |
+| **VCC** | **3.3V** | Cấp nguồn 3.3V từ bo ESP32-S3 (Khuyên dùng 3.3V) |
 | **GND** | **GND** | Nối vào đất chung |
 | **SCL** | **GPIO 9** | Bus I2C chung với PCA9685 |
 | **SDA** | **GPIO 8** | Bus I2C chung với PCA9685 |
-| **AD0** | **GND** | Cố định địa chỉ I2C ở mức `0x68` |
-| **INT** | *Bỏ trống* | Firmware đọc định kỳ bằng I2C polling |
+| **AD0** | **GND** (hoặc hở) | Nối GND = 0x68, nối 3.3V = 0x69. Firmware tự động nhận diện cả 2 |
+| **INT** | *Bỏ trống* | Firmware đọc định kỳ bằng I2C polling 50Hz |
 
 ---
 

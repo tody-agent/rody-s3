@@ -1397,6 +1397,10 @@
             <!-- Dynamic BOM rows injected here -->
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Component Visibility Manager Modal -->
   <div id="comp-vis-modal" class="vis-modal-overlay">
     <div class="vis-modal-content">
@@ -1441,10 +1445,11 @@
         tip: 'Bộ não của robot. Cấp nguồn 5V sau Diode 1N5819 hoặc qua cổng USB. Tuyệt đối không câu dây vào GPIO 26–37 (Flash) và GPIO 45.',
         price: '~120.000đ – 150.000đ',
         x: 820, y: 350, w: 340, h: 630,
+        defaultX: 820, defaultY: 350, hidden: false,
         type: 'esp32',
         pins: [
           // Left pins (x: 20)
-          { id: 'esp32_3v3', name: '3V3 (Chân 1)', label: '3V3', side: 'left', x: 20, y: 45, role: 'pwr' },
+          { id: 'esp32_3v3', name: '3V3 (Chân 1 - Nguồn Sạch 3.3V)', label: '3V3 OUT', side: 'left', x: 20, y: 45, role: 'pwr-3v3' },
           { id: 'esp32_en', name: 'EN (Reset)', label: 'EN', side: 'left', x: 20, y: 73, role: 'sig' },
           { id: 'esp32_io4', name: 'IO4 (INMP441 SCK)', label: 'IO4', side: 'left', x: 20, y: 101, role: 'sig' },
           { id: 'esp32_io5', name: 'IO5 (INMP441 WS)', label: 'IO5', side: 'left', x: 20, y: 129, role: 'sig' },
@@ -1462,7 +1467,7 @@
           { id: 'esp32_io11', name: 'IO11 (IR_R Dò Phải)', label: 'IO11 (IR_R)', side: 'left', x: 20, y: 465, role: 'sig' },
           { id: 'esp32_io12', name: 'IO12', label: 'IO12', side: 'left', x: 20, y: 493, role: 'sig' },
           { id: 'esp32_io13', name: 'IO13', label: 'IO13', side: 'left', x: 20, y: 521, role: 'sig' },
-          { id: 'esp32_5v', name: '5V (Chân 19 - Sau Diode)', label: '5V IN', side: 'left', x: 20, y: 549, role: 'pwr' },
+          { id: 'esp32_5v', name: '5V (Chân 19 - Sau Diode 5V IN)', label: '5V IN', side: 'left', x: 20, y: 549, role: 'pwr' },
           { id: 'esp32_gnd_l', name: 'GND (Chân 20 - Mass Trái)', label: 'GND', side: 'left', x: 20, y: 577, role: 'gnd' },
 
           // Right pins (x: 320)
@@ -1499,9 +1504,10 @@
         tip: 'Vẽ đôi mắt biểu cảm biến đổi linh hoạt 60 FPS. Cấp 3.3V từ chân 3V3 của ESP32. Chân BLK nối IO21 để điều khiển mờ dần (fade PWM).',
         price: '~50.000đ – 65.000đ',
         x: 1380, y: 100, w: 270, h: 290,
+        defaultX: 1380, defaultY: 100, hidden: false,
         type: 'st7789',
         pins: [
-          { id: 'tft_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'left', x: 20, y: 40, role: 'pwr' },
+          { id: 'tft_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'left', x: 20, y: 40, role: 'pwr-3v3' },
           { id: 'tft_gnd', name: 'GND (Mass)', label: 'GND', side: 'left', x: 20, y: 72, role: 'gnd' },
           { id: 'tft_scl', name: 'SCL / SCLK (SPI Clock)', label: 'SCL (IO42)', side: 'left', x: 20, y: 104, role: 'sig' },
           { id: 'tft_sda', name: 'SDA / MOSI (SPI Data)', label: 'SDA (IO41)', side: 'left', x: 20, y: 136, role: 'sig' },
@@ -1522,9 +1528,10 @@
         tip: 'Tuyệt đối CẤM cấp 5V vào VDD (cháy màng MEMS). Chân L/R nối xuống GND để chọn thu kênh Trái. Giữ lỗ mic ở đáy thông thoáng.',
         price: '~35.000đ – 45.000đ',
         x: 420, y: 100, w: 220, h: 185,
+        defaultX: 420, defaultY: 100, hidden: false,
         type: 'inmp441',
         pins: [
-          { id: 'mic_vdd', name: 'VDD (3.3V nghiêm ngặt)', label: 'VDD 3.3V', side: 'right', x: 195, y: 35, role: 'pwr' },
+          { id: 'mic_vdd', name: 'VDD (3.3V nghiêm ngặt)', label: 'VDD 3.3V', side: 'right', x: 195, y: 35, role: 'pwr-3v3' },
           { id: 'mic_gnd', name: 'GND (Mass)', label: 'GND', side: 'right', x: 195, y: 62, role: 'gnd' },
           { id: 'mic_sck', name: 'SCK (I2S Clock)', label: 'SCK (IO4)', side: 'right', x: 195, y: 89, role: 'sig' },
           { id: 'mic_ws', name: 'WS (Word Select)', label: 'WS (IO5)', side: 'right', x: 195, y: 116, role: 'sig' },
@@ -1543,6 +1550,7 @@
         tip: 'Cấp nguồn 5V từ Boost để loa to, sạch. GAIN và SD để hở mặc định. CẤM nối cực SPK- ra mass GND (mạch cầu BTL sẽ cháy)!',
         price: '~25.000đ – 35.000đ',
         x: 420, y: 330, w: 230, h: 220,
+        defaultX: 420, defaultY: 330, hidden: false,
         type: 'max98357a',
         pins: [
           { id: 'max_vin', name: 'VIN (Nguồn 5V Boost)', label: 'VIN 5V', side: 'right', x: 205, y: 35, role: 'pwr' },
@@ -1552,8 +1560,8 @@
           { id: 'max_bclk', name: 'BCLK (Bit Clock)', label: 'BCLK (IO16)', side: 'right', x: 205, y: 143, role: 'sig' },
           { id: 'max_gain', name: 'GAIN (Độ nhạy)', label: 'GAIN (Hở)', side: 'right', x: 205, y: 170, role: 'sig' },
           { id: 'max_sd', name: 'SD (Bật/Tắt)', label: 'SD (Hở)', side: 'right', x: 205, y: 197, role: 'sig' },
-          { id: 'max_spk_plus', name: 'SPK+ (Cực dương loa)', label: 'SPK+', side: 'left', x: 25, y: 85, role: 'pwr' },
-          { id: 'max_spk_minus', name: 'SPK- (Cực âm loa - CẤM GND)', label: 'SPK-', side: 'left', x: 25, y: 135, role: 'pwr' }
+          { id: 'max_spk_plus', name: 'SPK+ (Cực dương loa)', label: 'SPK+', side: 'left', x: 25, y: 85, role: 'sig' },
+          { id: 'max_spk_minus', name: 'SPK- (Cực âm loa - CẤM GND)', label: 'SPK-', side: 'left', x: 25, y: 135, role: 'sig' }
         ]
       },
 
@@ -1567,10 +1575,11 @@
         tip: 'Nối 2 dây vào cọc SPK+ và SPK- trên mạch MAX98357A. Nên gắn loa trong khoang đầu robot để tạo buồng cộng hưởng âm thanh tốt hơn.',
         price: '~12.000đ – 18.000đ',
         x: 130, y: 350, w: 190, h: 180,
+        defaultX: 130, defaultY: 350, hidden: false,
         type: 'speaker',
         pins: [
-          { id: 'spk_in_plus', name: 'Cực (+) Loa', label: '(+) Đỏ', side: 'right', x: 165, y: 70, role: 'pwr' },
-          { id: 'spk_in_minus', name: 'Cực (-) Loa', label: '(-) Đen', side: 'right', x: 165, y: 110, role: 'pwr' }
+          { id: 'spk_in_plus', name: 'Cực (+) Loa', label: '(+) Đỏ', side: 'right', x: 165, y: 70, role: 'sig' },
+          { id: 'spk_in_minus', name: 'Cực (-) Loa', label: '(-) Đen', side: 'right', x: 165, y: 110, role: 'sig' }
         ]
       },
 
@@ -1584,10 +1593,11 @@
         tip: 'Chân VCC nối 3V3 của ESP32. Cọc vít màu xanh V+ nối 5.1V từ mạch Boost (kèm tụ hóa 1000uF chống giật sụt áp).',
         price: '~45.000đ – 55.000đ',
         x: 1380, y: 440, w: 330, h: 250,
+        defaultX: 1380, defaultY: 440, hidden: false,
         type: 'pca9685',
         pins: [
           // Left side logic pins
-          { id: 'pca_side_vcc', name: 'VCC (3.3V Logic)', label: 'VCC 3.3V', side: 'left', x: 25, y: 55, role: 'pwr' },
+          { id: 'pca_side_vcc', name: 'VCC (3.3V Logic)', label: 'VCC 3.3V', side: 'left', x: 25, y: 55, role: 'pwr-3v3' },
           { id: 'pca_side_gnd', name: 'GND (Mass Logic)', label: 'GND', side: 'left', x: 25, y: 85, role: 'gnd' },
           { id: 'pca_side_sda', name: 'SDA (I2C Data)', label: 'SDA (IO8)', side: 'left', x: 25, y: 115, role: 'sig' },
           { id: 'pca_side_scl', name: 'SCL (I2C Clock)', label: 'SCL (IO9)', side: 'left', x: 25, y: 145, role: 'sig' },
@@ -1619,6 +1629,7 @@
         tip: 'Cắm giắc 3 chân theo thứ tự: Dây Cam (PWM) trên cùng, Dây Đỏ (V+) ở giữa, Dây Nâu (GND) ở dưới.',
         price: '~45.000đ – 55.000đ',
         x: 1820, y: 430, w: 190, h: 120,
+        defaultX: 1820, defaultY: 430, hidden: false,
         type: 'servo',
         pins: [
           { id: 'servol_pwm', name: 'Cam: PWM Pulse', label: 'Cam (PWM)', side: 'left', x: 20, y: 35, role: 'sig' },
@@ -1637,6 +1648,7 @@
         tip: 'Cắm giắc 3 chân vào Kênh 1. Khi tiến, firmware sẽ tự động đảo xung ngược chiều với bánh trái để xe tiến thẳng.',
         price: '~45.000đ – 55.000đ',
         x: 1820, y: 570, w: 190, h: 120,
+        defaultX: 1820, defaultY: 570, hidden: false,
         type: 'servo',
         pins: [
           { id: 'servor_pwm', name: 'Cam: PWM Pulse', label: 'Cam (PWM)', side: 'left', x: 20, y: 35, role: 'sig' },
@@ -1655,9 +1667,10 @@
         tip: 'Được di dời từ GPIO 6 sang GPIO 10 để nhường chân cho I2S Mic. Hỗ trợ ngắt cạnh xung phần cứng (ISR).',
         price: '~10.000đ – 15.000đ',
         x: 420, y: 580, w: 180, h: 110,
+        defaultX: 420, defaultY: 580, hidden: false,
         type: 'ir',
         pins: [
-          { id: 'irl_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'right', x: 160, y: 28, role: 'pwr' },
+          { id: 'irl_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'right', x: 160, y: 28, role: 'pwr-3v3' },
           { id: 'irl_gnd', name: 'GND (Mass)', label: 'GND', side: 'right', x: 160, y: 53, role: 'gnd' },
           { id: 'irl_do', name: 'DO (Tín hiệu số)', label: 'DO (IO10)', side: 'right', x: 160, y: 78, role: 'sig' }
         ]
@@ -1673,9 +1686,10 @@
         tip: 'Được di dời từ GPIO 7 sang GPIO 11 để nhường chân cho I2S Loa. Hỗ trợ ngắt cạnh xung phần cứng (ISR).',
         price: '~10.000đ – 15.000đ',
         x: 420, y: 720, w: 180, h: 110,
+        defaultX: 420, defaultY: 720, hidden: false,
         type: 'ir',
         pins: [
-          { id: 'irr_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'right', x: 160, y: 28, role: 'pwr' },
+          { id: 'irr_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'right', x: 160, y: 28, role: 'pwr-3v3' },
           { id: 'irr_gnd', name: 'GND (Mass)', label: 'GND', side: 'right', x: 160, y: 53, role: 'gnd' },
           { id: 'irr_do', name: 'DO (Tín hiệu số)', label: 'DO (IO11)', side: 'right', x: 160, y: 78, role: 'sig' }
         ]
@@ -1691,6 +1705,7 @@
         tip: 'Nối vào B+ và B- của mạch sạc TP4056. Tuyệt đối không để chập cực làm nổ pin.',
         price: '~35.000đ – 65.000đ',
         x: 240, y: 1040, w: 200, h: 110,
+        defaultX: 240, defaultY: 1040, hidden: false,
         type: 'battery',
         pins: [
           { id: 'bat_plus', name: '(+) Cực Dương Pin', label: '(+) 3.7V', side: 'right', x: 175, y: 35, role: 'pwr' },
@@ -1708,6 +1723,7 @@
         tip: 'Chọn loại mạch có 4 chân ngõ ra: B+/B- (nối pin) và OUT+/OUT- (cấp tải).',
         price: '~6.000đ – 10.000đ',
         x: 480, y: 1040, w: 200, h: 130,
+        defaultX: 480, defaultY: 1040, hidden: false,
         type: 'tp4056',
         pins: [
           { id: 'tp_bplus', name: 'B+ (Nối dương pin)', label: 'B+', side: 'left', x: 20, y: 35, role: 'pwr' },
@@ -1727,6 +1743,7 @@
         tip: 'Nối giữa OUT+ của TP4056 và IN+ của mạch Boost MT3608.',
         price: '~2.000đ – 5.000đ',
         x: 720, y: 1055, w: 130, h: 90,
+        defaultX: 720, defaultY: 1055, hidden: false,
         type: 'switch',
         pins: [
           { id: 'sw_in', name: 'Chân Vào (từ TP4056 OUT+)', label: 'IN', side: 'left', x: 20, y: 45, role: 'pwr' },
@@ -1744,6 +1761,7 @@
         tip: 'QUAN TRỌNG: Phải vặn biến trở đo VOM ngõ ra đúng 5.10V trước khi cắm dây vào servo hay loa!',
         price: '~10.000đ – 15.000đ',
         x: 890, y: 1030, w: 210, h: 140,
+        defaultX: 890, defaultY: 1030, hidden: false,
         type: 'boost',
         pins: [
           { id: 'boost_inplus', name: 'IN+ (Nguồn sau công tắc)', label: 'IN+', side: 'left', x: 20, y: 40, role: 'pwr' },
@@ -1753,8 +1771,7 @@
         ]
       },
 
-
-      // 16. Capacitive Touch Sensor TTP223
+      // 15. Capacitive Touch Sensor TTP223
       ttp223: {
         id: 'ttp223',
         title: 'Cảm Biến Chạm TTP223',
@@ -1764,27 +1781,29 @@
         tip: 'Dán mặt cảm ứng úp sát vào mặt trong nắp đỉnh đầu hoặc trán robot (xuyên qua vỏ nhựa 3D 1.5–2mm). Hoặc dùng một miếng lá nhôm nối dây vào GPIO 2 (firmware hỗ trợ touchRead).',
         price: '~4.000đ – 7.000đ',
         x: 885, y: 120, w: 210, h: 150,
+        defaultX: 885, defaultY: 120, hidden: false,
         type: 'ttp223',
         pins: [
-          { id: 'touch_vcc', name: 'VCC (3.3V Logic)', label: 'VCC 3.3V', side: 'left', x: 20, y: 40, role: 'pwr' },
+          { id: 'touch_vcc', name: 'VCC (3.3V Logic)', label: 'VCC 3.3V', side: 'left', x: 20, y: 40, role: 'pwr-3v3' },
           { id: 'touch_gnd', name: 'GND (Mass)', label: 'GND', side: 'left', x: 20, y: 75, role: 'gnd' },
           { id: 'touch_sig', name: 'I/O (SIG ➔ GPIO 2)', label: 'SIG (IO2)', side: 'right', x: 190, y: 55, role: 'sig' }
         ]
       },
 
-      // 17. 6-Axis IMU MPU6050 (GY-521)
+      // 16. 6/9-Axis IMU (MPU6050 / GY-6500 / GY-9250)
       mpu6050: {
         id: 'mpu6050',
-        title: 'Gia Tốc Kế MPU6050 (GY-521)',
-        subtitle: 'Cảm Biến Thăng Bằng & Lực Chuyển Động 6-DOF',
-        searchKw: 'cam bien gia toc mpu6050 gy-521 6 dof',
-        spec: 'Gia tốc 3 trục ±8g, Con quay hồi chuyển 3 trục ±1000°/s, I2C địa chỉ 0x68',
-        tip: 'Gắn nằm ngang ở đáy khung robot, trục Z hướng lên trời. Chia sẻ chung bus I2C (GPIO 8/9) với PCA9685. Chân AD0 PHẢI NỐI GND để cố định địa chỉ 0x68.',
-        price: '~18.000đ – 25.000đ',
+        title: 'Gia Tốc Kế GY-521 / GY-6500 / GY-9250',
+        subtitle: 'Cảm Biến Thăng Bằng & Lực Quán Tính IMU (6-DOF & 9-DOF)',
+        searchKw: 'cam bien gia toc gy-6500 gy-9250 mpu6050 gy-521',
+        spec: 'Gia tốc ±8g, Con quay ±1000°/s, I2C 0x68/0x69, tích hợp la bàn AK8963 (GY-9250)',
+        tip: 'Gắn nằm ngang ở đáy khung robot, trục Z hướng lên trời. Chia sẻ chung bus I2C (GPIO 8/9) với PCA9685. Chân AD0 nối GND (0x68) hoặc 3.3V (0x69). Firmware tự động dò tìm.',
+        price: '~18.000đ – 35.000đ',
         x: 1380, y: 730, w: 280, h: 220,
+        defaultX: 1380, defaultY: 730, hidden: false,
         type: 'mpu6050',
         pins: [
-          { id: 'mpu_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'left', x: 20, y: 35, role: 'pwr' },
+          { id: 'mpu_vcc', name: 'VCC (3.3V)', label: 'VCC 3.3V', side: 'left', x: 20, y: 35, role: 'pwr-3v3' },
           { id: 'mpu_gnd', name: 'GND (Mass)', label: 'GND', side: 'left', x: 20, y: 65, role: 'gnd' },
           { id: 'mpu_scl', name: 'SCL (I2C Clock ➔ GPIO 9)', label: 'SCL (IO9)', side: 'left', x: 20, y: 95, role: 'sig' },
           { id: 'mpu_sda', name: 'SDA (I2C Data ➔ GPIO 8)', label: 'SDA (IO8)', side: 'left', x: 20, y: 125, role: 'sig' },
@@ -1793,7 +1812,7 @@
         ]
       },
 
-      // 15. Diode Schottky 1N5819
+      // 17. Diode Schottky 1N5819
       diode: {
         id: 'diode',
         title: 'Diode Schottky 1N5819',
@@ -1803,6 +1822,7 @@
         tip: 'Vạch trắng bạc (Cathode) PHẢI quay về phía chân 5V của ESP32. Chặn 100% dòng USB không chạy ngược vào Boost!',
         price: '~1.000đ – 2.000đ',
         x: 1160, y: 1055, w: 160, h: 80,
+        defaultX: 1160, defaultY: 1055, hidden: false,
         type: 'diode',
         pins: [
           { id: 'diode_anode', name: 'Anode (Thân đen - từ Boost 5.1V)', label: 'Anode (5.1V)', side: 'left', x: 20, y: 40, role: 'pwr' },
@@ -1885,11 +1905,11 @@
       { id: 'w_touch_gnd', name: 'Mass GND cho Touch TTP223', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_r', to: 'touch_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', note: 'Nối mass chung cho cảm biến chạm.' },
       { id: 'w_touch_sig', name: 'Tín Hiệu Chạm Đỉnh Đầu (GPIO2)', color: 'var(--wire-pet-touch)', from: 'touch_sig', to: 'esp32_io2', cat: 'pet', subsystem: 'pet', volt: '3.3V Digital High', thick: 4, note: 'Tín hiệu ngõ ra mức HIGH khi ngón tay vuốt hoặc chạm vào đầu robot. Khi nhận tín hiệu, robot phát tiếng rừ rừ và mắt cười híp lại.' },
 
-      { id: 'w_mpu_vcc', name: 'Nguồn 3.3V cho MPU6050', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'mpu_vcc', cat: 'power', subsystem: 'pet', volt: '3.3V Logic', note: 'Cấp 3.3V cho vi mạch gia tốc kế MPU6050 (GY-521).' },
-      { id: 'w_mpu_gnd', name: 'Mass GND cho MPU6050', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', note: 'Mass chung cho cảm biến gia tốc MPU6050.' },
-      { id: 'w_mpu_sda', name: 'MPU6050 I2C SDA (GPIO8)', color: 'var(--wire-i2c-sda)', from: 'esp32_io8', to: 'mpu_sda', cat: 'pet', subsystem: 'pet', volt: '3.3V I2C Data', thick: 3.5, note: 'Bus dữ liệu I2C chia sẻ chung giữa PCA9685 và MPU6050 trên GPIO 8.' },
-      { id: 'w_mpu_scl', name: 'MPU6050 I2C SCL (GPIO9)', color: 'var(--wire-i2c-scl)', from: 'esp32_io9', to: 'mpu_scl', cat: 'pet', subsystem: 'pet', volt: '3.3V I2C Clock', thick: 3.5, note: 'Bus xung nhịp I2C chia sẻ chung giữa PCA9685 và MPU6050 trên GPIO 9.' },
-      { id: 'w_mpu_ad0', name: 'MPU6050 AD0 nối GND (0x68)', color: 'var(--wire-gnd)', stroke: '#64748b', from: 'mpu_ad0', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', thick: 3, note: 'Cố định chân AD0 xuống mass GND để thiết lập địa chỉ I2C của MPU6050 là 0x68 (không trùng với 0x40 của PCA9685).' }
+      { id: 'w_mpu_vcc', name: 'Nguồn 3.3V cho IMU', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'mpu_vcc', cat: 'power', subsystem: 'pet', volt: '3.3V Logic', note: 'Cấp 3.3V cho vi mạch gia tốc kế GY-521 (MPU6050) / GY-6500 / GY-9250.' },
+      { id: 'w_mpu_gnd', name: 'Mass GND cho IMU', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', note: 'Mass chung cho cảm biến quán tính IMU.' },
+      { id: 'w_mpu_sda', name: 'IMU I2C SDA (GPIO8)', color: 'var(--wire-i2c-sda)', from: 'esp32_io8', to: 'mpu_sda', cat: 'pet', subsystem: 'pet', volt: '3.3V I2C Data', thick: 3.5, note: 'Bus dữ liệu I2C chia sẻ chung giữa PCA9685 và IMU (MPU6050/6500/9250) trên GPIO 8.' },
+      { id: 'w_mpu_scl', name: 'IMU I2C SCL (GPIO9)', color: 'var(--wire-i2c-scl)', from: 'esp32_io9', to: 'mpu_scl', cat: 'pet', subsystem: 'pet', volt: '3.3V I2C Clock', thick: 3.5, note: 'Bus xung nhịp I2C chia sẻ chung giữa PCA9685 và IMU (MPU6050/6500/9250) trên GPIO 9.' },
+      { id: 'w_mpu_ad0', name: 'IMU AD0 nối GND/3V3 (0x68/0x69)', color: 'var(--wire-gnd)', stroke: '#64748b', from: 'mpu_ad0', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', thick: 3, note: 'Nối AD0 xuống GND để đặt địa chỉ 0x68 (hoặc nối 3.3V để đặt 0x69). Firmware tự động dò tìm cả 2 địa chỉ.' }
     ];
 
     // --- State Variables ---
@@ -2105,12 +2125,12 @@
         return `
           <svg width="${comp.w}" height="${comp.h}" viewBox="0 0 ${comp.w} ${comp.h}">
             <rect width="${comp.w}" height="${comp.h}" rx="10" fill="#1e3a8a" stroke="#38bdf8" stroke-width="2"/>
-            <text x="140" y="24" text-anchor="middle" fill="#e0f2fe" font-size="11" font-weight="bold">MPU6050 (GY-521)</text>
+            <text x="140" y="24" text-anchor="middle" fill="#e0f2fe" font-size="11" font-weight="bold">GY-521 / GY-6500 / GY-9250</text>
             <!-- QFN-24 Chip Center -->
             <rect x="85" y="58" width="80" height="80" rx="6" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5"/>
             <circle cx="95" cy="68" r="3" fill="#cbd5e1"/>
-            <text x="125" y="96" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold" font-family="monospace">MPU-6050</text>
-            <text x="125" y="113" text-anchor="middle" fill="#93c5fd" font-size="8.5" font-family="monospace">6-Axis IMU</text>
+            <text x="125" y="94" text-anchor="middle" fill="#fff" font-size="9.5" font-weight="bold" font-family="monospace">MPU-6x/9x</text>
+            <text x="125" y="112" text-anchor="middle" fill="#93c5fd" font-size="8" font-family="monospace">6-DOF / 9-DOF</text>
             <!-- 3D Coordinate Arrows -->
             <path d="M 195 85 L 240 85 M 235 81 L 240 85 L 235 89" fill="none" stroke="#22c55e" stroke-width="2"/>
             <text x="246" y="88" fill="#22c55e" font-size="9" font-weight="bold">+X (Tiến)</text>
@@ -2120,9 +2140,9 @@
             <circle cx="195" cy="65" r="2.5" fill="#38bdf8"/>
             <text x="207" y="68" fill="#38bdf8" font-size="9" font-weight="bold">+Z (Lên)</text>
             <!-- Status Info -->
-            <rect x="75" y="150" width="130" height="28" rx="4" fill="#0f172a"/>
-            <text x="140" y="168" text-anchor="middle" fill="#fde047" font-size="9.5" font-weight="bold">I2C: 0x68 (AD0=GND)</text>
-            <text x="140" y="198" text-anchor="middle" fill="#94a3b8" font-size="8.5">Đo rơi tự do, ngửa bụng, lắc</text>
+            <rect x="65" y="150" width="150" height="28" rx="4" fill="#0f172a"/>
+            <text x="140" y="168" text-anchor="middle" fill="#fde047" font-size="9.5" font-weight="bold">I2C: 0x68 / 0x69 (Auto)</text>
+            <text x="140" y="198" text-anchor="middle" fill="#94a3b8" font-size="8.5">Đo rơi tự do, ngửa bụng, lắc, AK8963</text>
           </svg>`;
       } else if (comp.type === 'diode') {
         return `

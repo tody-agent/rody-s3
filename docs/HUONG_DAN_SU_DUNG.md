@@ -69,7 +69,7 @@ Bổ sung thêm các linh kiện sau vào Phương Án A:
 *Dành cho bản thú cưng để bàn với các phản xạ xúc giác và quán tính sinh động (thư mục độc lập `firmware_pet/`).*
 
 Bổ sung thêm 2 linh kiện vào Phương Án B:
-- **Cảm biến Gia tốc & Con quay hồi chuyển IMU 6 trục (MPU6050)**: Mắc chung bus I2C (GPIO 8 SDA, GPIO 9 SCL) với PCA9685 ở địa chỉ `0x68`, hoàn toàn không tốn thêm chân GPIO phụ.
+- **Cảm biến Gia tốc & Quán tính IMU (MPU6050 / GY-6500 / GY-9250)**: Mắc chung bus I2C (GPIO 8 SDA, GPIO 9 SCL) với PCA9685 ở địa chỉ `0x68` hoặc `0x69`, hoàn toàn không tốn thêm chân GPIO phụ (GY-9250 hỗ trợ thêm la bàn AK8963 ở `0x0C`).
 - **Cảm biến Chạm Vuốt Ve (TTP223 hoặc dây đồng chạm cảm ứng)**: Nối vào **GPIO 2**.
 
 ---
@@ -142,12 +142,13 @@ Toàn bộ chân GPIO được quy định duy nhất tại [`include/pins.h`](i
 - **DO Cảm biến Trái** $\to$ **GPIO 10**
 - **DO Cảm biến Phải** $\to$ **GPIO 11**
 
-#### 6. Cảm Biến Quán Tính MPU6050 & Chạm Vuốt Ve (Pet Edition v0.3.0)
-- **Cảm biến MPU6050 (I2C 0x68)**:
-  - **VCC** $\to$ 3.3V, **GND** $\to$ GND
+#### 6. Cảm Biến Quán Tính IMU (MPU6050 / GY-6500 / GY-9250) & Chạm Vuốt Ve (Pet Edition v0.3.0)
+- **Cảm biến IMU (MPU6050 / GY-6500 / GY-9250)**:
+  - **VCC** $\to$ **3.3V** (Khuyên dùng 3.3V sạch từ ESP32)
+  - **GND** $\to$ GND
   - **SCL** $\to$ **GPIO 9** (Mắc chung với PCA9685 SCL)
   - **SDA** $\to$ **GPIO 8** (Mắc chung với PCA9685 SDA)
-  - **AD0** $\to$ GND (Đặt địa chỉ I2C `0x68`)
+  - **AD0** $\to$ GND (Địa chỉ `0x68`) hoặc 3.3V (Địa chỉ `0x69`). Firmware tự động nhận diện cả 2 địa chỉ.
 - **Cảm biến Chạm TTP223 (hoặc Touch Pad ESP32-S3)**:
   - **VCC** $\to$ 3.3V, **GND** $\to$ GND
   - **SIG (IO)** $\to$ **GPIO 2** (Chân an toàn Touch)
