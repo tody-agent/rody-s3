@@ -24,9 +24,9 @@ void setup() {
   pet_audio::init();
   pet_audio::play(pet_audio::PetSound::BOOT_HELLO);
 
-  // 3. Gia tốc kế MPU6050 I2C (GPIO 8 & 9)
+  // 3. Gia tốc kế IMU (MPU6050 / GY-6500 / GY-9250) I2C (GPIO 8 & 9)
   if (!imu_sensor::init()) {
-    Serial.println("# [boot] Warning: MPU6050 not detected. Continuing with Touch & Audio.");
+    Serial.println("# [boot] Warning: IMU (MPU6050/6500/9250) not detected. Continuing with Touch & Audio.");
   }
 
   // 4. Cảm biến chạm GPIO 2

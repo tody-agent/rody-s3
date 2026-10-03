@@ -26,25 +26,28 @@
       --header-h: 56px;
       --subsystem-h: 46px;
 
-      /* High-contrast distinct wire colors */
-      --wire-pwr-main: #ef4444;
-      --wire-pwr-sw: #ff7a00;
-      --wire-pwr-boost: #dc2626;
-      --wire-pwr-diode: #fbbf24;
-      --wire-pwr-3v3: #f8fafc;
-      --wire-gnd: #0f172a;
-      --wire-gnd-stroke: #475569;
-      
+      /* Unified High-Contrast Wire Color System */
+      --wire-pwr-5v: #ef4444;       /* Đồng nhất Đỏ chuẩn cho TẤT CẢ đường 5V / 5.10V */
+      --wire-pwr-3v3: #f59e0b;      /* Đồng nhất Vàng Hổ Phách cho TẤT CẢ đường Logic 3.3V */
+      --wire-pwr-bat: #f97316;      /* Cam San Hô cho nguồn Pin Li-ion 3.7V - 4.2V */
+      --wire-gnd: #1e293b;          /* Đồng nhất Than Đậm cho TẤT CẢ đường Mass GND */
+      --wire-gnd-stroke: #94a3b8;   /* Viền Bạc Sáng tương phản cao giúp nhìn rõ GND trên nền tối */
+
+      /* Backwards-compatibility Aliases */
+      --wire-pwr-main: var(--wire-pwr-5v);
+      --wire-pwr-sw: var(--wire-pwr-bat);
+      --wire-pwr-boost: var(--wire-pwr-5v);
+      --wire-pwr-diode: var(--wire-pwr-5v);
+      --wire-srv-l-vcc: var(--wire-pwr-5v);
+      --wire-srv-r-vcc: var(--wire-pwr-5v);
+      --wire-srv-l-gnd: var(--wire-gnd);
+      --wire-srv-r-gnd: var(--wire-gnd);
+
       --wire-i2c-sda: #eab308;
       --wire-i2c-scl: #8b5cf6;
       
       --wire-srv-l-pwm: #f97316;
-      --wire-srv-l-vcc: #f87171;
-      --wire-srv-l-gnd: #78350f;
-      
       --wire-srv-r-pwm: #d946ef;
-      --wire-srv-r-vcc: #fb7185;
-      --wire-srv-r-gnd: #451a03;
       
       /* Audio I2S */
       --wire-i2s-sck: #fbbf24;
@@ -54,7 +57,7 @@
       --wire-i2s-lrc: #a855f7;
       --wire-i2s-bclk: #06b6d4;
       --wire-spk-plus: #ef4444;
-      --wire-spk-minus: #334155;
+      --wire-spk-minus: #64748b;
       
       /* Display SPI */
       --wire-tft-scl: #38bdf8;
@@ -336,7 +339,25 @@
       stroke-width: 14;
     }
     .wire-dimmed {
-      opacity: 0.12 !important;
+      opacity: 0.1 !important;
+    }
+
+    /* Electrical Net Highlighting & Power Flow Animation */
+    @keyframes wireDashFlow {
+      from { stroke-dashoffset: 24; }
+      to { stroke-dashoffset: 0; }
+    }
+    .wire-path.net-highlighted {
+      stroke-width: 6.5px !important;
+      stroke-dasharray: 8 5;
+      animation: wireDashFlow 0.8s linear infinite;
+      filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 2px #fff) !important;
+      opacity: 1 !important;
+      z-index: 25;
+    }
+    .wire-glow.net-highlighted {
+      opacity: 0.85 !important;
+      stroke-width: 16px !important;
     }
 
     /* HTML Components Placement Layer */
@@ -352,7 +373,8 @@
     .component-card {
       position: absolute;
       pointer-events: auto;
-      cursor: pointer;
+      cursor: grab;
+      user-select: none;
       transition: transform 0.15s, box-shadow 0.15s;
     }
     .component-card:hover {
@@ -360,7 +382,65 @@
       filter: drop-shadow(0 8px 16px rgba(0,0,0,0.5));
     }
     .component-card.selected {
-      filter: drop-shadow(0 0 12px var(--accent));
+      filter: drop-shadow(0 0 14px var(--accent));
+    }
+    .component-card.is-dragging {
+      cursor: grabbing !important;
+      z-index: 70 !important;
+      filter: drop-shadow(0 16px 36px rgba(0,0,0,0.85)) drop-shadow(0 0 18px rgba(56, 189, 248, 0.75)) !important;
+      transform: scale(1.025);
+      transition: none !important;
+    }
+
+    /* Quick Card Header Actions (Visibility Hide Button & Drag Indicator) */
+    .comp-header-bar {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 25;
+      pointer-events: auto;
+    }
+    .comp-vis-btn {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #94a3b8;
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.15s;
+    }
+    .comp-vis-btn:hover {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+      transform: scale(1.1);
+    }
+    .comp-drag-hint {
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 9px;
+      color: var(--fg-dim);
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .component-card:hover .comp-drag-hint {
+      opacity: 1;
     }
 
     /* Interactive Pin Badges */
@@ -382,11 +462,205 @@
       transform: translate(-50%, -50%) scale(1.6);
       box-shadow: 0 0 10px #fff;
     }
-    .pin-badge.role-pwr { background: #ef4444; }
-    .pin-badge.role-gnd { background: #0f172a; border-color: #64748b; }
+    .pin-badge.role-pwr { background: var(--wire-pwr-5v); border-color: #fca5a5; }
+    .pin-badge.role-pwr-3v3 { background: var(--wire-pwr-3v3); border-color: #fde68a; }
+    .pin-badge.role-gnd { background: var(--wire-gnd); border-color: var(--wire-gnd-stroke); }
     .pin-badge.role-sig { background: #38bdf8; }
     .pin-badge.role-warn { background: #f59e0b; }
     .pin-badge.role-forbidden { background: #dc2626; border-color: #fecaca; }
+
+    /* Active Net Floating Banner */
+    .net-banner {
+      position: fixed;
+      top: calc(var(--header-h) + var(--subsystem-h) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid var(--accent);
+      border-radius: 30px;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 920;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 0 12px rgba(56, 189, 248, 0.35);
+      font-size: 12.5px;
+      color: #fff;
+      font-weight: 600;
+      animation: bannerSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes bannerSlideDown {
+      0% { opacity: 0; transform: translate(-50%, -10px); }
+      100% { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .net-banner-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-light);
+      color: var(--fg);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .net-banner-btn:hover {
+      background: var(--danger);
+      color: #fff;
+      border-color: var(--danger);
+    }
+
+    /* Hidden Components Bottom Notification */
+    .hidden-banner {
+      position: fixed;
+      bottom: 74px;
+      left: 16px;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--warning);
+      border-radius: 20px;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: #fbbf24;
+      font-weight: 500;
+      z-index: 920;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .hidden-banner button {
+      background: var(--warning);
+      color: #0f172a;
+      border: none;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Component Visibility Modal */
+    .vis-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 2500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .vis-modal-overlay.open {
+      display: flex;
+    }
+    .vis-modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    .vis-quick-btn {
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .vis-quick-btn:hover {
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .vis-comp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .vis-comp-item {
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .vis-comp-item:hover {
+      border-color: var(--border-light);
+    }
+    .vis-comp-item.is-hidden {
+      opacity: 0.45;
+      border-style: dashed;
+    }
+    .vis-switch {
+      width: 36px;
+      height: 20px;
+      background: #334155;
+      border-radius: 10px;
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .vis-switch.on {
+      background: #10b981;
+    }
+    .vis-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .vis-switch.on::after {
+      transform: translateX(16px);
+    }
+
+    /* Floating Toast */
+    #toast-notify {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border-light);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #fff;
+      font-weight: 500;
+      z-index: 3000;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    #toast-notify.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
 
     
     /* Pin Text Labels Mode */
@@ -951,7 +1225,18 @@
         <span class="btn-lbl">Tên Chân</span>
       </button>
 
-      <button class="action-btn" onclick="fitView()" title="Cân vừa màn hình">
+      <button class="action-btn" id="btn-comp-vis" onclick="openVisModal()" title="Ẩn/Hiện linh kiện theo nhu cầu quan sát">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="btn-lbl">Linh Kiện</span>
+        <span class="badge" id="vis-counter-badge" style="padding:2px 5px; font-size:9.5px; margin-left:2px; background:#10b981;">17/17</span>
+      </button>
+
+      <button class="action-btn" id="btn-reset-layout" onclick="resetComponentPositions()" title="Khôi phục vị trí mặc định của toàn bộ linh kiện">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span class="btn-lbl">Đặt Lại Vị Trí</span>
+      </button>
+
+      <button class="action-btn" onclick="fitView()" title="Cân vừa màn hình (Phím F)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         <span class="btn-lbl">Cân Màn</span>
       </button>
@@ -968,44 +1253,68 @@
     </div>
   </header>
 
-  <!-- Subsystem Filter Chips -->
+  <!-- Subsystem & Power Net Filter Bar -->
   <div id="subsystem-bar">
-    <div class="filter-chip active whitespace-nowrap shrink-0" onclick="setFilter('all', this)">
+    <div class="filter-chip active whitespace-nowrap shrink-0" data-filter="all" onclick="clearNetSelection(this)">
       <span class="dot-indicator shrink-0" style="background:#fff;"></span>
       Tất Cả Dây
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('tft', this)">
-      <span class="dot-indicator shrink-0" style="background:var(--wire-tft-scl);"></span>
-      Màn Hình TFT (SPI)
+    <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_5v" onclick="selectNet('net_5v', this)" title="Làm nổi bật toàn bộ đường nguồn 5V/5.1V cấp cho động cơ, loa và ESP32">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-5v);"></span>
+      🔴 Nguồn 5V / 5.1V
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('audio', this)">
-      <span class="dot-indicator shrink-0" style="background:var(--wire-i2s-din);"></span>
-      Âm Thanh I2S (Mic & Loa)
+    <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_3v3" onclick="selectNet('net_3v3', this)" title="Làm nổi bật toàn bộ đường nguồn 3.3V Logic cấp cho cảm biến và màn hình">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-3v3);"></span>
+      🟡 Nguồn 3.3V Logic
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('drive', this)">
+    <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_gnd" onclick="selectNet('net_gnd', this)" title="Làm nổi bật toàn bộ hệ thống Mass GND chung (Star Ground)">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-gnd-stroke); border:1px solid #475569;"></span>
+      ⚫ Mass GND Chung
+    </div>
+    <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_vbat" onclick="selectNet('net_vbat', this)" title="Làm nổi bật đường nguồn Pin Li-ion 3.7V qua sạc TP4056 và công tắc">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-bat);"></span>
+      🔋 Pin Li-ion 3.7V
+    </div>
+    <div class="filter-chip whitespace-nowrap shrink-0" data-filter="drive" onclick="setFilter('drive', this)">
       <span class="dot-indicator shrink-0" style="background:var(--wire-i2c-sda);"></span>
       Động Cơ & PCA9685
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('ir', this)">
-      <span class="dot-indicator shrink-0" style="background:var(--wire-irl-do);"></span>
-      Cảm Biến IR
+    <div class="filter-chip whitespace-nowrap shrink-0" data-filter="audio" onclick="setFilter('audio', this)">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-i2s-din);"></span>
+      Âm Thanh I2S (Mic & Loa)
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('power', this)">
-      <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-main);"></span>
-      Nguồn Pin & Boost
+    <div class="filter-chip whitespace-nowrap shrink-0" data-filter="tft" onclick="setFilter('tft', this)">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-tft-scl);"></span>
+      Màn Hình TFT (SPI)
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('pet', this)">
+    <div class="filter-chip whitespace-nowrap shrink-0" data-filter="pet" onclick="setFilter('pet', this)">
       <span class="dot-indicator shrink-0" style="background:#ec4899;"></span>
       🐾 Xúc Giác & IMU (Pet)
     </div>
-    <div class="filter-chip whitespace-nowrap shrink-0" onclick="setFilter('gnd', this)">
-      <span class="dot-indicator shrink-0" style="background:#64748b;"></span>
-      Mass GND Chung
+    <div class="filter-chip whitespace-nowrap shrink-0" data-filter="ir" onclick="setFilter('ir', this)">
+      <span class="dot-indicator shrink-0" style="background:var(--wire-irl-do);"></span>
+      Cảm Biến IR
     </div>
   </div>
 
   <!-- Interactive CAD Viewport -->
   <div id="viewport">
+    <!-- Active Net Floating Banner -->
+    <div id="net-active-banner" class="net-banner" style="display:none;">
+      <span id="net-banner-icon">⚡</span>
+      <span id="net-banner-text">Đang làm nổi bật Mạng Nguồn 5V</span>
+      <button class="net-banner-btn" onclick="clearNetSelection()">Hiện tất cả dây</button>
+    </div>
+
+    <!-- Hidden Components Bottom Notification -->
+    <div id="hidden-comps-banner" class="hidden-banner" style="display:none;">
+      <span>⚠️ Đang ẩn <strong id="hidden-comps-count">0</strong> linh kiện</span>
+      <button onclick="setVisPreset('all')">Hiện lại tất cả</button>
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toast-notify"></div>
+
     <div id="canvas-container">
       <!-- SVG Base Wire Layer -->
       <svg id="wire-canvas" width="3200" height="2000"></svg>
@@ -1088,6 +1397,33 @@
             <!-- Dynamic BOM rows injected here -->
           </tbody>
         </table>
+  <!-- Component Visibility Manager Modal -->
+  <div id="comp-vis-modal" class="vis-modal-overlay">
+    <div class="vis-modal-content">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:18px;">👁️</span>
+          <div>
+            <h2 style="font-size:15px; font-weight:700; color:#fff;">Quản Lý Hiển Thị Linh Kiện</h2>
+            <div style="font-size:11px; color:var(--fg-muted);">Bật / tắt linh kiện để làm thoáng sơ đồ và tập trung đi dây</div>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeVisModal()">×</button>
+      </div>
+      <div class="modal-body" style="padding:14px 18px;">
+        <!-- Quick Preset Filter Chips -->
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">
+          <button class="vis-quick-btn active" onclick="setVisPreset('all')">✓ Hiện Tất Cả (17)</button>
+          <button class="vis-quick-btn" onclick="setVisPreset('power_esp')">⚡ Nguồn & ESP32</button>
+          <button class="vis-quick-btn" onclick="setVisPreset('drive')">🚗 Động Cơ & PCA</button>
+          <button class="vis-quick-btn" onclick="setVisPreset('media')">🔊 Màn Hình & Âm Thanh</button>
+          <button class="vis-quick-btn" onclick="setVisPreset('pet')">🐾 Pet (Chạm & IMU)</button>
+          <button class="vis-quick-btn" onclick="setVisPreset('none')">✕ Ẩn Toàn Bộ</button>
+        </div>
+        <!-- Grid of component toggle switches -->
+        <div id="vis-comp-list" class="vis-comp-grid">
+          <!-- Dynamically populated -->
+        </div>
       </div>
     </div>
   </div>

@@ -817,7 +817,7 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
           <button class="btn btn-primary" style="min-height:30px; padding:4px 10px; font-size:11.5px;" onclick="scanI2C()">Quét Ngay</button>
         </div>
         <p style="font-size:12px; color:var(--fg-muted); margin-bottom:8px;">
-          Chân SDA = IO8, SCL = IO9. Tự động nhận diện PCA9685, MPU6050, SSD1306.
+          Chân SDA = IO8, SCL = IO9. Tự động nhận diện PCA9685, MPU6050/6500/9250, AK8963, SSD1306.
         </p>
         <div id="i2c-result" style="background:var(--surface-subtle); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px; font-size:12px;">
           Chưa quét. Bấm nút Quét Ngay để tìm linh kiện cắm trên bus.
@@ -1075,7 +1075,7 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
         .then(r => r.json())
         .then(data => {
           if (data.devices.length === 0) {
-            box.innerHTML = '<span class="badge neutral whitespace-nowrap shrink-0"><span class="status-dot"></span> 0 thiết bị</span> Chưa tìm thấy linh kiện I2C nào cắm trên bus. (Bình thường nếu chưa cắm PCA9685/MPU6050)';
+            box.innerHTML = '<span class="badge neutral whitespace-nowrap shrink-0"><span class="status-dot"></span> 0 thiết bị</span> Chưa tìm thấy linh kiện I2C nào cắm trên bus. (Bình thường nếu chưa cắm PCA9685/IMU)';
             log("I2C Scan: 0 thiết bị tìm thấy.", 'warn');
           } else {
             let html = `<div style="margin-bottom:6px;"><span class="badge pass whitespace-nowrap shrink-0"><span class="status-dot"></span> ${data.devices.length} Thiết Bị Đã Nhận Diện:</span></div>`;
@@ -1223,7 +1223,9 @@ void init() {
       if (Wire.endTransmission() == 0) {
         found.push_back(addr);
         if (addr == 0x40) names.push_back("PCA9685 (16-Ch Servo Driver)");
-        else if (addr == 0x68) names.push_back("MPU6050 (Gia Tốc & Con Quay 6-DOF)");
+        else if (addr == 0x68) names.push_back("MPU6050 / GY-6500 / GY-9250 (IMU 6/9-DOF)");
+        else if (addr == 0x69) names.push_back("MPU6050 / GY-6500 / GY-9250 (IMU - Chân AD0 = HIGH)");
+        else if (addr == 0x0C) names.push_back("AK8963 (La Bàn Số Magnetometer của MPU9250)");
         else if (addr == 0x3C || addr == 0x3D) names.push_back("OLED / Màn Hình I2C");
         else if (addr == 0x70) names.push_back("TCA9548A / PCA9685 All-Call");
         else names.push_back("Linh kiện I2C khác");
@@ -1327,11 +1329,17 @@ void init() {
     // Check I2C devices
     bool hasPca = false;
     bool hasMpu = false;
+    uint8_t mpuAddr = 0;
+    bool hasMag = false;
     for (uint8_t addr = 1; addr < 127; addr++) {
       Wire.beginTransmission(addr);
       if (Wire.endTransmission() == 0) {
         if (addr == 0x40) hasPca = true;
-        if (addr == 0x68) hasMpu = true;
+        if (addr == 0x68 || addr == 0x69) {
+          hasMpu = true;
+          mpuAddr = addr;
+        }
+        if (addr == 0x0C) hasMag = true;
       }
     }
 
@@ -1377,12 +1385,17 @@ void init() {
     }
     json += ",";
 
-    // Item 4: MPU6050 Accelerometer
-    json += "{\"name\":\"4. Cảm Biến Gia Tốc MPU6050\",";
+    // Item 4: IMU Accelerometer / Gyro (MPU6050 / GY-6500 / GY-9250)
+    json += "{\"name\":\"4. Cảm Biến Gia Tốc IMU (MPU6050/6500/9250)\",";
     if (hasMpu) {
-      json += "\"status\":\"PASS\",\"msg\":\"Phát hiện MPU6050 tại địa chỉ I2C 0x68. Sẵn sàng cho biểu cảm thú cưng.\"}";
+      String msg = "Phát hiện IMU tại địa chỉ I2C 0x" + String(mpuAddr, HEX);
+      if (hasMag) {
+        msg += " + AK8963 Magnetometer (0x0C)";
+      }
+      msg += ". Sẵn sàng cho biểu cảm thú cưng.";
+      json += "\"status\":\"PASS\",\"msg\":\"" + msg + "\"}";
     } else {
-      json += "\"status\":\"WARN\",\"msg\":\"Chưa thấy MPU6050 (0x68). (Lắp đặt sau khi hoàn thiện cơ khí).\"}";
+      json += "\"status\":\"WARN\",\"msg\":\"Chưa thấy IMU (0x68/0x69). (Lắp đặt sau khi hoàn thiện cơ khí).\"}";
     }
     json += ",";
 

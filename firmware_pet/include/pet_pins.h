@@ -2,12 +2,14 @@
 #include <stdint.h>
 
 namespace pet_pins {
-// I2C Bus: Chia sẻ chung giữa PCA9685 (0x40) và Gia tốc kế MPU6050 (0x68)
+// I2C Bus: Chia sẻ chung giữa PCA9685 (0x40) và Gia tốc kế IMU MPU6050 / GY-6500 / GY-9250 (0x68 / 0x69)
 constexpr int I2C_SDA = 8;
 constexpr int I2C_SCL = 9;
 
-// Cảm biến Gia tốc MPU6050
-constexpr uint8_t MPU6050_ADDR = 0x68;
+// Cảm biến Gia tốc & Quán tính IMU (MPU6050 / MPU6500 / MPU9250)
+constexpr uint8_t MPU6050_ADDR    = 0x68; // Địa chỉ mặc định khi AD0 nối GND
+constexpr uint8_t MPU_ADDR_ALT    = 0x69; // Địa chỉ dự phòng khi AD0 nối VCC / kéo cao
+constexpr uint8_t AK8963_MAG_ADDR = 0x0C; // Địa chỉ La bàn số AK8963 (MPU-9250 bypass)
 
 // Cảm biến Chạm (Touch Sensor trên đỉnh đầu / trán)
 // GPIO 2: Tương thích cả module rời TTP223 (digitalRead) và cảm ứng điện dung tích hợp (touchRead)

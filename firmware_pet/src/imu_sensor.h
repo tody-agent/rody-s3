@@ -18,7 +18,7 @@ struct MotionState {
   bool isAirplaneMode;      // Được nhấc bổng bay lượn trên không trung
 };
 
-// Khởi tạo cảm biến MPU6050
+// Khởi tạo cảm biến IMU (MPU6050 / GY-6500 / GY-9250)
 bool init();
 
 // Đọc và cập nhật trạng thái gia tốc (gọi tuần hoàn trong loop, chu kỳ 20-50ms)
@@ -27,10 +27,31 @@ void update();
 // Lấy thông tin trạng thái chuyển động hiện tại
 const MotionState& getState();
 
-// Kiểm tra xem MPU6050 có phản hồi trên I2C không
+// Kiểm tra xem cảm biến IMU có phản hồi trên I2C không
 bool isAvailable();
 
 // Đặt lại các cờ va đập / giật mình sau khi đã xử lý
 void clearTransientFlags();
+
+// Phân loại dòng chip quán tính
+enum class ChipType : uint8_t {
+  UNKNOWN = 0,
+  MPU6050 = 1,
+  MPU6500 = 2,
+  MPU9250 = 3,
+  MPU9255 = 4
+};
+
+// Lấy tên chip IMU đã nhận diện dưới dạng chuỗi
+const char* getChipName();
+
+// Lấy loại chip enum
+ChipType getChipType();
+
+// Lấy địa chỉ I2C đang hoạt động (0x68 hoặc 0x69)
+uint8_t getActiveAddress();
+
+// Kiểm tra xem la bàn số AK8963 (MPU9250) có phản hồi không
+bool hasMagnetometer();
 
 } // namespace imu_sensor

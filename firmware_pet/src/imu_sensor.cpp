@@ -6,16 +6,24 @@
 
 namespace imu_sensor {
 
-static constexpr uint8_t MPU_ADDR = pet_pins::MPU6050_ADDR; // 0x68
+static uint8_t activeAddr = pet_pins::MPU6050_ADDR; // 0x68 default
+static ChipType detectedChip = ChipType::UNKNOWN;
+static bool magnetometerFound = false;
 
-// MPU6050 Registers
-static constexpr uint8_t REG_SMPLRT_DIV   = 0x19;
-static constexpr uint8_t REG_CONFIG       = 0x1A;
-static constexpr uint8_t REG_GYRO_CONFIG  = 0x1B;
-static constexpr uint8_t REG_ACCEL_CONFIG = 0x1C;
-static constexpr uint8_t REG_ACCEL_XOUT_H = 0x3B;
-static constexpr uint8_t REG_PWR_MGMT_1   = 0x6B;
-static constexpr uint8_t REG_WHO_AM_I     = 0x75;
+// MPU6050 / MPU6500 / MPU9250 Registers
+static constexpr uint8_t REG_SMPLRT_DIV     = 0x19;
+static constexpr uint8_t REG_CONFIG         = 0x1A;
+static constexpr uint8_t REG_GYRO_CONFIG    = 0x1B;
+static constexpr uint8_t REG_ACCEL_CONFIG   = 0x1C;
+static constexpr uint8_t REG_ACCEL_CONFIG_2 = 0x1D; // MPU6500 / MPU9250 DLPF
+static constexpr uint8_t REG_INT_PIN_CFG    = 0x37; // Bit 1 = BYPASS_EN for AK8963
+static constexpr uint8_t REG_ACCEL_XOUT_H   = 0x3B;
+static constexpr uint8_t REG_USER_CTRL      = 0x6A; // Bit 5 = I2C_MST_EN
+static constexpr uint8_t REG_PWR_MGMT_1     = 0x6B;
+static constexpr uint8_t REG_WHO_AM_I       = 0x75;
+
+// AK8963 Magnetometer Registers (on MPU9250 at 0x0C)
+static constexpr uint8_t AK8963_REG_WIA     = 0x00; // WHO_I_AM, expected 0x48
 
 // Scale factors for +/- 8g and +/- 1000 deg/s
 static constexpr float ACCEL_SCALE = 4096.0f;  // LSB per g
@@ -33,19 +41,19 @@ static float lastAx = 0.0f;
 static float lastAz = 1.0f;
 static uint32_t airplaneStartTime = 0;
 
-static bool writeRegister(uint8_t reg, uint8_t data) {
-  Wire.beginTransmission(MPU_ADDR);
+static bool writeRegister(uint8_t addr, uint8_t reg, uint8_t data) {
+  Wire.beginTransmission(addr);
   Wire.write(reg);
   Wire.write(data);
   return (Wire.endTransmission() == 0);
 }
 
-static bool readRegisters(uint8_t reg, uint8_t* buffer, size_t len) {
-  Wire.beginTransmission(MPU_ADDR);
+static bool readRegisters(uint8_t addr, uint8_t reg, uint8_t* buffer, size_t len) {
+  Wire.beginTransmission(addr);
   Wire.write(reg);
   if (Wire.endTransmission(false) != 0) return false;
   
-  size_t readCount = Wire.requestFrom((int)MPU_ADDR, (int)len);
+  size_t readCount = Wire.requestFrom((int)addr, (int)len);
   if (readCount != len) return false;
 
   for (size_t i = 0; i < len; i++) {
@@ -54,35 +62,114 @@ static bool readRegisters(uint8_t reg, uint8_t* buffer, size_t len) {
   return true;
 }
 
+static inline bool writeReg(uint8_t reg, uint8_t data) {
+  return writeRegister(activeAddr, reg, data);
+}
+
+static inline bool readRegs(uint8_t reg, uint8_t* buffer, size_t len) {
+  return readRegisters(activeAddr, reg, buffer, len);
+}
+
 bool init() {
   Wire.begin(pet_pins::I2C_SDA, pet_pins::I2C_SCL, 400000);
   delay(10);
 
-  // Check WHO_AM_I
+  // Auto-probe candidate I2C addresses: 0x68 (AD0=GND) and 0x69 (AD0=VCC/pull-up)
+  const uint8_t candidateAddrs[] = { pet_pins::MPU6050_ADDR, pet_pins::MPU_ADDR_ALT };
   uint8_t whoAmI = 0;
-  if (!readRegisters(REG_WHO_AM_I, &whoAmI, 1) || (whoAmI != 0x68 && whoAmI != 0x70 && whoAmI != 0x72)) {
-    Serial.printf("# [imu] MPU6050 not detected at 0x%02X (read: 0x%02X)\n", MPU_ADDR, whoAmI);
+  bool found = false;
+
+  for (uint8_t addr : candidateAddrs) {
+    if (readRegisters(addr, REG_WHO_AM_I, &whoAmI, 1)) {
+      if (whoAmI == 0x68 || whoAmI == 0x70 || whoAmI == 0x71 || whoAmI == 0x72 || whoAmI == 0x73) {
+        activeAddr = addr;
+        found = true;
+        break;
+      }
+    }
+  }
+
+  if (!found) {
+    Serial.printf("# [imu] No IMU (MPU6050/6500/9250) detected at 0x68 or 0x69 (last read: 0x%02X)\n", whoAmI);
     isInitialized = false;
+    detectedChip = ChipType::UNKNOWN;
     return false;
   }
 
-  // Wake up MPU6050 (clear sleep bit in PWR_MGMT_1)
-  writeRegister(REG_PWR_MGMT_1, 0x01); // Clock source = PLL with X Gyro
+  // Identify chip model from WHO_AM_I register
+  switch (whoAmI) {
+    case 0x68: detectedChip = ChipType::MPU6050; break;
+    case 0x70: detectedChip = ChipType::MPU6500; break;
+    case 0x71: detectedChip = ChipType::MPU9250; break;
+    case 0x72:
+    case 0x73: detectedChip = ChipType::MPU9255; break;
+    default:   detectedChip = ChipType::UNKNOWN; break;
+  }
+
+  // Wake up IMU (clear sleep bit in PWR_MGMT_1, clock source = auto/PLL with Gyro)
+  writeReg(REG_PWR_MGMT_1, 0x01);
   delay(10);
 
   // Sample rate divider = 4 -> 200Hz
-  writeRegister(REG_SMPLRT_DIV, 0x04);
-  // DLPF (Low Pass Filter) config = 3 (~44Hz bandwidth)
-  writeRegister(REG_CONFIG, 0x03);
+  writeReg(REG_SMPLRT_DIV, 0x04);
+  // DLPF (Low Pass Filter) config = 3 (~44Hz bandwidth for Gyro & Temp)
+  writeReg(REG_CONFIG, 0x03);
   // Gyro +/- 1000 deg/s
-  writeRegister(REG_GYRO_CONFIG, 0x10);
+  writeReg(REG_GYRO_CONFIG, 0x10);
   // Accel +/- 8g
-  writeRegister(REG_ACCEL_CONFIG, 0x10);
+  writeReg(REG_ACCEL_CONFIG, 0x10);
+
+  // For MPU-6500 / MPU-9250 / MPU-9255: Configure accelerometer DLPF (REG_ACCEL_CONFIG_2)
+  if (detectedChip != ChipType::MPU6050) {
+    writeReg(REG_ACCEL_CONFIG_2, 0x03); // ~44Hz DLPF
+  }
+
+  // If MPU-9250 / MPU-9255: Enable I2C Bypass mode to expose AK8963 Magnetometer at 0x0C
+  magnetometerFound = false;
+  if (detectedChip == ChipType::MPU9250 || detectedChip == ChipType::MPU9255) {
+    // Disable internal I2C Master mode
+    writeReg(REG_USER_CTRL, 0x00);
+    delay(5);
+    // Enable bypass mode: BYPASS_EN = 1 in INT_PIN_CFG
+    writeReg(REG_INT_PIN_CFG, 0x02);
+    delay(10);
+
+    // Verify AK8963 response at 0x0C
+    uint8_t magWhoAmI = 0;
+    if (readRegisters(pet_pins::AK8963_MAG_ADDR, AK8963_REG_WIA, &magWhoAmI, 1) && (magWhoAmI == 0x48)) {
+      magnetometerFound = true;
+      Serial.printf("# [imu] AK8963 Magnetometer active at 0x%02X (WIA: 0x%02X)\n", pet_pins::AK8963_MAG_ADDR, magWhoAmI);
+    }
+  }
 
   isInitialized = true;
   lastUpdateTime = millis();
-  Serial.printf("# [imu] MPU6050 initialized successfully (WHO_AM_I: 0x%02X)\n", whoAmI);
+  Serial.printf("# [imu] %s initialized successfully at 0x%02X (WHO_AM_I: 0x%02X%s)\n",
+                getChipName(), activeAddr, whoAmI,
+                magnetometerFound ? ", 9-DOF with AK8963" : "");
   return true;
+}
+
+const char* getChipName() {
+  switch (detectedChip) {
+    case ChipType::MPU6050: return "MPU-6050";
+    case ChipType::MPU6500: return "MPU-6500 (GY-6500)";
+    case ChipType::MPU9250: return "MPU-9250 (GY-9250)";
+    case ChipType::MPU9255: return "MPU-9255";
+    default: return isInitialized ? "MPU-Compatible" : "None";
+  }
+}
+
+ChipType getChipType() {
+  return detectedChip;
+}
+
+uint8_t getActiveAddress() {
+  return activeAddr;
+}
+
+bool hasMagnetometer() {
+  return magnetometerFound;
 }
 
 bool isAvailable() {
@@ -104,7 +191,7 @@ void update() {
 
   // Read 14 burst bytes: Accel (6) + Temp (2) + Gyro (6)
   uint8_t rawBuf[14];
-  if (!readRegisters(REG_ACCEL_XOUT_H, rawBuf, 14)) {
+  if (!readRegs(REG_ACCEL_XOUT_H, rawBuf, 14)) {
     return;
   }
 
