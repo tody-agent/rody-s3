@@ -112,19 +112,19 @@
         side: T.DoubleSide
       });
 
-      // Middle: Official HP Robotic Sky Blue (#549EF7)
+      // Middle: Vibrant Xiaomi Tech / Royal Blue (#1D4ED8)
       this.matMiddle = new T.MeshStandardMaterial({
-        color: 0x549ef7,
-        roughness: 0.35,
-        metalness: 0.05,
+        color: 0x0230a8,
+        roughness: 0.32,
+        metalness: 0.06,
         side: T.DoubleSide
       });
 
-      // Faceplate: Official HP Robotic Sky Blue (#549EF7)
+      // Faceplate: Vibrant Xiaomi Tech / Royal Blue (#1D4ED8)
       this.matFace = new T.MeshStandardMaterial({
-        color: 0x549ef7,
-        roughness: 0.35,
-        metalness: 0.05,
+        color: 0x0230a8,
+        roughness: 0.32,
+        metalness: 0.06,
         side: T.DoubleSide
       });
 
@@ -568,7 +568,7 @@
      */
     setChassisColor(colorOrPreset) {
       const presets = {
-        white: 0x549ef7,     // Official HP Robotic Blue for middle shell
+        white: 0x0230a8,     // Saturated Xiaomi Royal Blue for middle shell
         graphite: 0x1e293b,
         mint: 0x10b981,
         yellow: 0xf59e0b
