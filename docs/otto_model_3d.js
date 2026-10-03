@@ -104,51 +104,51 @@
      * 1. Official Materials Palette (Sharp Hard-Surface PBR)
      * ----------------------------------------------------------- */
     _initMaterials() {
-      // Top: Crisp White PLA (#FFFFFF)
+      // Top: Crisp Off-White Satin PLA (#F3F6F9)
       this.matTop = new T.MeshStandardMaterial({
-        color: 0xffffff,
+        color: 0xf3f6f9,
         roughness: 0.32,
-        metalness: 0.04,
+        metalness: 0.02,
         side: T.DoubleSide
       });
 
-      // Middle: Vibrant Xiaomi Tech / Royal Blue (#1D4ED8)
+      // Middle: Deep Rich Xiaomi Royal Cobalt Blue (#002D9C)
       this.matMiddle = new T.MeshStandardMaterial({
-        color: 0x0230a8,
-        roughness: 0.32,
-        metalness: 0.06,
-        side: T.DoubleSide
-      });
-
-      // Faceplate: Vibrant Xiaomi Tech / Royal Blue (#1D4ED8)
-      this.matFace = new T.MeshStandardMaterial({
-        color: 0x0230a8,
-        roughness: 0.32,
-        metalness: 0.06,
-        side: T.DoubleSide
-      });
-
-      // Bottom: Crisp White PLA (#FFFFFF)
-      this.matBottom = new T.MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.35,
+        color: 0x002d9c,
+        roughness: 0.38,
         metalness: 0.04,
         side: T.DoubleSide
       });
 
-      // Wheel Tire: Dark Charcoal Rubber (#1F242D)
-      this.matTire = new T.MeshStandardMaterial({
-        color: 0x1f242d,
-        roughness: 0.85,
-        metalness: 0.08,
+      // Faceplate: Deep Rich Xiaomi Royal Cobalt Blue (#002D9C)
+      this.matFace = new T.MeshStandardMaterial({
+        color: 0x002d9c,
+        roughness: 0.38,
+        metalness: 0.04,
         side: T.DoubleSide
       });
 
-      // Caster Ball: Polished Chrome Silver
+      // Bottom: Crisp Off-White Satin PLA (#F3F6F9)
+      this.matBottom = new T.MeshStandardMaterial({
+        color: 0xf3f6f9,
+        roughness: 0.35,
+        metalness: 0.02,
+        side: T.DoubleSide
+      });
+
+      // Wheel Tire: Deep Carbon Black Rubber (#18181B)
+      this.matTire = new T.MeshStandardMaterial({
+        color: 0x18181b,
+        roughness: 0.50,
+        metalness: 0.10,
+        side: T.DoubleSide
+      });
+
+      // Caster Ball & Brackets: Technical Silver Matte (Khử đen do thiếu HDRI)
       this.matChrome = new T.MeshStandardMaterial({
-        color: 0xe2e8f0,
-        roughness: 0.15,
-        metalness: 0.90,
+        color: 0xd1d5db,
+        roughness: 0.40,
+        metalness: 0.20,
         side: T.DoubleSide
       });
     }
@@ -495,6 +495,9 @@
                 if (p.mat) child.material = p.mat;
                 if (p.role === 'middle' || p.role === 'face') {
                   this.bodyParts.push(child);
+                  if (child.material && child.material.color) {
+                    child.material.color.set(this.matMiddle.color);
+                  }
                 }
               }
             });
@@ -512,6 +515,9 @@
               this.fallbackGroup = null;
             }
             this.isCADLoaded = true;
+            if (typeof this.options.onLoaded === 'function') {
+              this.options.onLoaded();
+            }
           }
         }, undefined, (err) => {
           console.warn('Failed loading CAD part: ' + p.file, err);
@@ -568,7 +574,7 @@
      */
     setChassisColor(colorOrPreset) {
       const presets = {
-        white: 0x0230a8,     // Saturated Xiaomi Royal Blue for middle shell
+        white: 0x002d9c,     // Deep Rich Xiaomi Royal Cobalt Blue for middle shell
         graphite: 0x1e293b,
         mint: 0x10b981,
         yellow: 0xf59e0b

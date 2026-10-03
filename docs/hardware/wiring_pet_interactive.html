@@ -663,6 +663,68 @@
     }
 
     
+    /* Net Step Cards in Drawer */
+    .net-step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .net-step-card {
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .net-step-card:hover {
+      border-color: var(--accent);
+      background: rgba(30, 41, 59, 0.9);
+      transform: translateX(2px);
+    }
+    .step-num {
+      width: 22px;
+      height: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .step-endpoints {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 3px;
+    }
+    .step-arrow {
+      color: var(--accent);
+      font-weight: 800;
+    }
+    .step-note {
+      font-size: 11px;
+      color: var(--fg-muted);
+      line-height: 1.45;
+    }
+
     /* Pin Text Labels Mode */
     .pin-label-text {
       position: absolute;
@@ -1834,36 +1896,36 @@
     // --- Verified Wires for the Entire AI Robot System ---
     const wires = [
       // === 1. Power Supply System ===
-      { id: 'w_bat_p', name: 'Dương Pin Li-ion', color: 'var(--wire-pwr-main)', from: 'bat_plus', to: 'tp_bplus', cat: 'power', subsystem: 'power', volt: '3.7V – 4.2V', note: 'Dây đỏ nối từ cực dương pin vào chân B+ TP4056.' },
-      { id: 'w_bat_n', name: 'Âm Pin Li-ion', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'bat_minus', to: 'tp_bminus', cat: 'gnd', subsystem: 'power', volt: '0V (GND)', note: 'Dây đen nối từ cực âm pin vào chân B- TP4056.' },
-      { id: 'w_tp_sw', name: 'Dương nguồn sạc qua công tắc', color: 'var(--wire-pwr-main)', from: 'tp_outplus', to: 'sw_in', cat: 'power', subsystem: 'power', volt: '3.0V – 4.2V', note: 'Nguồn sau mạch bảo vệ pin cấp vào chân công tắc gạt.' },
-      { id: 'w_sw_boost', name: 'Nguồn bật sang Boost (VBAT_SW)', color: 'var(--wire-pwr-sw)', from: 'sw_out', to: 'boost_inplus', cat: 'power', subsystem: 'power', volt: 'VBAT_SW', note: 'Sau công tắc, cấp vào ngõ IN+ của mạch Boost MT3608.' },
-      { id: 'w_tp_gnd', name: 'Mass TP4056 sang Boost', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'tp_outminus', to: 'boost_inminus', cat: 'gnd', subsystem: 'power', volt: 'GND', note: 'Mass nguồn từ TP4056 nối vào Boost IN-.' },
-      { id: 'w_boost_gnd_link', name: 'Mass Boost nối tiếp', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_inminus', to: 'boost_outminus', cat: 'gnd', subsystem: 'power', volt: 'GND', note: 'Mass chung trên mạch Boost.' },
+      { id: 'w_bat_p', name: 'Dương Pin Li-ion', color: 'var(--wire-pwr-bat)', stroke: 'var(--wire-pwr-bat)', from: 'bat_plus', to: 'tp_bplus', cat: 'power', subsystem: 'power', net: 'net_vbat', volt: '3.7V – 4.2V', note: 'Dây đỏ nối từ cực dương pin vào chân B+ TP4056.' },
+      { id: 'w_bat_n', name: 'Âm Pin Li-ion', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'bat_minus', to: 'tp_bminus', cat: 'gnd', subsystem: 'power', net: 'net_gnd', volt: '0V (GND)', note: 'Dây đen nối từ cực âm pin vào chân B- TP4056.' },
+      { id: 'w_tp_sw', name: 'Dương nguồn sạc qua công tắc', color: 'var(--wire-pwr-bat)', stroke: 'var(--wire-pwr-bat)', from: 'tp_outplus', to: 'sw_in', cat: 'power', subsystem: 'power', net: 'net_vbat', volt: '3.0V – 4.2V', note: 'Nguồn sau mạch bảo vệ pin cấp vào chân công tắc gạt.' },
+      { id: 'w_sw_boost', name: 'Nguồn bật sang Boost (VBAT_SW)', color: 'var(--wire-pwr-bat)', stroke: 'var(--wire-pwr-bat)', from: 'sw_out', to: 'boost_inplus', cat: 'power', subsystem: 'power', net: 'net_vbat', volt: 'VBAT_SW', note: 'Sau công tắc, cấp vào ngõ IN+ của mạch Boost MT3608.' },
+      { id: 'w_tp_gnd', name: 'Mass TP4056 sang Boost', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'tp_outminus', to: 'boost_inminus', cat: 'gnd', subsystem: 'power', net: 'net_gnd', volt: 'GND', note: 'Mass nguồn từ TP4056 nối vào Boost IN-.' },
+      { id: 'w_boost_gnd_link', name: 'Mass Boost nối tiếp', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_inminus', to: 'boost_outminus', cat: 'gnd', subsystem: 'power', net: 'net_gnd', volt: 'GND', note: 'Mass chung trên mạch Boost.' },
 
       // === 2. Servo & Amply Power 5.1V & Diode Schottky ===
-      { id: 'w_boost_pca_v', name: 'Nguồn Động Cơ 5.1V (SERVO_5V)', color: 'var(--wire-pwr-boost)', from: 'boost_outplus', to: 'pca_term_vplus', cat: 'power', subsystem: 'drive', volt: '5.10V', thick: 4.5, note: 'Nguồn chính nuôi 2 servo bánh xe. Cọc V+ có tụ hóa 1000uF chống sụt áp.' },
-      { id: 'w_boost_amp_v', name: 'Nguồn Amply Loa 5.1V', color: '#e11d48', from: 'boost_outplus', to: 'max_vin', cat: 'power', subsystem: 'audio', volt: '5.10V', thick: 3.5, note: 'Cấp 5.1V riêng cho MAX98357A để âm lượng phát ra to, rõ ràng và không vỡ tiếng.' },
-      { id: 'w_boost_diode', name: 'Boost vào Diode', color: '#e11d48', from: 'boost_outplus', to: 'diode_anode', cat: 'power', subsystem: 'power', volt: '5.10V', note: 'Nối vào chân Anode (thân đen) của Diode 1N5819.' },
-      { id: 'w_diode_esp', name: 'Nguồn ESP32 (Sau Diode)', color: 'var(--wire-pwr-diode)', from: 'diode_cathode', to: 'esp32_5v', cat: 'power', subsystem: 'power', volt: '4.8V Logic', thick: 4, note: 'Vạch trắng bạc của Diode nối vào chân 5V của ESP32. Chặn dòng USB không chạy ngược vào pin!' },
+      { id: 'w_boost_pca_v', name: 'Nguồn Động Cơ 5.1V (SERVO_5V)', color: 'var(--wire-pwr-5v)', stroke: 'var(--wire-pwr-5v)', from: 'boost_outplus', to: 'pca_term_vplus', cat: 'power', subsystem: 'drive', net: 'net_5v', volt: '5.10V', thick: 4.5, note: 'Nguồn chính nuôi 2 servo bánh xe. Cọc V+ có tụ hóa 1000uF chống sụt áp.' },
+      { id: 'w_boost_amp_v', name: 'Nguồn Amply Loa 5.1V', color: 'var(--wire-pwr-5v)', stroke: 'var(--wire-pwr-5v)', from: 'boost_outplus', to: 'max_vin', cat: 'power', subsystem: 'audio', net: 'net_5v', volt: '5.10V', thick: 3.5, note: 'Cấp 5.1V riêng cho MAX98357A để âm lượng phát ra to, rõ ràng và không vỡ tiếng.' },
+      { id: 'w_boost_diode', name: 'Boost vào Diode', color: 'var(--wire-pwr-5v)', stroke: 'var(--wire-pwr-5v)', from: 'boost_outplus', to: 'diode_anode', cat: 'power', subsystem: 'power', net: 'net_5v', volt: '5.10V', note: 'Nối vào chân Anode (thân đen) của Diode 1N5819.' },
+      { id: 'w_diode_esp', name: 'Nguồn ESP32 (Sau Diode)', color: 'var(--wire-pwr-5v)', stroke: 'var(--wire-pwr-5v)', from: 'diode_cathode', to: 'esp32_5v', cat: 'power', subsystem: 'power', net: 'net_5v', volt: '4.8V Logic', thick: 4, note: 'Vạch trắng bạc của Diode nối vào chân 5V của ESP32. Chặn dòng USB không chạy ngược vào pin!' },
 
       // === 3. Common Star Ground ===
-      { id: 'w_boost_pca_gnd', name: 'Mass Cọc PCA9685', color: 'var(--wire-gnd)', stroke: '#64748b', from: 'boost_outminus', to: 'pca_term_gnd', cat: 'gnd', subsystem: 'drive', volt: 'GND', thick: 4.5, note: 'Mass cọc vít PCA9685.' },
-      { id: 'w_boost_esp_gnd', name: 'Mass Chung ESP32 -> Boost', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_outminus', to: 'esp32_gnd_l', cat: 'gnd', subsystem: 'power', volt: 'GND', note: 'Đảm bảo toàn hệ thống chung 1 điểm Mass (Star Ground).' },
-      { id: 'w_gnd_pca_logic', name: 'Mass Logic PCA9685', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'pca_side_gnd', cat: 'gnd', subsystem: 'drive', volt: 'GND', note: 'Nối mass logic giữa ESP32 và PCA9685.' },
-      { id: 'w_gnd_max', name: 'Mass Amply MAX98357A', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'max_gnd', cat: 'gnd', subsystem: 'audio', volt: 'GND', note: 'Mass amply MAX98357A.' },
-      { id: 'w_gnd_mic', name: 'Mass Mic INMP441', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'mic_gnd', cat: 'gnd', subsystem: 'audio', volt: 'GND', note: 'Mass microphone I2S.' },
-      { id: 'w_mic_lr', name: 'Mic L/R nối Mass', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'mic_gnd', to: 'mic_lr', cat: 'gnd', subsystem: 'audio', volt: 'GND', note: 'Nối chân L/R xuống GND để chọn thu kênh Trái (Left Channel).' },
-      { id: 'w_gnd_tft', name: 'Mass Màn Hình ST7789', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_r', to: 'tft_gnd', cat: 'gnd', subsystem: 'tft', volt: 'GND', note: 'Mass màn hình TFT 1.54".' },
-      { id: 'w_gnd_irl', name: 'Mass IR Trái', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irl_gnd', cat: 'gnd', subsystem: 'ir', volt: 'GND', note: 'Mass cảm biến hồng ngoại trái.' },
-      { id: 'w_gnd_irr', name: 'Mass IR Phải', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irr_gnd', cat: 'gnd', subsystem: 'ir', volt: 'GND', note: 'Mass cảm biến hồng ngoại phải.' },
+      { id: 'w_boost_pca_gnd', name: 'Mass Cọc PCA9685', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_outminus', to: 'pca_term_gnd', cat: 'gnd', subsystem: 'drive', net: 'net_gnd', volt: 'GND', thick: 4.5, note: 'Mass cọc vít PCA9685.' },
+      { id: 'w_boost_esp_gnd', name: 'Mass Chung ESP32 -> Boost', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'boost_outminus', to: 'esp32_gnd_l', cat: 'gnd', subsystem: 'power', net: 'net_gnd', volt: 'GND', note: 'Đảm bảo toàn hệ thống chung 1 điểm Mass (Star Ground).' },
+      { id: 'w_gnd_pca_logic', name: 'Mass Logic PCA9685', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'pca_side_gnd', cat: 'gnd', subsystem: 'drive', net: 'net_gnd', volt: 'GND', note: 'Nối mass logic giữa ESP32 và PCA9685.' },
+      { id: 'w_gnd_max', name: 'Mass Amply MAX98357A', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'max_gnd', cat: 'gnd', subsystem: 'audio', net: 'net_gnd', volt: 'GND', note: 'Mass amply MAX98357A.' },
+      { id: 'w_gnd_mic', name: 'Mass Mic INMP441', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'mic_gnd', cat: 'gnd', subsystem: 'audio', net: 'net_gnd', volt: 'GND', note: 'Mass microphone I2S.' },
+      { id: 'w_mic_lr', name: 'Mic L/R nối Mass', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'mic_gnd', to: 'mic_lr', cat: 'gnd', subsystem: 'audio', net: 'net_gnd', volt: 'GND', note: 'Nối chân L/R xuống GND để chọn thu kênh Trái (Left Channel).' },
+      { id: 'w_gnd_tft', name: 'Mass Màn Hình ST7789', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_r', to: 'tft_gnd', cat: 'gnd', subsystem: 'tft', net: 'net_gnd', volt: 'GND', note: 'Mass màn hình TFT 1.54".' },
+      { id: 'w_gnd_irl', name: 'Mass IR Trái', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irl_gnd', cat: 'gnd', subsystem: 'ir', net: 'net_gnd', volt: 'GND', note: 'Mass cảm biến hồng ngoại trái.' },
+      { id: 'w_gnd_irr', name: 'Mass IR Phải', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'irr_gnd', cat: 'gnd', subsystem: 'ir', net: 'net_gnd', volt: 'GND', note: 'Mass cảm biến hồng ngoại phải.' },
 
       // === 4. 3.3V Logic Power Rail ===
-      { id: 'w_3v3_pca', name: 'Nguồn 3.3V cho PCA9685', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'pca_side_vcc', cat: 'power', subsystem: 'drive', volt: '3.3V', note: 'Chỉ nuôi chip logic PCA9685 (không nuôi động cơ).' },
-      { id: 'w_3v3_mic', name: 'Nguồn 3.3V cho Mic INMP441', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'mic_vdd', cat: 'power', subsystem: 'audio', volt: '3.3V', note: 'CẤM CẤP 5V! Chỉ dùng nguồn sạch 3.3V từ chân 3V3 của ESP32.' },
-      { id: 'w_3v3_tft', name: 'Nguồn 3.3V cho TFT ST7789', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'tft_vcc', cat: 'power', subsystem: 'tft', volt: '3.3V', note: 'Nuôi vi mạch điều khiển ST7789.' },
-      { id: 'w_3v3_irl', name: 'Nguồn 3.3V cho IR Trái', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'irl_vcc', cat: 'power', subsystem: 'ir', volt: '3.3V', note: 'Nuôi IC so sánh LM393 cảm biến trái.' },
-      { id: 'w_3v3_irr', name: 'Nguồn 3.3V cho IR Phải', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'irr_vcc', cat: 'power', subsystem: 'ir', volt: '3.3V', note: 'Nuôi IC so sánh LM393 cảm biến phải.' },
+      { id: 'w_3v3_pca', name: 'Nguồn 3.3V cho PCA9685', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'pca_side_vcc', cat: 'power', subsystem: 'drive', net: 'net_3v3', volt: '3.3V', note: 'Chỉ nuôi chip logic PCA9685 (không nuôi động cơ).' },
+      { id: 'w_3v3_mic', name: 'Nguồn 3.3V cho Mic INMP441', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'mic_vdd', cat: 'power', subsystem: 'audio', net: 'net_3v3', volt: '3.3V', note: 'CẤM CẤP 5V! Chỉ dùng nguồn sạch 3.3V từ chân 3V3 của ESP32.' },
+      { id: 'w_3v3_tft', name: 'Nguồn 3.3V cho TFT ST7789', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'tft_vcc', cat: 'power', subsystem: 'tft', net: 'net_3v3', volt: '3.3V', note: 'Nuôi vi mạch điều khiển ST7789.' },
+      { id: 'w_3v3_irl', name: 'Nguồn 3.3V cho IR Trái', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'irl_vcc', cat: 'power', subsystem: 'ir', net: 'net_3v3', volt: '3.3V', note: 'Nuôi IC so sánh LM393 cảm biến trái.' },
+      { id: 'w_3v3_irr', name: 'Nguồn 3.3V cho IR Phải', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'irr_vcc', cat: 'power', subsystem: 'ir', net: 'net_3v3', volt: '3.3V', note: 'Nuôi IC so sánh LM393 cảm biến phải.' },
 
       // === 5. Audio Subsystem (Mic & Loa I2S) ===
       { id: 'w_i2s_sck', name: 'Mic Clock SCK (GPIO4)', color: 'var(--wire-i2s-sck)', from: 'esp32_io4', to: 'mic_sck', cat: 'audio', subsystem: 'audio', volt: '3.3V Clock', note: 'Xung nhịp thu âm I2S0 BCLK.' },
@@ -1890,30 +1952,104 @@
       { id: 'w_i2c_scl', name: 'I2C SCL (GPIO9)', color: 'var(--wire-i2c-scl)', from: 'esp32_io9', to: 'pca_side_scl', cat: 'drive', subsystem: 'drive', volt: '3.3V Logic', note: 'Đường xung nhịp I2C nối vào GPIO9.' },
 
       { id: 'w_srv_l_pwm', name: 'Servo Trái PWM (Ch0)', color: 'var(--wire-srv-l-pwm)', from: 'pca_ch0_pwm', to: 'servol_pwm', cat: 'drive', subsystem: 'drive', volt: 'PWM Pulse', thick: 3.5, note: 'Xung điều khiển servo bánh trái.' },
-      { id: 'w_srv_l_vcc', name: 'Servo Trái VCC (Ch0)', color: 'var(--wire-srv-l-vcc)', from: 'pca_ch0_vcc', to: 'servol_vcc', cat: 'power', subsystem: 'drive', volt: '5.10V', note: 'Nguồn 5.1V servo bánh trái.' },
-      { id: 'w_srv_l_gnd', name: 'Servo Trái GND (Ch0)', color: 'var(--wire-srv-l-gnd)', stroke: 'var(--wire-srv-l-gnd)', from: 'pca_ch0_gnd', to: 'servol_gnd', cat: 'gnd', subsystem: 'drive', volt: 'GND', note: 'Dây nâu GND servo bánh trái.' },
+      { id: 'w_srv_l_vcc', name: 'Servo Trái VCC (Ch0)', color: 'var(--wire-pwr-5v)', stroke: 'var(--wire-pwr-5v)', from: 'pca_ch0_vcc', to: 'servol_vcc', cat: 'power', subsystem: 'drive', net: 'net_5v', volt: '5.10V', note: 'Nguồn 5.1V servo bánh trái.' },
+      { id: 'w_srv_l_gnd', name: 'Servo Trái GND (Ch0)', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'pca_ch0_gnd', to: 'servol_gnd', cat: 'gnd', subsystem: 'drive', net: 'net_gnd', volt: 'GND', note: 'Dây nâu GND servo bánh trái.' },
 
       { id: 'w_srv_r_pwm', name: 'Servo Phải PWM (Ch1)', color: 'var(--wire-srv-r-pwm)', from: 'pca_ch1_pwm', to: 'servor_pwm', cat: 'drive', subsystem: 'drive', volt: 'PWM Pulse', thick: 3.5, note: 'Xung điều khiển servo bánh phải (Màu Hồng Tím).' },
-      { id: 'w_srv_r_vcc', name: 'Servo Phải VCC (Ch1)', color: 'var(--wire-srv-r-vcc)', from: 'pca_ch1_vcc', to: 'servor_vcc', cat: 'power', subsystem: 'drive', volt: '5.10V', note: 'Nguồn 5.1V servo bánh phải.' },
-      { id: 'w_srv_r_gnd', name: 'Servo Phải GND (Ch1)', color: 'var(--wire-srv-r-gnd)', stroke: 'var(--wire-srv-r-gnd)', from: 'pca_ch1_gnd', to: 'servor_gnd', cat: 'gnd', subsystem: 'drive', volt: 'GND', note: 'Dây nâu đậm GND servo bánh phải.' },
+      { id: 'w_srv_r_vcc', name: 'Servo Phải VCC (Ch1)', color: 'var(--wire-pwr-5v)', stroke: 'var(--wire-pwr-5v)', from: 'pca_ch1_vcc', to: 'servor_vcc', cat: 'power', subsystem: 'drive', net: 'net_5v', volt: '5.10V', note: 'Nguồn 5.1V servo bánh phải.' },
+      { id: 'w_srv_r_gnd', name: 'Servo Phải GND (Ch1)', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'pca_ch1_gnd', to: 'servor_gnd', cat: 'gnd', subsystem: 'drive', net: 'net_gnd', volt: 'GND', note: 'Dây nâu đậm GND servo bánh phải.' },
 
       // === 8. IR Sensors (Line & Tachometer) ===
       { id: 'w_irl_do', name: 'IR Trái DO (GPIO10)', color: 'var(--wire-irl-do)', from: 'irl_do', to: 'esp32_io10', cat: 'ir', subsystem: 'ir', volt: 'Digital 0/1', note: 'Tín hiệu ngắt đếm xung đĩa sọc bánh trái / Dò line trái.' },
       { id: 'w_irr_do', name: 'IR Phải DO (GPIO11)', color: 'var(--wire-irr-do)', from: 'irr_do', to: 'esp32_io11', cat: 'ir', subsystem: 'ir', volt: 'Digital 0/1', note: 'Tín hiệu ngắt đếm xung đĩa sọc bánh phải / Dò line phải.' },
+
       // === 9. Pet Sensory Subsystem (MPU6050 & TTP223 Touch) ===
-      { id: 'w_touch_vcc', name: 'Nguồn 3.3V cho Touch TTP223', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'touch_vcc', cat: 'power', subsystem: 'pet', volt: '3.3V Logic', note: 'Nuôi cảm biến chạm TTP223 từ chân 3V3 của ESP32.' },
-      { id: 'w_touch_gnd', name: 'Mass GND cho Touch TTP223', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_r', to: 'touch_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', note: 'Nối mass chung cho cảm biến chạm.' },
+      { id: 'w_touch_vcc', name: 'Nguồn 3.3V cho Touch TTP223', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'touch_vcc', cat: 'power', subsystem: 'pet', net: 'net_3v3', volt: '3.3V Logic', note: 'Nuôi cảm biến chạm TTP223 từ chân 3V3 của ESP32.' },
+      { id: 'w_touch_gnd', name: 'Mass GND cho Touch TTP223', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_r', to: 'touch_gnd', cat: 'gnd', subsystem: 'pet', net: 'net_gnd', volt: '0V (GND)', note: 'Nối mass chung cho cảm biến chạm.' },
       { id: 'w_touch_sig', name: 'Tín Hiệu Chạm Đỉnh Đầu (GPIO2)', color: 'var(--wire-pet-touch)', from: 'touch_sig', to: 'esp32_io2', cat: 'pet', subsystem: 'pet', volt: '3.3V Digital High', thick: 4, note: 'Tín hiệu ngõ ra mức HIGH khi ngón tay vuốt hoặc chạm vào đầu robot. Khi nhận tín hiệu, robot phát tiếng rừ rừ và mắt cười híp lại.' },
 
-      { id: 'w_mpu_vcc', name: 'Nguồn 3.3V cho IMU', color: 'var(--wire-pwr-3v3)', stroke: '#e2e8f0', from: 'esp32_3v3', to: 'mpu_vcc', cat: 'power', subsystem: 'pet', volt: '3.3V Logic', note: 'Cấp 3.3V cho vi mạch gia tốc kế GY-521 (MPU6050) / GY-6500 / GY-9250.' },
-      { id: 'w_mpu_gnd', name: 'Mass GND cho IMU', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', note: 'Mass chung cho cảm biến quán tính IMU.' },
+      { id: 'w_mpu_vcc', name: 'Nguồn 3.3V cho IMU', color: 'var(--wire-pwr-3v3)', stroke: 'var(--wire-pwr-3v3)', from: 'esp32_3v3', to: 'mpu_vcc', cat: 'power', subsystem: 'pet', net: 'net_3v3', volt: '3.3V Logic', note: 'Cấp 3.3V cho vi mạch gia tốc kế GY-521 (MPU6050) / GY-6500 / GY-9250.' },
+      { id: 'w_mpu_gnd', name: 'Mass GND cho IMU', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'esp32_gnd_l', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', net: 'net_gnd', volt: '0V (GND)', note: 'Mass chung cho cảm biến quán tính IMU.' },
       { id: 'w_mpu_sda', name: 'IMU I2C SDA (GPIO8)', color: 'var(--wire-i2c-sda)', from: 'esp32_io8', to: 'mpu_sda', cat: 'pet', subsystem: 'pet', volt: '3.3V I2C Data', thick: 3.5, note: 'Bus dữ liệu I2C chia sẻ chung giữa PCA9685 và IMU (MPU6050/6500/9250) trên GPIO 8.' },
       { id: 'w_mpu_scl', name: 'IMU I2C SCL (GPIO9)', color: 'var(--wire-i2c-scl)', from: 'esp32_io9', to: 'mpu_scl', cat: 'pet', subsystem: 'pet', volt: '3.3V I2C Clock', thick: 3.5, note: 'Bus xung nhịp I2C chia sẻ chung giữa PCA9685 và IMU (MPU6050/6500/9250) trên GPIO 9.' },
-      { id: 'w_mpu_ad0', name: 'IMU AD0 nối GND/3V3 (0x68/0x69)', color: 'var(--wire-gnd)', stroke: '#64748b', from: 'mpu_ad0', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', volt: '0V (GND)', thick: 3, note: 'Nối AD0 xuống GND để đặt địa chỉ 0x68 (hoặc nối 3.3V để đặt 0x69). Firmware tự động dò tìm cả 2 địa chỉ.' }
+      { id: 'w_mpu_ad0', name: 'IMU AD0 nối GND/3V3 (0x68/0x69)', color: 'var(--wire-gnd)', stroke: 'var(--wire-gnd-stroke)', from: 'mpu_ad0', to: 'mpu_gnd', cat: 'gnd', subsystem: 'pet', net: 'net_gnd', volt: '0V (GND)', thick: 3, note: 'Nối AD0 xuống GND để đặt địa chỉ 0x68 (hoặc nối 3.3V để đặt 0x69). Firmware tự động dò tìm cả 2 địa chỉ.' }
     ];
+
+    // --- Power Net Specifications & Wiring Guide Data ---
+    const netDetails = {
+      net_5v: {
+        id: 'net_5v',
+        name: 'Mạng Nguồn 5V / 5.1V',
+        icon: '🔴',
+        color: 'var(--wire-pwr-5v)',
+        badge: '5.10V CÔNG SUẤT CAO',
+        summary: 'Cấp nguồn tải nặng cho 2 động cơ servo và IC công suất amply âm thanh MAX98357A, đồng thời qua Diode 1N5819 nuôi ESP32.',
+        steps: [
+          { order: 1, from: 'Mạch Boost MT3608 (OUT+)', to: 'Cọc vít PCA9685 (V+)', note: 'Dây đỏ tiết diện lớn ≥ 22AWG. Cọc này có tụ hóa 1000uF chống sụt áp khi servo khởi động.' },
+          { order: 2, from: 'Mạch Boost MT3608 (OUT+)', to: 'Amply MAX98357A (Vin)', note: 'Cấp 5.1V riêng nuôi amply phát âm thanh to rõ, không rè vỡ tiếng.' },
+          { order: 3, from: 'Mạch Boost MT3608 (OUT+)', to: 'Diode 1N5819 (Anode)', note: 'Dây vào chân Anode (phần thân đen) của Diode chống dòng ngược.' },
+          { order: 4, from: 'Diode 1N5819 (Cathode)', to: 'ESP32-S3 (Chân 5V)', note: 'Vạch trắng bạc của Diode nối vào chân 5V của ESP32. Bảo vệ cổng USB khi vừa cắm máy tính vừa bật pin!' },
+          { order: 5, from: 'Hàng Chân PCA9685 (Ch0 VCC)', to: 'Servo Bánh Trái (Dây Đỏ)', note: 'Cấp nguồn 5.1V trực tiếp từ đường nguồn động cơ.' },
+          { order: 6, from: 'Hàng Chân PCA9685 (Ch1 VCC)', to: 'Servo Bánh Phải (Dây Đỏ)', note: 'Cấp nguồn 5.1V trực tiếp từ đường nguồn động cơ.' }
+        ],
+        safety: 'Đo đồng hồ vạn năng tại ngõ ra Boost MT3608 PHẢI đúng 5.0V – 5.10V trước khi cắm dây vào ESP32 và Servo!'
+      },
+      net_3v3: {
+        id: 'net_3v3',
+        name: 'Mạng Nguồn 3.3V Logic',
+        icon: '🟡',
+        color: 'var(--wire-pwr-3v3)',
+        badge: '3.3V LOGIC SẠCH',
+        summary: 'Cấp từ IC ổn áp LDO onboard của ESP32 sang các cảm biến và màn hình hiển thị. TUYỆT ĐỐI KHÔNG DÙNG ĐỂ NUÔI ĐỘNG CƠ.',
+        steps: [
+          { order: 1, from: 'ESP32-S3 (Chân 3V3)', to: 'PCA9685 (VCC Logic cạnh bên)', note: 'Chỉ nuôi vi mạch logic I2C của PCA9685, tách biệt hoàn toàn cọc V+ động cơ.' },
+          { order: 2, from: 'ESP32-S3 (Chân 3V3)', to: 'Mic I2S INMP441 (VDD)', note: 'CẤM CẤP 5V sẽ cháy mic ngay lập tức! Chỉ dùng nguồn sạch 3.3V.' },
+          { order: 3, from: 'ESP32-S3 (Chân 3V3)', to: 'Màn hình TFT ST7789 (VCC)', note: 'Cấp nguồn điều khiển và đèn nền màn hình.' },
+          { order: 4, from: 'ESP32-S3 (Chân 3V3)', to: 'Cảm biến hồng ngoại Trái (VCC)', note: 'Nuôi IC so sánh LM393 cảm biến dò line/đĩa sọc trái.' },
+          { order: 5, from: 'ESP32-S3 (Chân 3V3)', to: 'Cảm biến hồng ngoại Phải (VCC)', note: 'Nuôi IC so sánh LM393 cảm biến dò line/đĩa sọc phải.' },
+          { order: 6, from: 'ESP32-S3 (Chân 3V3)', to: 'Cảm biến chạm TTP223 (VCC)', note: 'Cấp nguồn cảm biến chạm xúc giác trên đầu robot.' },
+          { order: 7, from: 'ESP32-S3 (Chân 3V3)', to: 'Cảm biến gia tốc MPU6050 (VCC)', note: 'Cấp nguồn cho chip IMU Gyro/Accelerometer.' }
+        ],
+        safety: 'Tổng dòng tải 3.3V của các cảm biến < 150mA, hoàn toàn an toàn cho LDO của ESP32-S3.'
+      },
+      net_gnd: {
+        id: 'net_gnd',
+        name: 'Hệ Thống Mass GND Chung (Star Ground)',
+        icon: '⚫',
+        color: 'var(--wire-gnd-stroke)',
+        badge: '0V COMMON GROUND',
+        summary: 'Mọi linh kiện trong robot PHẢI nối chung về một điểm Mass duy nhất để cân bằng điện thế tham chiếu, triệt tiêu xung nhiễu motor ảnh hưởng đến I2S Audio và I2C Bus.',
+        steps: [
+          { order: 1, from: 'Pin Li-ion (Cực Âm -)', to: 'Mạch Sạc TP4056 (B-)', note: 'Dây đen từ cực âm pin vào chân âm sạc.' },
+          { order: 2, from: 'TP4056 (OUT-)', to: 'Mạch Boost MT3608 (IN-)', note: 'Mass chính từ mạch bảo vệ pin vào Boost.' },
+          { order: 3, from: 'Boost MT3608 (IN-)', to: 'Boost MT3608 (OUT-)', note: 'Đường mass liên thông trên bo mạch MT3608.' },
+          { order: 4, from: 'Boost MT3608 (OUT-)', to: 'Cọc Vít PCA9685 (GND)', note: 'Mass công suất cho 2 động cơ servo.' },
+          { order: 5, from: 'Boost MT3608 (OUT-)', to: 'ESP32-S3 (Chân GND Trái)', note: 'Đường mass trung tâm Star Ground.' },
+          { order: 6, from: 'ESP32-S3 (GND)', to: 'PCA9685 / MAX98357A / INMP441', note: 'Mass logic cho các mô-đun âm thanh & I2C.' },
+          { order: 7, from: 'ESP32-S3 (GND)', to: 'TFT ST7789 / IR-L / IR-R', note: 'Mass cho màn hình và 2 mắt hồng ngoại.' },
+          { order: 8, from: 'ESP32-S3 (GND)', to: 'TTP223 / MPU6050 (GND & AD0)', note: 'Mass cho cảm biến chạm và IMU.' }
+        ],
+        safety: 'Đo kiểm thông mạch (Ohm) giữa tất cả các điểm GND của các mô-đun: điện trở PHẢI < 0.2 Ohm.'
+      },
+      net_vbat: {
+        id: 'net_vbat',
+        name: 'Mạng Nguồn Pin Li-ion 3.7V',
+        icon: '🔋',
+        color: 'var(--wire-pwr-bat)',
+        badge: '3.7V – 4.2V TIÊU CHUẨN',
+        summary: 'Đường nguồn thô từ cell pin 18650/Lipo 3.7V qua cổng bảo vệ sạc TP4056 và công tắc gạt chính trước khi nâng áp lên 5.1V.',
+        steps: [
+          { order: 1, from: 'Pin Li-ion (Cực Dương +)', to: 'Mạch Sạc TP4056 (B+)', note: 'Dây đỏ nối từ cực dương pin vào cổng nạp/bảo vệ B+.' },
+          { order: 2, from: 'TP4056 (OUT+)', to: 'Công Tắc Gạt (Chân Vào 1)', note: 'Nguồn sau mạch ngắt quá xả đưa vào công tắc nguồn.' },
+          { order: 3, from: 'Công Tắc Gạt (Chân Ra 2)', to: 'Boost MT3608 (IN+)', note: 'Khi gạt ON, dòng điện từ pin cấp vào ngõ vào Boost MT3608.' }
+        ],
+        safety: 'Đảm bảo cell pin có dung lượng ≥ 1200mAh và dòng xả liên tục ≥ 2C (ít nhất 2.5A).'
+      }
+    };
 
     // --- State Variables ---
     let currentFilter = 'all';
+    let selectedNetId = null;
     let wireMode = 'orthogonal';
     let showPinLabels = true;
     let hoveredWireId = null;
@@ -1924,6 +2060,11 @@
     let panY = 20;
     let isDragging = false;
     let startX = 0, startY = 0;
+
+    // Component Dragging State
+    let draggedCompId = null;
+    let compDragStartPos = { mouseX: 0, mouseY: 0, compX: 0, compY: 0 };
+    let hasDraggedComp = false;
 
     // --- SVG Component Artworks ---
     function getComponentSvg(comp) {
@@ -2175,17 +2316,20 @@
 
     // Filter wire active status
     function isWireActive(w) {
+      if (selectedNetId) {
+        return w.net === selectedNetId;
+      }
       if (selectedCompId) {
         const fromPos = getPinPos(w.from);
         const toPos = getPinPos(w.to);
         return (fromPos && fromPos.comp.id === selectedCompId) || (toPos && toPos.comp.id === selectedCompId);
       }
       if (currentFilter === 'all') return true;
-      if (currentFilter === 'gnd') return w.cat === 'gnd' || w.subsystem === 'gnd';
+      if (currentFilter === 'gnd') return w.cat === 'gnd' || w.subsystem === 'gnd' || w.net === 'net_gnd';
       return w.subsystem === currentFilter;
     }
 
-    // --- Dynamic Wire Rendering with Electrical Jumper Bridges ---
+    // --- Dynamic Wire Rendering ---
     function renderWires() {
       const svg = document.getElementById('wire-canvas');
       svg.innerHTML = `
@@ -2196,41 +2340,43 @@
           </filter>
         </defs>`;
 
-      const drawnSegments = [];
-
       wires.forEach(w => {
         const from = getPinPos(w.from);
         const to = getPinPos(w.to);
         if (!from || !to) return;
+        if (from.comp.hidden || to.comp.hidden) return;
 
         const active = isWireActive(w);
         const isSelected = (selectedWireId === w.id);
-        const isDimmed = !active && !isSelected;
+        const isNetHighlighted = selectedNetId && (w.net === selectedNetId);
+        const isDimmed = selectedNetId ? !isNetHighlighted : (!active && !isSelected);
 
         let pathData = '';
         if (wireMode === 'orthogonal') {
-          pathData = buildOrthogonalWithHops(from, to, drawnSegments, active, w);
+          pathData = buildOrthogonalPath(from, to, w);
         } else if (wireMode === 'curved') {
           pathData = buildCurvedPath(from, to, w);
         } else {
-          const pts = getSmartRouteWaypoints(from, to, w);
-          pathData = 'M ' + pts.map(p => p.x + ' ' + p.y).join(' L ');
+          pathData = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
         }
 
-        // 1. Glow Layer for Selection
-        const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        glow.setAttribute('d', pathData);
-        glow.setAttribute('class', `wire-glow ${isSelected ? 'selected' : ''}`);
-        glow.setAttribute('stroke', w.color);
-        svg.appendChild(glow);
+        // 1. Glow Layer for Selection / Net Highlight
+        if (isSelected || isNetHighlighted) {
+          const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          glow.setAttribute('d', pathData);
+          glow.setAttribute('class', `wire-glow ${isSelected ? 'selected' : ''}`);
+          glow.setAttribute('stroke', w.color);
+          glow.setAttribute('stroke-width', (w.thick || 3.5) + 6);
+          svg.appendChild(glow);
+        }
 
         // 2. Core Wire Path
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('id', `path-${w.id}`);
         path.setAttribute('d', pathData);
-        path.setAttribute('class', `wire-path ${isSelected ? 'selected' : ''} ${isDimmed ? 'wire-dimmed' : ''}`);
+        path.setAttribute('class', `wire-path ${isSelected ? 'selected' : ''} ${isNetHighlighted ? 'net-highlighted' : ''} ${isDimmed ? 'wire-dimmed' : ''}`);
         path.setAttribute('stroke', w.stroke || w.color);
-        path.setAttribute('stroke-width', w.thick || 3.5);
+        path.setAttribute('stroke-width', isNetHighlighted ? (w.thick || 3.5) + 1.5 : (w.thick || 3.5));
 
         path.onmouseenter = (e) => {
           hoveredWireId = w.id;
@@ -2242,10 +2388,10 @@
         path.onmouseleave = () => {
           hoveredWireId = null;
           hideTooltip();
-          if (!selectedWireId) {
+          if (!selectedWireId && !selectedNetId) {
             hideEndpointCallouts();
             clearTopOverlay();
-          } else {
+          } else if (selectedWireId) {
             const selWire = wires.find(x => x.id === selectedWireId);
             if (selWire) showEndpointCallouts(selWire);
           }
@@ -2259,164 +2405,125 @@
       });
     }
 
-    // Router with Semi-Circular Jumper Hops
-    // --- Obstacle-Avoidance Smart Corridor Router ---
-    function getSmartRouteWaypoints(from, to, wire) {
-      if (wire.waypoints) {
-        return [{ x: from.x, y: from.y }, ...wire.waypoints, { x: to.x, y: to.y }];
+    // --- Dynamic Pin Direction & Organic Router ---
+    function getSideVector(side) {
+      switch (side) {
+        case 'left': return { x: -1, y: 0 };
+        case 'right': return { x: 1, y: 0 };
+        case 'top': return { x: 0, y: -1 };
+        case 'bottom': return { x: 0, y: 1 };
+        default: return { x: 0, y: 0 };
       }
-
-      // Bypass bottom components (Boost, Diode, Switch)
-      if (wire.id === "w_diode_esp") {
-        return [
-          { x: from.x, y: from.y },
-          { x: 1350, y: from.y },
-          { x: 1350, y: 1210 },
-          { x: 700, y: 1210 },
-          { x: 700, y: to.y },
-          { x: to.x, y: to.y }
-        ];
-      }
-      if (wire.id === "w_boost_pca_v") {
-        return [
-          { x: from.x, y: from.y },
-          { x: 1115, y: from.y },
-          { x: 1115, y: 1005 },
-          { x: 1345, y: 1005 },
-          { x: 1345, y: 410 },
-          { x: to.x, y: 410 },
-          { x: to.x, y: to.y }
-        ];
-      }
-      if (wire.id === "w_boost_pca_gnd") {
-        return [
-          { x: from.x, y: from.y },
-          { x: 1125, y: from.y },
-          { x: 1125, y: 995 },
-          { x: 1355, y: 995 },
-          { x: 1355, y: 400 },
-          { x: to.x, y: 400 },
-          { x: to.x, y: to.y }
-        ];
-      }
-      if (wire.id === "w_boost_amp_v") {
-        return [
-          { x: from.x, y: from.y },
-          { x: 1080, y: 1005 },
-          { x: 700, y: 1005 },
-          { x: 700, y: to.y },
-          { x: to.x, y: to.y }
-        ];
-      }
-      if (wire.id === "w_tp_gnd") {
-        return [
-          { x: from.x, y: from.y },
-          { x: from.x + 20, y: from.y },
-          { x: from.x + 20, y: 1205 },
-          { x: to.x - 20, y: 1205 },
-          { x: to.x - 20, y: to.y },
-          { x: to.x, y: to.y }
-        ];
-      }
-      if (wire.id === "w_boost_esp_gnd") {
-        return [
-          { x: from.x, y: from.y },
-          { x: 1080, y: 1210 },
-          { x: 690, y: 1210 },
-          { x: 690, y: to.y },
-          { x: to.x, y: to.y }
-        ];
-      }
-
-      // Default orthogonal 3-point routing
-      let midX = (from.x + to.x) / 2;
-      if (Math.abs(from.x - to.x) < 40) midX = Math.max(from.x, to.x) + 30;
-      return [
-        { x: from.x, y: from.y },
-        { x: midX, y: from.y },
-        { x: midX, y: to.y },
-        { x: to.x, y: to.y }
-      ];
     }
 
-    // Router with Semi-Circular Jumper Hops over arbitrary waypoints
-    function buildOrthogonalWithHops(from, to, registeredSegments, shouldRegister = true, wire = {}) {
-      const pts = getSmartRouteWaypoints(from, to, wire);
-      const segs = [];
-      for (let i = 0; i < pts.length - 1; i++) {
-        segs.push({
-          x1: pts[i].x, y1: pts[i].y,
-          x2: pts[i+1].x, y2: pts[i+1].y,
-          isVert: (pts[i].x === pts[i+1].x)
-        });
-      }
-
-      let d = `M ${pts[0].x} ${pts[0].y}`;
-
-      segs.forEach(seg => {
-        if (!seg.isVert) {
-          d += ` L ${seg.x2} ${seg.y2}`;
-          if (shouldRegister) registeredSegments.push(seg);
-        } else {
-          const yStart = Math.min(seg.y1, seg.y2);
-          const yEnd = Math.max(seg.y1, seg.y2);
-          const x = seg.x1;
-
-          const crossings = [];
-          registeredSegments.forEach(hSeg => {
-            if (!hSeg.isVert) {
-              const hxStart = Math.min(hSeg.x1, hSeg.x2);
-              const hxEnd = Math.max(hSeg.x1, hSeg.x2);
-              const hy = hSeg.y1;
-              if (x > hxStart + 6 && x < hxEnd - 6 && hy > yStart + 8 && hy < yEnd - 8) {
-                crossings.push(hy);
-              }
-            }
-          });
-
-          if (seg.y1 < seg.y2) {
-            crossings.sort((a, b) => a - b);
-          } else {
-            crossings.sort((a, b) => b - a);
-          }
-
-          crossings.forEach(hy => {
-            const hopRadius = 7;
-            const hopEntryY = seg.y1 < seg.y2 ? (hy - hopRadius) : (hy + hopRadius);
-            const hopExitY = seg.y1 < seg.y2 ? (hy + hopRadius) : (hy - hopRadius);
-            d += ` L ${x} ${hopEntryY}`;
-            const sweep = (seg.y1 < seg.y2) ? 1 : 0;
-            d += ` A ${hopRadius} ${hopRadius} 0 0 ${sweep} ${x} ${hopExitY}`;
-          });
-
-          d += ` L ${seg.x2} ${seg.y2}`;
-          if (shouldRegister) registeredSegments.push(seg);
-        }
-      });
-
-      return d;
-    }
-
-    // Curved router with waypoint corner rounding
+    // Smooth Directional Cubic Bezier Curve (No kinks, no loops, fully dynamic)
     function buildCurvedPath(from, to, wire = {}) {
-      const pts = getSmartRouteWaypoints(from, to, wire);
-      if (pts.length === 2) {
-        const dx = Math.abs(to.x - from.x) * 0.45;
-        const dy = Math.abs(to.y - from.y) * 0.45;
-        const cx1 = from.x + (from.x < to.x ? dx : -dx);
-        const cy1 = from.y + (from.y < to.y ? dy : -dy);
-        const cx2 = to.x + (from.x < to.x ? -dx : dx);
-        const cy2 = to.y + (from.y < to.y ? -dy : dy);
-        return `M ${from.x} ${from.y} C ${cx1} ${from.y}, ${cx2} ${to.y}, ${to.x} ${to.y}`;
+      const vFrom = getSideVector(from.pin ? from.pin.side : 'right');
+      const vTo = getSideVector(to.pin ? to.pin.side : 'left');
+
+      let vfX = vFrom.x, vfY = vFrom.y;
+      let vtX = vTo.x, vtY = vTo.y;
+      if (vfX === 0 && vfY === 0) vfX = (from.x < to.x) ? 1 : -1;
+      if (vtX === 0 && vtY === 0) vtX = (to.x < from.x) ? 1 : -1;
+
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.hypot(dx, dy);
+      const tension = Math.min(Math.max(dist * 0.45, 45), 240);
+
+      const cx1 = from.x + vfX * tension;
+      const cy1 = from.y + vfY * tension;
+      const cx2 = to.x + vtX * tension;
+      const cy2 = to.y + vtY * tension;
+
+      return `M ${from.x} ${from.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${to.x} ${to.y}`;
+    }
+
+    // Elegant Filleted Manhattan Orthogonal Router
+    function buildOrthogonalPath(from, to, wire = {}) {
+      const vFrom = getSideVector(from.pin ? from.pin.side : 'right');
+      const vTo = getSideVector(to.pin ? to.pin.side : 'left');
+
+      let vfX = vFrom.x, vfY = vFrom.y;
+      let vtX = vTo.x, vtY = vTo.y;
+      if (vfX === 0 && vfY === 0) vfX = (from.x < to.x) ? 1 : -1;
+      if (vtX === 0 && vtY === 0) vtX = (to.x < from.x) ? 1 : -1;
+
+      const stub = 24;
+      const p1 = { x: from.x, y: from.y };
+      const p2 = { x: from.x + vfX * stub, y: from.y + vfY * stub };
+      const p5 = { x: to.x + vtX * stub, y: to.y + vtY * stub };
+      const p6 = { x: to.x, y: to.y };
+
+      const pts = [p1, p2];
+
+      if (vfX !== 0 && vtX !== 0) {
+        if ((vfX > 0 && vtX < 0 && p2.x < p5.x) || (vfX < 0 && vtX > 0 && p2.x > p5.x)) {
+          const midX = (p2.x + p5.x) / 2;
+          pts.push({ x: midX, y: p2.y });
+          pts.push({ x: midX, y: p5.y });
+        } else {
+          let midX = (vfX > 0) ? Math.max(p2.x, p5.x) + 30 : Math.min(p2.x, p5.x) - 30;
+          pts.push({ x: midX, y: p2.y });
+          pts.push({ x: midX, y: p5.y });
+        }
+      } else if (vfY !== 0 && vtY !== 0) {
+        const midY = (p2.y + p5.y) / 2;
+        pts.push({ x: p2.x, y: midY });
+        pts.push({ x: p5.x, y: midY });
+      } else if (vfX !== 0) {
+        pts.push({ x: p5.x, y: p2.y });
+      } else {
+        pts.push({ x: p2.x, y: p5.y });
       }
+
+      pts.push(p5);
+      pts.push(p6);
+
+      const cleanPts = [];
+      for (let i = 0; i < pts.length; i++) {
+        if (i === 0 || Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 2) {
+          cleanPts.push(pts[i]);
+        }
+      }
+
+      return createFilletedPath(cleanPts, 8);
+    }
+
+    // Creates smooth filleted circular arcs (radius 8px) at every 90° turn
+    function createFilletedPath(pts, radius = 8) {
+      if (pts.length < 2) return '';
+      if (pts.length === 2) return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`;
+
       let d = `M ${pts[0].x} ${pts[0].y}`;
-      for (let i = 1; i < pts.length; i++) {
-        const prev = pts[i - 1];
-        const curr = pts[i];
-        const midX = (prev.x + curr.x) / 2;
-        const midY = (prev.y + curr.y) / 2;
-        d += ` Q ${prev.x} ${prev.y}, ${midX} ${midY} L ${curr.x} ${curr.y}`;
+      for (let i = 1; i < pts.length - 1; i++) {
+        const pPrev = pts[i - 1];
+        const pCurr = pts[i];
+        const pNext = pts[i + 1];
+
+        const dInX = pCurr.x - pPrev.x;
+        const dInY = pCurr.y - pPrev.y;
+        const lenIn = Math.hypot(dInX, dInY);
+
+        const dOutX = pNext.x - pCurr.x;
+        const dOutY = pNext.y - pCurr.y;
+        const lenOut = Math.hypot(dOutX, dOutY);
+
+        const cross = dInX * dOutY - dInY * dOutX;
+        if (Math.abs(cross) < 1e-4 || lenIn < 2 || lenOut < 2) {
+          d += ` L ${pCurr.x} ${pCurr.y}`;
+          continue;
+        }
+
+        const r = Math.min(radius, lenIn / 2, lenOut / 2);
+        const entryX = pCurr.x - (dInX / lenIn) * r;
+        const entryY = pCurr.y - (dInY / lenIn) * r;
+        const exitX = pCurr.x + (dOutX / lenOut) * r;
+        const exitY = pCurr.y + (dOutY / lenOut) * r;
+
+        d += ` L ${entryX} ${entryY} Q ${pCurr.x} ${pCurr.y}, ${exitX} ${exitY}`;
       }
+      d += ` L ${pts[pts.length - 1].x} ${pts[pts.length - 1].y}`;
       return d;
     }
 
@@ -2426,6 +2533,8 @@
       container.innerHTML = '';
 
       Object.values(components).forEach(comp => {
+        if (comp.hidden) return; // Skip rendering hidden components
+
         // 1. Component Card
         const card = document.createElement('div');
         card.id = `comp-${comp.id}`;
@@ -2434,10 +2543,22 @@
         card.style.top = `${comp.y}px`;
         card.style.width = `${comp.w}px`;
         card.style.height = `${comp.h}px`;
-        card.innerHTML = getComponentSvg(comp);
+
+        // Card header bar with drag hint and quick hide button
+        const headerBar = `
+          <div class="comp-header-bar">
+            <span class="comp-drag-hint" title="Kéo thả để dời vị trí linh kiện">⋮⋮ Kéo</span>
+            <button class="comp-vis-btn" onclick="toggleComponentVisibility('${comp.id}', event)" title="Ẩn linh kiện này">👁️</button>
+          </div>
+        `;
+        card.innerHTML = headerBar + getComponentSvg(comp);
+
+        card.onmousedown = (e) => startCompDrag(e, comp.id);
+        card.ontouchstart = (e) => startCompDrag(e, comp.id);
 
         card.onclick = (e) => {
           e.stopPropagation();
+          if (hasDraggedComp) return;
           selectComponent(comp.id);
         };
         card.onmouseenter = (e) => showCompTooltip(e, comp);
@@ -2469,6 +2590,7 @@
 
           // Pin readable text label
           const label = document.createElement('div');
+          label.id = `label-${pin.id}`;
           label.className = `pin-label-text side-${pin.side || 'left'} ${isPinUsed ? 'used' : 'unused'} ${pin.role}`;
           label.style.left = `${comp.x + pin.x}px`;
           label.style.top = `${comp.y + pin.y}px`;
@@ -2476,9 +2598,387 @@
           container.appendChild(label);
         });
       });
+
+      updateVisibilityUI();
     }
 
-    // --- Interactivity: Selection & Highlights ---
+    // --- Component Drag & Drop Handlers ---
+    function startCompDrag(e, compId) {
+      if (e.target.closest('.pin-badge') || e.target.closest('.comp-vis-btn')) return;
+      e.stopPropagation();
+      draggedCompId = compId;
+      const comp = components[compId];
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      compDragStartPos = {
+        mouseX: clientX,
+        mouseY: clientY,
+        compX: comp.x,
+        compY: comp.y
+      };
+      hasDraggedComp = false;
+
+      const card = document.getElementById(`comp-${compId}`);
+      if (card) card.classList.add('is-dragging');
+    }
+
+    function onCompDragMove(e) {
+      if (!draggedCompId) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = (clientX - compDragStartPos.mouseX) / zoom;
+      const dy = (clientY - compDragStartPos.mouseY) / zoom;
+
+      if (!hasDraggedComp && Math.hypot(dx, dy) > 3) {
+        hasDraggedComp = true;
+      }
+
+      if (hasDraggedComp) {
+        const comp = components[draggedCompId];
+        comp.x = Math.round(compDragStartPos.compX + dx);
+        comp.y = Math.round(compDragStartPos.compY + dy);
+
+        // Move card directly
+        const card = document.getElementById(`comp-${comp.id}`);
+        if (card) {
+          card.style.left = `${comp.x}px`;
+          card.style.top = `${comp.y}px`;
+        }
+
+        // Move pins and labels
+        comp.pins.forEach(pin => {
+          const badge = document.getElementById(`pin-${pin.id}`);
+          if (badge) {
+            badge.style.left = `${comp.x + pin.x}px`;
+            badge.style.top = `${comp.y + pin.y}px`;
+          }
+          const label = document.getElementById(`label-${pin.id}`);
+          if (label) {
+            label.style.left = `${comp.x + pin.x}px`;
+            label.style.top = `${comp.y + pin.y}px`;
+          }
+        });
+
+        // Re-render wires in real-time
+        renderWires();
+      }
+    }
+
+    function endCompDrag() {
+      if (!draggedCompId) return;
+      const card = document.getElementById(`comp-${draggedCompId}`);
+      if (card) card.classList.remove('is-dragging');
+
+      if (hasDraggedComp) {
+        saveComponentPositions();
+        showToast('✓ Đã cập nhật & lưu vị trí linh kiện');
+      }
+
+      draggedCompId = null;
+      setTimeout(() => { hasDraggedComp = false; }, 80);
+    }
+
+    function saveComponentPositions() {
+      try {
+        const posMap = {};
+        Object.values(components).forEach(c => {
+          posMap[c.id] = { x: c.x, y: c.y };
+        });
+        localStorage.setItem('rody_pet_positions', JSON.stringify(posMap));
+      } catch (e) {}
+    }
+
+    function loadSavedComponentPositions() {
+      try {
+        const saved = localStorage.getItem('rody_pet_positions');
+        if (!saved) return;
+        const posMap = JSON.parse(saved);
+        Object.entries(posMap).forEach(([id, pos]) => {
+          if (components[id] && typeof pos.x === 'number' && typeof pos.y === 'number') {
+            components[id].x = pos.x;
+            components[id].y = pos.y;
+          }
+        });
+      } catch (e) {}
+    }
+
+    function resetComponentPositions() {
+      try {
+        localStorage.removeItem('rody_pet_positions');
+      } catch (e) {}
+      Object.values(components).forEach(c => {
+        if (typeof c.defaultX === 'number') c.x = c.defaultX;
+        if (typeof c.defaultY === 'number') c.y = c.defaultY;
+      });
+      renderComponents();
+      renderWires();
+      showToast('✓ Đã khôi phục vị trí mặc định');
+    }
+
+    // --- Component Visibility Handlers ---
+    function toggleComponentVisibility(compId, e) {
+      if (e) e.stopPropagation();
+      const comp = components[compId];
+      if (!comp) return;
+      comp.hidden = !comp.hidden;
+
+      if (comp.hidden && selectedCompId === compId) {
+        closeDrawer();
+      }
+
+      renderComponents();
+      renderWires();
+      updateVisibilityUI();
+      showToast(comp.hidden ? `Đã ẩn: ${comp.title}` : `Đã hiện: ${comp.title}`);
+    }
+
+    function setComponentVisible(compId, isVisible) {
+      const comp = components[compId];
+      if (!comp) return;
+      comp.hidden = !isVisible;
+      if (comp.hidden && selectedCompId === compId) {
+        closeDrawer();
+      }
+    }
+
+    function openVisModal() {
+      populateVisModalList();
+      document.getElementById('comp-vis-modal').classList.add('open');
+    }
+
+    function closeVisModal() {
+      document.getElementById('comp-vis-modal').classList.remove('open');
+    }
+
+    function updateVisibilityUI() {
+      const total = Object.keys(components).length;
+      const visibleCount = Object.values(components).filter(c => !c.hidden).length;
+      const hiddenCount = total - visibleCount;
+
+      const badge = document.getElementById('vis-counter-badge');
+      if (badge) {
+        badge.textContent = `${visibleCount}/${total}`;
+        badge.style.background = (hiddenCount > 0) ? '#f59e0b' : '#10b981';
+      }
+
+      const banner = document.getElementById('hidden-comps-banner');
+      const bannerCount = document.getElementById('hidden-comps-count');
+      if (banner && bannerCount) {
+        if (hiddenCount > 0) {
+          bannerCount.textContent = hiddenCount;
+          banner.style.display = 'flex';
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+    }
+
+    function populateVisModalList() {
+      const listEl = document.getElementById('vis-comp-list');
+      if (!listEl) return;
+      listEl.innerHTML = Object.values(components).map(c => `
+        <div class="vis-comp-item ${c.hidden ? 'is-hidden' : ''}" onclick="toggleVisModalItem('${c.id}')">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; color:#fff; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.title}</div>
+            <div style="font-size:10.5px; color:var(--fg-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c.subtitle}</div>
+          </div>
+          <div class="vis-switch ${c.hidden ? '' : 'on'}"></div>
+        </div>
+      `).join('');
+    }
+
+    function toggleVisModalItem(compId) {
+      toggleComponentVisibility(compId);
+      populateVisModalList();
+    }
+
+    function setVisPreset(preset) {
+      document.querySelectorAll('.vis-quick-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.vis-quick-btn')).find(b => b.getAttribute('onclick')?.includes(preset));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const allIds = Object.keys(components);
+      if (preset === 'all') {
+        allIds.forEach(id => setComponentVisible(id, true));
+      } else if (preset === 'none') {
+        allIds.forEach(id => setComponentVisible(id, id === 'esp32'));
+      } else if (preset === 'power_esp') {
+        const keep = ['esp32', 'battery', 'tp4056', 'switch', 'boost', 'diode'];
+        allIds.forEach(id => setComponentVisible(id, keep.includes(id)));
+      } else if (preset === 'drive') {
+        const keep = ['esp32', 'pca9685', 'servo_l', 'servo_r', 'boost', 'diode', 'battery', 'tp4056', 'switch'];
+        allIds.forEach(id => setComponentVisible(id, keep.includes(id)));
+      } else if (preset === 'media') {
+        const keep = ['esp32', 'tft_154', 'inmp441', 'max98357a', 'speaker', 'boost', 'diode'];
+        allIds.forEach(id => setComponentVisible(id, keep.includes(id)));
+      } else if (preset === 'pet') {
+        const keep = ['esp32', 'ttp223', 'mpu6050', 'tft_154'];
+        allIds.forEach(id => setComponentVisible(id, keep.includes(id)));
+      }
+
+      renderComponents();
+      renderWires();
+      updateVisibilityUI();
+      populateVisModalList();
+    }
+
+    // --- Toast Notifications ---
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notify');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+
+    // --- Interactivity: Selection, Nets & Highlights ---
+    function getPinNet(pinId) {
+      const matchWire = wires.find(w => w.net && (w.from === pinId || w.to === pinId));
+      if (matchWire) return matchWire.net;
+      for (const comp of Object.values(components)) {
+        const p = comp.pins.find(pin => pin.id === pinId);
+        if (p) {
+          if (p.role === 'pwr-3v3') return 'net_3v3';
+          if (p.role === 'gnd') return 'net_gnd';
+          if (p.role === 'pwr') return 'net_5v';
+        }
+      }
+      return null;
+    }
+
+    function selectNet(netId, chipEl) {
+      if (selectedNetId === netId) {
+        clearNetSelection();
+        return;
+      }
+
+      selectedNetId = netId;
+      selectedCompId = null;
+      selectedWireId = null;
+      currentFilter = 'all';
+
+      // Update chip UI in toolbar
+      document.querySelectorAll('#subsystem-bar .filter-chip').forEach(c => c.classList.remove('active'));
+      if (chipEl) {
+        chipEl.classList.add('active');
+      } else {
+        const targetChip = document.querySelector(`#subsystem-bar .filter-chip[data-net="${netId}"]`);
+        if (targetChip) targetChip.classList.add('active');
+      }
+
+      // Update floating banner
+      const banner = document.getElementById('net-active-banner');
+      const bannerIcon = document.getElementById('net-banner-icon');
+      const bannerText = document.getElementById('net-banner-text');
+      const net = netDetails[netId];
+
+      if (banner && net) {
+        const count = wires.filter(w => w.net === netId).length;
+        bannerIcon.textContent = net.icon || '⚡';
+        bannerText.innerHTML = `Đang làm nổi bật: <strong>${net.name}</strong> (${count} đường dây)`;
+        banner.style.display = 'flex';
+      }
+
+      renderWires();
+      renderComponents();
+
+      // Pulse all pins belonging to this net
+      document.querySelectorAll('.pin-pulse-active').forEach(el => el.classList.remove('pin-pulse-active'));
+      const netWires = wires.filter(w => w.net === netId);
+      netWires.forEach(w => {
+        const pinA = document.getElementById(`pin-${w.from}`);
+        const pinB = document.getElementById(`pin-${w.to}`);
+        if (pinA) pinA.classList.add('pin-pulse-active');
+        if (pinB) pinB.classList.add('pin-pulse-active');
+      });
+
+      // Open drawer with step-by-step wiring instructions
+      if (net) {
+        openNetDrawer(net);
+      }
+    }
+
+    function clearNetSelection(chipEl) {
+      selectedNetId = null;
+      const banner = document.getElementById('net-active-banner');
+      if (banner) banner.style.display = 'none';
+
+      document.querySelectorAll('#subsystem-bar .filter-chip').forEach(c => c.classList.remove('active'));
+      if (chipEl) {
+        chipEl.classList.add('active');
+      } else {
+        const allChip = document.querySelector('#subsystem-bar .filter-chip[data-filter="all"]');
+        if (allChip) allChip.classList.add('active');
+      }
+
+      document.querySelectorAll('.pin-pulse-active').forEach(el => el.classList.remove('pin-pulse-active'));
+      closeDrawer();
+      renderWires();
+      renderComponents();
+    }
+
+    function openNetDrawer(net) {
+      drawerTitle.textContent = net.name;
+      const netWires = wires.filter(w => w.net === net.id);
+
+      drawerBody.innerHTML = `
+        <span class="info-badge verified whitespace-nowrap shrink-0" style="background:${net.color}; color:#000; font-weight:800;">
+          ${net.badge}
+        </span>
+        <div style="font-size:12px; color:var(--fg-muted); margin-top:8px; margin-bottom:12px; line-height:1.5;">
+          ${net.summary}
+        </div>
+
+        <div style="background:var(--surface-deep); border-left:3px solid ${net.color}; padding:10px 12px; border-radius:0 8px 8px 0; margin-bottom:14px;">
+          <div style="font-size:11px; font-weight:700; color:#fbbf24; margin-bottom:4px;">⚠️ NGUYÊN TẮC AN TOÀN BẮT BUỘC:</div>
+          <div style="font-size:11.5px; color:var(--fg); line-height:1.5;">${net.safety}</div>
+        </div>
+
+        <div style="font-weight:700; font-size:13px; color:#fff; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>Thứ Tự Đi Dây Chuẩn (${net.steps.length} Bước):</span>
+          <span style="font-size:11px; color:#94a3b8;">${netWires.length} đường dây</span>
+        </div>
+
+        <div class="net-step-list">
+          ${net.steps.map((st, i) => `
+            <div class="net-step-card" onclick="focusNetStep('${net.id}', ${i})">
+              <div class="step-num">${st.order}</div>
+              <div class="step-content">
+                <div class="step-endpoints">
+                  <span>${st.from}</span>
+                  <span class="step-arrow">➔</span>
+                  <span>${st.to}</span>
+                </div>
+                <div class="step-note">${st.note}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      drawer.classList.add('open');
+      drawerBackdrop.classList.add('open');
+    }
+
+    function focusNetStep(netId, stepIdx) {
+      const netWires = wires.filter(w => w.net === netId);
+      if (netWires[stepIdx]) {
+        showEndpointCallouts(netWires[stepIdx]);
+        const from = getPinPos(netWires[stepIdx].from);
+        if (from) {
+          const targetZoom = (viewport.clientWidth < 640) ? 0.8 : 1.0;
+          zoom = targetZoom;
+          panX = viewport.clientWidth / 2 - from.x * zoom;
+          panY = viewport.clientHeight / 2 - from.y * zoom;
+          updateTransform();
+        }
+      }
+    }
+
     function selectComponent(compId) {
       if (selectedCompId === compId) {
         selectedCompId = null;
@@ -2486,6 +2986,7 @@
       } else {
         selectedCompId = compId;
         selectedWireId = null;
+        selectedNetId = null;
         openDrawer(components[compId]);
       }
       renderComponents();
@@ -2509,12 +3010,9 @@
           const to = getPinPos(w.to);
           if (from && to) {
             let pathData = '';
-            if (wireMode === 'orthogonal') pathData = buildOrthogonalWithHops(from, to, [], false, w);
+            if (wireMode === 'orthogonal') pathData = buildOrthogonalPath(from, to, w);
             else if (wireMode === 'curved') pathData = buildCurvedPath(from, to, w);
-            else {
-              const pts = getSmartRouteWaypoints(from, to, w);
-              pathData = 'M ' + pts.map(p => p.x + ' ' + p.y).join(' L ');
-            }
+            else pathData = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
             renderTopOverlayWire(w, pathData);
           }
         }
@@ -2524,6 +3022,11 @@
     }
 
     function highlightPinWires(pinId) {
+      const netId = getPinNet(pinId);
+      if (netId) {
+        selectNet(netId);
+        return;
+      }
       const matchWire = wires.find(w => w.from === pinId || w.to === pinId);
       if (matchWire) {
         selectWire(matchWire.id);
@@ -2875,6 +3378,10 @@
     };
 
     window.onmousemove = (e) => {
+      if (draggedCompId) {
+        onCompDragMove(e);
+        return;
+      }
       if (!isDragging) return;
       panX = e.clientX - startX;
       panY = e.clientY - startY;
@@ -2882,6 +3389,9 @@
     };
 
     window.onmouseup = () => {
+      if (draggedCompId) {
+        endCompDrag();
+      }
       isDragging = false;
     };
 
@@ -2919,6 +3429,10 @@
     }, { passive: true });
 
     viewport.addEventListener('touchmove', (e) => {
+      if (draggedCompId) {
+        onCompDragMove(e);
+        return;
+      }
       if (e.touches.length === 1 && isDragging) {
         panX = e.touches[0].clientX - startX;
         panY = e.touches[0].clientY - startY;
@@ -2941,6 +3455,9 @@
     }, { passive: true });
 
     viewport.addEventListener('touchend', (e) => {
+      if (draggedCompId) {
+        endCompDrag();
+      }
       if (e.touches.length === 0) {
         isDragging = false;
         touchStartDist = 0;
@@ -2952,9 +3469,12 @@
       }
     }, { passive: true });
 
-    // Close modal on click outside
+    // Close modals on click outside
     document.getElementById('bom-modal').onclick = (e) => {
       if (e.target === document.getElementById('bom-modal')) closeBomModal();
+    };
+    document.getElementById('comp-vis-modal').onclick = (e) => {
+      if (e.target === document.getElementById('comp-vis-modal')) closeVisModal();
     };
 
     // Keyboard Shortcuts
@@ -2962,6 +3482,7 @@
       if (e.key === 'Escape') {
         closeDrawer();
         closeBomModal();
+        closeVisModal();
       }
       if (e.key === 'f' || e.key === 'F') {
         fitView();
@@ -2977,13 +3498,23 @@
     };
 
     // --- Init ---
+    loadSavedComponentPositions();
     renderComponents();
     renderWires();
+    updateVisibilityUI();
     fitView();
     if (window.location.hash) {
-      const wid = window.location.hash.slice(1);
-      if (wid && wires.some(w => w.id === wid)) {
-        setTimeout(() => selectWire(wid), 50);
+      const hash = window.location.hash.slice(1);
+      if (hash === 'curved' || hash === 'orthogonal' || hash === 'straight') {
+        setTimeout(() => setWireMode(hash), 60);
+      } else if (hash.startsWith('net_')) {
+        setTimeout(() => selectNet(hash), 60);
+      } else if (hash === 'vis') {
+        setTimeout(() => openVisModal(), 60);
+      } else if (wires.some(w => w.id === hash)) {
+        setTimeout(() => selectWire(hash), 60);
+      } else if (components[hash]) {
+        setTimeout(() => selectComponent(hash), 60);
       }
     }
   </script>

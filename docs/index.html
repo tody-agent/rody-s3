@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="./GLTFLoader.js"></script>
-  <script src="./otto_model_3d.js"></script>
+  <script src="./otto_model_3d.js?v=2.7"></script>
 
   <style>
     :root {
@@ -227,9 +227,9 @@
       position: relative;
       border-radius: var(--radius-lg);
       overflow: hidden;
-      border: 1px solid rgba(226, 232, 240, 0.9);
+      border: 1px solid rgba(203, 213, 225, 0.8);
       box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 8px 20px -6px rgba(15, 23, 42, 0.04);
-      background: radial-gradient(circle at 50% 38%, #ffffff 0%, #f8fafc 55%, #edf2f7 100%);
+      background: radial-gradient(circle at 50% 32%, #f8fafc 0%, #edf2f7 48%, #e2e8f0 100%);
       margin-bottom: 50px;
       height: 520px;
       width: 100%;
@@ -259,6 +259,8 @@
     }
     .hero-3d-fallback.hidden {
       opacity: 0;
+      visibility: hidden;
+      display: none;
       pointer-events: none;
     }
 
@@ -1255,12 +1257,12 @@
       scene.background = null; // Transparent to display Xiaomi light studio gradient
 
       const isMobile = width < 640;
-      const cameraFov = isMobile ? 44 : 36;
+      const cameraFov = isMobile ? 42 : 40;
       const camera = new THREE.PerspectiveCamera(cameraFov, width / height, 0.1, 1000);
       if (isMobile) {
-        camera.position.set(19, 14, 25);
+        camera.position.set(18.0, 13.5, 23.0);
       } else {
-        camera.position.set(16, 12, 20);
+        camera.position.set(16.5, 12.5, 21.0);
       }
 
       const renderer = new THREE.WebGLRenderer({
@@ -1274,55 +1276,81 @@
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
 
       const controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.target.set(0, 4.0, 0);
+      controls.target.set(0, 3.4, 0);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
       controls.maxPolarAngle = Math.PI / 2 + 0.02;
-      controls.minDistance = 12;
-      controls.maxDistance = 45;
+      controls.minDistance = 8;
+      controls.maxDistance = 28;
       controls.autoRotate = true;
       controls.autoRotateSpeed = 1.0;
       controls.update();
 
-      // Studio Lights (Xiaomi High-Key Minimalist Studio)
-      const hemi = new THREE.HemisphereLight(0xffffff, 0xf1f5f9, 1.2);
+      // Studio Lights (Balanced High-Key Studio with ACES Tone Mapping)
+      // Soft ambient to gently illuminate undercuts
+      const hemi = new THREE.HemisphereLight(0xffffff, 0xcfd8dc, 0.65);
       scene.add(hemi);
 
-      const sun = new THREE.DirectionalLight(0xffffff, 1.45);
-      sun.position.set(20, 42, 28);
+      // Main Key Light at 45 degrees with soft shadow
+      const sun = new THREE.DirectionalLight(0xffffff, 1.15);
+      sun.position.set(14, 24, 18);
       sun.castShadow = true;
-      sun.shadow.mapSize.set(1024, 1024);
-      sun.shadow.bias = -0.0001;
+      sun.shadow.mapSize.set(2048, 2048);
+      sun.shadow.bias = -0.0002;
+      sun.shadow.radius = 3;
       scene.add(sun);
 
-      const fill = new THREE.DirectionalLight(0xf0f9ff, 0.75);
-      fill.position.set(-28, 22, -18);
+      // Soft Cool Fill Light
+      const fill = new THREE.DirectionalLight(0xe0f2fe, 0.45);
+      fill.position.set(-18, 14, -10);
       scene.add(fill);
 
-      const rim = new THREE.DirectionalLight(0xdbeafe, 0.55);
-      rim.position.set(0, 25, -35);
+      // Subtle Rim Light to highlight white shell contours
+      const rim = new THREE.DirectionalLight(0xdbeafe, 0.50);
+      rim.position.set(0, 18, -22);
       scene.add(rim);
 
-      // Clean Minimalist Ceramic White Pedestal (Xiaomi Style)
-      const pedGeo = new THREE.CylinderGeometry(14, 14.4, 0.6, 64);
+      // Soft Realistic Contact Shadow on Floor
+      const shadowCanvas = document.createElement('canvas');
+      shadowCanvas.width = 256;
+      shadowCanvas.height = 256;
+      const sCtx = shadowCanvas.getContext('2d');
+      const grad = sCtx.createRadialGradient(128, 128, 10, 128, 128, 120);
+      grad.addColorStop(0, 'rgba(15, 23, 42, 0.38)');
+      grad.addColorStop(0.35, 'rgba(15, 23, 42, 0.20)');
+      grad.addColorStop(0.75, 'rgba(15, 23, 42, 0.05)');
+      grad.addColorStop(1, 'rgba(15, 23, 42, 0)');
+      sCtx.fillStyle = grad;
+      sCtx.fillRect(0, 0, 256, 256);
+
+      const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
+      const shadowGeo = new THREE.PlaneGeometry(16, 16);
+      const shadowMat = new THREE.MeshBasicMaterial({
+        map: shadowTexture,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.90
+      });
+      const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+      shadowMesh.rotation.x = -Math.PI / 2;
+      shadowMesh.position.set(0, 0.01, -0.6);
+      scene.add(shadowMesh);
+
+      // Clean Minimalist Ceramic Studio Pedestal (Proportional to Robot)
+      const pedGeo = new THREE.CylinderGeometry(7.5, 7.8, 0.4, 64);
       const pedMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.20,
+        color: 0xf1f5f9,
+        roughness: 0.32,
         metalness: 0.02
       });
       const pedestal = new THREE.Mesh(pedGeo, pedMat);
-      pedestal.position.y = -0.3;
+      pedestal.position.y = -0.2;
       pedestal.receiveShadow = true;
       scene.add(pedestal);
-
-      const ringGeo = new THREE.RingGeometry(14.45, 14.65, 64);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x1d4ed8, side: THREE.DoubleSide });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.rotation.x = -Math.PI / 2;
-      ring.position.y = 0.005;
-      scene.add(ring);
 
       let robot = null;
       if (typeof OttoRobot3D !== 'undefined') {
@@ -1330,14 +1358,17 @@
           robot = new OttoRobot3D({
             theme: 'white',
             enableLights: true,
-            modelsPath: './models/otto_starter/'
+            modelsPath: './models/otto_starter/',
+            onLoaded: () => {
+              if (fallbackImg) fallbackImg.classList.add('hidden');
+            }
           });
           scene.add(robot.root);
           robot.setEmotion('happy');
 
           setTimeout(() => {
             if (fallbackImg) fallbackImg.classList.add('hidden');
-          }, 600);
+          }, 800);
         } catch (e) {
           console.warn('Could not instantiate OttoRobot3D', e);
         }
@@ -1372,11 +1403,11 @@
       window.resetHeroCamera = function() {
         const isMob = container.clientWidth < 640;
         if (isMob) {
-          camera.position.set(19, 14, 25);
+          camera.position.set(18.0, 13.5, 23.0);
         } else {
-          camera.position.set(16, 12, 20);
+          camera.position.set(16.5, 12.5, 21.0);
         }
-        controls.target.set(0, 4.0, 0);
+        controls.target.set(0, 3.4, 0);
         controls.update();
       };
 
