@@ -1,6 +1,6 @@
 ---
 name: esp32-circuit-architect
-description: Use when designing circuits, wiring sensors, actuators, or power modules with ESP32/microcontrollers, or when verifying and cataloging hardware components
+description: Use when designing circuits, wiring sensors, actuators, or power modules with ESP32/microcontrollers, creating interactive CAD schematics and wiring diagrams (ribbon bus routing, jumper bridge hops, BOM inspector), or verifying electrical pin safety and silicon constraints.
 allowed-tools:
   - bash
   - read
