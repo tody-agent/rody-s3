@@ -41,6 +41,8 @@ Use this skill whenever:
 3. NEVER USE RESERVED FLASH/PSRAM PINS (GPIO 26-37 ON ESP32-S3 N16R8, GPIO 6-11 ON ESP32).
 4. NEVER GUESS PINOUTS WHEN COMPONENT VARIANTS ARE AMBIGUOUS — STOP AND ASK.
 5. NO SCHEMATIC IS COMPLETE WITHOUT JUMPER HOPS, PIN LABELS, AND PASSED AUDITS.
+6. NEVER COLLAPSE MULTIPLE WIRES ONTO A SINGLE MIDPOINT TRUNK — USE CHANNEL RIBBON BUS (PITCH 12-14PX).
+7. NEVER ALLOW AMBIGUOUS WIRE CROSSINGS — ALL CROSSINGS MUST RENDER SEMICIRCULAR JUMPER HOPS (R=6PX).
 ```
 
 ---
@@ -109,22 +111,39 @@ When a new component or module is requested:
 
 ### Phase 3: Interactive Visual Schematic Generation
 
-When generating circuit documentation, NEVER provide flat ASCII text or messy overlapping SVG lines. Build a rich, interactive HTML/SVG canvas based on `templates/wiring_canvas_template.html`.
+When generating circuit documentation, NEVER provide flat ASCII text, messy overlapping SVG lines, or midpoint-collapsed trunks. Build a rich, interactive HTML/SVG canvas based on `templates/wiring_canvas_template.html`.
 
 **Mandatory Visual Design Rules:**
 1. **Clear Pin Labels & Toggle Mode (Chế Độ Hiện Tên Chân Pin):** Display legible monospace text labels right next to every component pin dot (`3V3`, `IO4`, `SDA`, `SCL`, `GND`, `DIN`...). Distinct visual badges for Power (`red`), Ground (`black`), Signal (`blue/cyan/gold`), and Reserved/Forbidden (`gray/red outline`). Provide a prominent top toolbar toggle button `[🏷️ Tên Chân]` (Keyboard Shortcut `L`) so makers can view all pin labels at a glance without hover guessing.
-2. **Dual-Endpoint Interactive Callouts (Huy Hiệu 2 Đầu Chân Nối):** When hovering or clicking any wire, immediately spawn floating glowing callout badges (`.endpoint-callout`) attached directly at both endpoints (`📍 [Component A]: [Pin A]` and `📍 [Component B]: [Pin B]`), accompanied by a pulsating neon halo (`.pin-pulse-active`) on both pin dots so users immediately know exactly which two pins to plug.
-3. **Obstacle-Avoidance Wire Routing & Z-Index Overlay (Thuật Giải Né Linh Kiện & Lớp Nổi):** Wires must NEVER cut through or dive behind component cards. All routes must navigate through designated wiring corridors (gutters) around component bounding boxes. Active/hovered wires must be elevated to a top SVG overlay (`#wire-top-overlay`) above all component cards.
-4. **Schematic Jumper Hops (Cầu Nhảy Dây):** When wires cross each other, the vertical wire MUST render an arc bridge (`A 7 7 0 0 1 ...`) jumping over the horizontal wire. Wires only connect when a solid junction dot (`●`) is drawn.
-5. **Distinct Wire Colors per Component:** Prevent visual spaghetti by assigning dedicated color palettes to each peripheral (e.g. Left Servo: Orange/Pink/Brown; Right Servo: Magenta/Crimson/Dark Brown; I2S Mic: Yellow/Green/SkyBlue; I2S Amp: Orange/Purple/Cyan; Touch: Pink/Rose).
-6. **macOS Trackpad & CAD Navigation:**
-   - Two-finger scroll to pan infinitely in all directions.
-   - Two-finger pinch to zoom smoothly anchored at cursor coordinate (`zoomAt(cursorX, cursorY)`).
-   - Spacebar + Drag to pan.
-   - Floating zoom widget with `[-]`, `[ 100% ]`, `[+]`, and `[⛶ Cân Màn]` bounding-box centering.
-7. **Component Inspector & BOM Shopping Guide:**
-   - Click any component to reveal full electrical ratings, pin table, and DOs/DON'Ts.
-   - Top-bar `🛒 BOM Shopping Guide` button displaying exact commercial names, quantities, and 1-click Shopee search keywords.
+2. **Channel Ribbon Bus Routing (Phân Luồng Dây Băng Ribbon - Pitch 12-14px):**
+   - NEVER collapse wires between two components into a single midpoint X (`(from.x + to.x) / 2`). That creates an unreadable clump.
+   - Bundle wires by connected component pairs (`[c1, c2].sort().join('--')`).
+   - **Monotonic Pin Ordering:** Sort pins within each bundle monotonically by destination Y coordinate (`b.to.y - a.to.y`) so parallel wires flow naturally without internal crossing.
+   - Allocate discrete vertical trunks spaced by a pitch of 12-14px: $X_{\text{trunk}} = X_{\text{start}} + \text{idx} \times \text{pitch}$.
+3. **Global Vertical Trunk Conflict Resolver (Bộ Giải Quyết Xung Đột Đường Thân):**
+   - Perform a multi-pass sweep (up to 6 passes) scanning all vertical trunks across different wire bundles.
+   - If two vertical segments share nearly the same X coordinate ($|x_1 - x_2| < 8\text{px}$) and their vertical Y spans overlap by $> 6\text{px}$, push the second trunk outward by $+14\text{px}$ until 0 vertical trunk overlaps remain.
+4. **Directional Semicircular Crossing Bridge Hops (Cầu Nhảy Dây Bán Nguyệt R=6px):**
+   - Wires MUST NEVER cross as ambiguous intersecting lines. Wires only connect when a junction dot (`●`) is present.
+   - Any vertical trunk crossing another wire's horizontal segment must insert a semicircular arch ($R=6\text{px}$):
+     - Downward flow: `L x (cy - 6) A 6 6 0 0 1 x (cy + 6)`
+     - Upward flow: `L x (cy + 6) A 6 6 0 0 0 x (cy - 6)`
+     *(Both bulge outward to +X for clean visual rhythm).*
+5. **Filleted Manhattan Corners (Bo Góc 90° Mềm Mại R=8px):**
+   - Replace harsh 90° corners with smooth quadratic bezier curves ($R=8\text{px}$): `Q c.currX c.currY, c.outX c.outY`.
+6. **Obstacle-Avoidance Wire Routing & Z-Index Overlay (Thuật Giải Né Linh Kiện & Lớp Nổi):**
+   - Wires must NEVER cut through or dive behind component cards. All routes must navigate through designated wiring corridors around component bounding boxes.
+   - Active/hovered wires must be elevated to a top SVG overlay (`#wire-top-overlay`) above all component cards.
+7. **Dual-Endpoint Interactive Callouts (Huy Hiệu 2 Đầu Chân Nối):**
+   - When hovering or clicking any wire, immediately spawn floating glowing callout badges (`.endpoint-callout`) attached directly at both endpoints (`📍 [Component A]: [Pin A]` and `📍 [Component B]: [Pin B]`), accompanied by a pulsating neon halo (`.pin-pulse-active`) on both pin dots so users immediately know exactly which two pins to plug.
+8. **Distinct Wire Colors per Component:** Prevent visual spaghetti by assigning dedicated color palettes to each peripheral (e.g. Left Servo: Orange/Pink/Brown; Right Servo: Magenta/Crimson/Dark Brown; I2S Mic: Yellow/Green/SkyBlue; I2S Amp: Orange/Purple/Cyan; Touch: Pink/Rose).
+9. **Desktop Trackpad CAD Navigation & Mobile Touch Gestures:**
+   - Desktop: Two-finger scroll to pan infinitely; two-finger pinch to zoom anchored at cursor; Spacebar + Drag to pan.
+   - Mobile: 1-Finger drag to pan canvas; 2-Finger pinch to zoom smoothly centered at midpoint; Double-tap to auto-fit (`fitToScreen()`).
+   - Bottom Carousel / Drawer with slide-up sheet on mobile viewports ($\le 768\text{px}$). Touch targets $\ge 44\times 44\text{px}$.
+10. **Component Inspector & BOM Shopping Guide:**
+    - Click any component to reveal full electrical ratings, pin table, and DOs/DON'Ts.
+    - Top-bar `🛒 BOM Shopping Guide` button displaying exact commercial names, quantities, and 1-click Shopee search keywords.
 
 ---
 

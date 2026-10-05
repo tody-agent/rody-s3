@@ -105,6 +105,7 @@ Sau đó mở trình duyệt tại: **`http://localhost:8080`**
 
 ## 📚 Tài Liệu Hướng Dẫn Kỹ Thuật
 
+- 🛠️ [**`docs/FIRMWARE_GUIDE.md`**](docs/FIRMWARE_GUIDE.md): **Cẩm nang Cài đặt, Debug & Xử lý sự cố Firmware** (Toolchain PlatformIO, Unit Test, HIL Test, Exception Decoder, RAM/PSRAM, Troubleshooting Matrix).
 - 📖 [**`docs/HUONG_DAN_SU_DUNG.md`**](docs/HUONG_DAN_SU_DUNG.md): Sổ tay hướng dẫn chi tiết từ A-Z (Lắp ráp, nạp code, hiệu chuẩn động cơ, điều khiển Web, khẩu lệnh giọng nói và chẩn đoán sự cố).
 - 📜 [**`CHANGELOG.md`**](CHANGELOG.md): Nhật ký thay đổi qua các phiên bản (từ v0.1.0 đến v0.2.1-debug).
 - 📄 [`docs/hardware/WIRING.md`](docs/hardware/WIRING.md): Tiêu chuẩn đấu dây đầy đủ v2.0 (BOM chi tiết, bảng chân, phân bổ nguồn).

@@ -7,6 +7,7 @@
 #include "calib.h"
 #include "behaviors.h"
 #include "emotion_gfx.h"
+#include "oled_diag.h"
 #include "audio_player.h"
 #include "voice_control.h"
 #include <Arduino.h>
@@ -355,6 +356,140 @@ static void handleCommand(const String& line) {
       }
     }
   }
+  else if (cmd == "display" || cmd == "screen") {
+    if (tokens.size() < 2) {
+      store::DisplayType cur = store::getDisplayType();
+      Serial.printf("{\"cmd\":\"display\",\"ok\":true,\"current\":%d,\"name\":\"%s\",\"w\":%d,\"h\":%d,\"options\":["
+                    "{\"id\":0,\"name\":\"1.54 ST7789 240x240\"},"
+                    "{\"id\":1,\"name\":\"1.28 GC9A01 240x240 Round\"},"
+                    "{\"id\":2,\"name\":\"1.8 ST7735 160x128\"},"
+                    "{\"id\":3,\"name\":\"0.96 ST7735 160x80 IPS\"},"
+                    "{\"id\":4,\"name\":\"0.96 SSD1306 128x64 OLED\"}]}\n",
+                    (int)cur, store::getDisplayTypeName(cur), emotion_gfx::getWidth(), emotion_gfx::getHeight());
+      Serial.flush();
+      return;
+    }
+    const String& sub = tokens[1];
+    if (sub == "test") {
+      emotion_gfx::testDisplayPattern();
+      Serial.println("{\"cmd\":\"display\",\"ok\":true,\"test\":\"finished\"}");
+      Serial.flush();
+    } else if (sub == "scan") {
+      Serial.printf("# [display] OLED probe: detected=%s, addr=0x%02X, SDA=%d, SCL=%d\n",
+                    store::isOledDetected() ? "YES" : "NO",
+                    store::getOledAddr(), store::getOledSdaPin(), store::getOledSclPin());
+      Serial.printf("{\"cmd\":\"display\",\"ok\":true,\"oled_detected\":%s,\"addr\":\"0x%02X\",\"sda\":%d,\"scl\":%d}\n",
+                    store::isOledDetected() ? "true" : "false",
+                    store::getOledAddr(), store::getOledSdaPin(), store::getOledSclPin());
+      Serial.flush();
+    } else if (sub == "list") {
+      Serial.println("# Available display models:");
+      Serial.println("#  0: 1.54\" ST7789 240x240 (Square - Default)");
+      Serial.println("#  1: 1.28\" GC9A01 240x240 (Round Circular)");
+      Serial.println("#  2: 1.8\"  ST7735  160x128 (Landscape)");
+      Serial.println("#  3: 0.96\" ST7735  160x80  (IPS Mini Landscape)");
+      Serial.println("#  4: 0.96\" SSD1306 128x64  (OLED I2C)");
+      Serial.println("#  5: 0.96\" SSD1306 128x64  (OLED SPI)");
+      Serial.println("{\"cmd\":\"display\",\"ok\":true}");
+      Serial.flush();
+    } else if (sub == "get" || sub == "status" || sub == "info") {
+      store::DisplayType cur = store::getDisplayType();
+      Serial.printf("{\"cmd\":\"display\",\"ok\":true,\"current\":%d,\"name\":\"%s\",\"w\":%d,\"h\":%d}\n",
+                    (int)cur, store::getDisplayTypeName(cur), emotion_gfx::getWidth(), emotion_gfx::getHeight());
+      Serial.flush();
+    } else if (sub == "reset" || sub == "reboot") {
+      if (tokens.size() > 2) {
+        int id = tokens[2].toInt();
+        store::setDisplayType((store::DisplayType)id);
+        emotion_gfx::switchDisplay((store::DisplayType)id);
+      }
+      Serial.println("{\"cmd\":\"display\",\"ok\":true,\"rebooting\":true}");
+      Serial.flush();
+      delay(300);
+      ESP.restart();
+    } else if (sub == "set" && tokens.size() > 2) {
+      int id = tokens[2].toInt();
+      if (id >= 0 && id <= 5) {
+        store::setDisplayType((store::DisplayType)id);
+        emotion_gfx::switchDisplay((store::DisplayType)id);
+        Serial.printf("{\"cmd\":\"display\",\"ok\":true,\"saved\":%d,\"name\":\"%s\",\"msg\":\"Display switched on screen and saved to NVS.\"}\n",
+                      id, store::getDisplayTypeName((store::DisplayType)id));
+        Serial.flush();
+      } else {
+        Serial.println("{\"cmd\":\"display\",\"ok\":false,\"err\":\"invalid_display_id\"}");
+        Serial.flush();
+      }
+    } else if (sub.length() == 1 && isDigit(sub[0])) {
+      int id = sub.toInt();
+      if (id >= 0 && id <= 5) {
+        store::setDisplayType((store::DisplayType)id);
+        emotion_gfx::switchDisplay((store::DisplayType)id);
+        Serial.printf("{\"cmd\":\"display\",\"ok\":true,\"saved\":%d,\"name\":\"%s\",\"msg\":\"Display switched on screen and saved to NVS.\"}\n",
+                      id, store::getDisplayTypeName((store::DisplayType)id));
+        Serial.flush();
+      } else {
+        Serial.println("{\"cmd\":\"display\",\"ok\":false,\"err\":\"invalid_display_id\"}");
+        Serial.flush();
+      }
+    } else {
+      Serial.println("{\"cmd\":\"display\",\"ok\":false,\"err\":\"unknown_subcommand\"}");
+      Serial.flush();
+    }
+  }
+  else if (cmd == "oled") {
+    String sub = (tokens.size() > 1) ? tokens[1] : "test";
+    sub.toLowerCase();
+    if (sub == "test" || sub == "on" || sub == "force" || sub == "light") {
+      auto scan = oled_diag::scanAllCandidatePins();
+      int sda = scan.found ? scan.sdaPin : store::getOledSdaPin();
+      int scl = scan.found ? scan.sclPin : store::getOledSclPin();
+      uint8_t addr = scan.found ? scan.address : store::getOledAddr();
+
+      bool tested = false;
+      const char* bus = "none";
+      if (scan.found) {
+        Serial.printf("# [oled] Executing Hardware Force Light Up on SDA=%d, SCL=%d, Addr=0x%02X...\n", sda, scl, addr);
+        tested = oled_diag::runVisualTest(sda, scl, addr);
+        bus = "i2c";
+        store::setOledConfig(sda, scl, addr);
+        store::setDisplayType(store::DisplayType::SSD1306_096);
+      } else if (oled_diag::spiHeaderConnected()) {
+        Serial.println("# [oled] I2C probe failed. SPI header is live. Sending SSD1306 SPI lamp.");
+        tested = oled_diag::forceSpiPanelOn();
+        bus = "spi";
+        store::setDisplayType(store::DisplayType::SSD1306_096_SPI);
+      } else {
+        Serial.printf("# [oled] No I2C OLED and no SPI header. Probe on SDA=%d SCL=%d.\n", sda, scl);
+        tested = oled_diag::runVisualTest(sda, scl, addr);
+      }
+
+      Serial.printf("{\"cmd\":\"oled\",\"ok\":true,\"found\":%s,\"bus\":\"%s\",\"sda\":%d,\"scl\":%d,\"addr\":\"0x%02X\",\"tested\":%s}\n",
+                    scan.found ? "true" : "false", bus, sda, scl, addr, tested ? "true" : "false");
+      if (!scan.found && strcmp(bus, "spi") != 0) {
+        Serial.print(oled_diag::getPinDiagnosticsReport());
+      }
+      Serial.flush();
+      if (strcmp(bus, "spi") == 0) {
+        delay(800);
+        ESP.restart();
+      }
+    } else if (sub == "scan") {
+      auto scan = oled_diag::scanAllCandidatePins();
+      Serial.printf("{\"cmd\":\"oled_scan\",\"ok\":true,\"found\":%s,\"sda\":%d,\"scl\":%d,\"addr\":\"0x%02X\"}\n",
+                    scan.found ? "true" : "false", scan.sdaPin, scan.sclPin, scan.address);
+      Serial.print(oled_diag::getPinDiagnosticsReport());
+      Serial.flush();
+    } else {
+      Serial.println("{\"cmd\":\"oled\",\"ok\":false,\"err\":\"usage: oled test | scan | on\"}");
+      Serial.flush();
+    }
+  }
+  else if (cmd == "reset" || cmd == "reboot") {
+    Serial.println("{\"cmd\":\"reboot\",\"ok\":true}");
+    Serial.flush();
+    delay(200);
+    ESP.restart();
+  }
   else {
     Serial.printf("{\"cmd\":\"%s\",\"ok\":false,\"err\":\"unknown\"}\n", cmd.c_str());
   }
@@ -362,6 +497,9 @@ static void handleCommand(const String& line) {
 
 void init() {
   Serial.begin(115200);
+#if ARDUINO_USB_CDC_ON_BOOT
+  Serial.setTxTimeoutMs(10);
+#endif
   lineBuffer.reserve(128);
 }
 
@@ -372,6 +510,7 @@ void process() {
       if (lineBuffer.length() > 0) {
         handleCommand(lineBuffer);
         lineBuffer = "";
+        Serial.flush();
       }
     } else {
       if (lineBuffer.length() < 256) {

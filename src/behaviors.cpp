@@ -1,6 +1,7 @@
 #include "behaviors.h"
 #include "../include/pins.h"
 #include "sensors.h"
+#include "imu_sensor.h"
 #include "drive.h"
 #include "emotion_gfx.h"
 #include "audio_player.h"
@@ -11,9 +12,11 @@ namespace behaviors {
 
 static Mode currentMode = Mode::MANUAL;
 static uint32_t lastBehaviorUpdate = 0;
+static bool wasEmergency = false;
 
 void init() {
   currentMode = Mode::MANUAL;
+  wasEmergency = false;
 }
 
 bool setMode(const char* modeStr) {
@@ -50,6 +53,37 @@ void update() {
   uint32_t now = millis();
   if (now - lastBehaviorUpdate < 80) return; // rate limit behavior loop to ~12Hz
   lastBehaviorUpdate = now;
+
+  // IMU Motion Intelligence & Tilt Protection
+  if (sensors::isEmergencyStop()) {
+    drive::stop();
+    wasEmergency = true;
+    if (sensors::isBellyUp()) {
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::DIZZY);
+    } else {
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::OBSTACLE);
+    }
+    return;
+  } else if (wasEmergency) {
+    wasEmergency = false;
+    audio_player::playSfx(audio_player::SoundEffect::HAPPY_CHIRP);
+    emotion_gfx::setEmotion(emotion_gfx::Emotion::HAPPY);
+  }
+
+  // Interactive gestures: Shaking / Knocking
+  if (imu_sensor::isAvailable()) {
+    const auto& imuSt = imu_sensor::getState();
+    if (imuSt.isShaking) {
+      drive::stop();
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::DIZZY);
+      audio_player::playSfx(audio_player::SoundEffect::OBSTACLE_ALARM);
+      return;
+    }
+    if (imuSt.isKnocked) {
+      emotion_gfx::setEmotion(emotion_gfx::Emotion::OBSTACLE);
+      imu_sensor::clearTransientFlags();
+    }
+  }
 
   if (currentMode == Mode::AVOID) {
     float dist = sensors::measureDistanceCmOnce();

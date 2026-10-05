@@ -374,7 +374,9 @@
       position: absolute;
       pointer-events: auto;
       cursor: grab;
+      touch-action: none;
       user-select: none;
+      -webkit-user-select: none;
       transition: transform 0.15s, box-shadow 0.15s;
     }
     .component-card:hover {
@@ -1145,12 +1147,20 @@
         padding: 0 10px;
         gap: 6px;
       }
+      .title-group {
+        min-width: 0;
+        flex: 1 1 auto;
+        overflow: hidden;
+      }
       .badge {
-        font-size: 9.5px;
+        font-size: 9px;
         padding: 2px 6px;
       }
       h1 {
         font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .sub-title {
         display: none !important;
@@ -1158,21 +1168,37 @@
       .btn-lbl {
         display: none !important;
       }
+      .toolbar-tools {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
       .tool-btn {
         padding: 6px;
+        min-width: 32px;
+        min-height: 32px;
       }
       .action-btn {
-        padding: 5px 8px;
+        padding: 6px 8px;
         font-size: 11.5px;
+        min-width: 32px;
+        min-height: 32px;
       }
 
       #subsystem-bar {
         padding: 0 8px;
         gap: 6px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      #subsystem-bar::-webkit-scrollbar {
+        display: none;
       }
       .filter-chip {
         font-size: 11px;
         padding: 4px 10px;
+        min-height: 30px;
       }
 
       /* Inspector Drawer: Transform to Mobile Bottom Sheet */
@@ -1195,6 +1221,12 @@
       }
       .sheet-drag-handle {
         display: block;
+        width: 44px;
+        height: 5px;
+        background: var(--border-light);
+        border-radius: 3px;
+        margin: 10px auto 4px;
+        cursor: pointer;
       }
       .drawer-header {
         padding: 8px 16px 12px;
@@ -1209,6 +1241,10 @@
         left: 10px;
         max-width: calc(100vw - 165px);
         padding: 3px 8px;
+        scrollbar-width: none;
+      }
+      #quick-jump-bar::-webkit-scrollbar {
+        display: none;
       }
       #nav-controls {
         bottom: 12px;
@@ -1252,6 +1288,49 @@
         padding: 12px;
       }
     }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 0 6px;
+        gap: 4px;
+      }
+      .badge {
+        display: none;
+      }
+      h1 {
+        font-size: 12px;
+      }
+      .toolbar-tools {
+        gap: 2px;
+      }
+      .tool-btn, .action-btn {
+        padding: 5px;
+        min-width: 30px;
+        min-height: 30px;
+      }
+      #btn-comp-vis .badge {
+        display: none;
+      }
+      #quick-jump-bar {
+        bottom: 10px;
+        left: 8px;
+        max-width: calc(100vw - 145px);
+      }
+      #nav-controls {
+        bottom: 10px;
+        right: 8px;
+        gap: 2px;
+      }
+      .nav-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+      }
+      .zoom-level {
+        min-width: 34px;
+        font-size: 10.5px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1290,7 +1369,7 @@
       <button class="action-btn" id="btn-comp-vis" onclick="openVisModal()" title="Ẩn/Hiện linh kiện theo nhu cầu quan sát">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         <span class="btn-lbl">Linh Kiện</span>
-        <span class="badge" id="vis-counter-badge" style="padding:2px 5px; font-size:9.5px; margin-left:2px; background:#10b981;">17/17</span>
+        <span class="badge whitespace-nowrap shrink-0" id="vis-counter-badge" style="padding:2px 5px; font-size:9.5px; margin-left:2px; background:#10b981;">17/17</span>
       </button>
 
       <button class="action-btn" id="btn-reset-layout" onclick="resetComponentPositions()" title="Khôi phục vị trí mặc định của toàn bộ linh kiện">
@@ -1392,6 +1471,7 @@
   <!-- Mobile Quick Component Jumper Carousel -->
   <div id="quick-jump-bar">
     <span class="jump-title">🧭 Xem nhanh:</span>
+    <button class="jump-chip reset-chip" onclick="resetComponentPositions()" title="Khôi phục vị trí mặc định" style="color:var(--accent); font-weight:700;">↺ Đặt Lại</button>
     <button class="jump-chip" onclick="focusComponent('ttp223')">🐾 Cảm Biến Chạm</button>
     <button class="jump-chip" onclick="focusComponent('mpu6050')">⚖️ Gia Tốc MPU6050</button>
     <button class="jump-chip" onclick="focusComponent('tft_154')">Màn Hình</button>
@@ -1426,7 +1506,7 @@
 
   <!-- Side Drawer / Mobile Bottom Sheet for Component & Wire Inspector -->
   <div id="inspector-drawer">
-    <div class="sheet-drag-handle"></div>
+    <div class="sheet-drag-handle" onclick="closeDrawer()" title="Chạm để đóng"></div>
     <div class="drawer-header">
       <div class="drawer-title" id="drawer-title">Chi Tiết Linh Kiện</div>
       <button class="close-btn" onclick="closeDrawer()">×</button>
@@ -1482,7 +1562,7 @@
           <button class="vis-quick-btn active" onclick="setVisPreset('all')">✓ Hiện Tất Cả (17)</button>
           <button class="vis-quick-btn" onclick="setVisPreset('power_esp')">⚡ Nguồn & ESP32</button>
           <button class="vis-quick-btn" onclick="setVisPreset('drive')">🚗 Động Cơ & PCA</button>
-          <button class="vis-quick-btn" onclick="setVisPreset('media')">🔊 Màn Hình & Âm Thanh</button>
+          <button class="vis-quick-btn" onclick="setVisPreset('media')">🔊 Màn Hình & Loa</button>
           <button class="vis-quick-btn" onclick="setVisPreset('pet')">🐾 Pet (Chạm & IMU)</button>
           <button class="vis-quick-btn" onclick="setVisPreset('none')">✕ Ẩn Toàn Bộ</button>
         </div>
@@ -2329,6 +2409,387 @@
       return w.subsystem === currentFilter;
     }
 
+    // --- Component Movement Detector ---
+    function hasComponentMoved(compId) {
+      const c = components[compId];
+      if (!c || typeof c.defaultX !== 'number') return false;
+      return Math.abs(c.x - c.defaultX) > 6 || Math.abs(c.y - c.defaultY) > 6;
+    }
+
+    // --- Curated Perimeter Bypass Routes (for bottom power loops when in default layout) ---
+    function getSpecialBypassWaypoints(from, to, wire) {
+      const fromMoved = from.comp && hasComponentMoved(from.comp.id);
+      const toMoved = to.comp && hasComponentMoved(to.comp.id);
+      if (fromMoved || toMoved) return null;
+
+      if (wire.id === 'w_diode_esp') {
+        return [
+          { x: from.x, y: from.y },
+          { x: 1350, y: from.y },
+          { x: 1350, y: 1210 },
+          { x: 700, y: 1210 },
+          { x: 700, y: to.y },
+          { x: to.x, y: to.y }
+        ];
+      }
+      if (wire.id === 'w_boost_pca_v') {
+        return [
+          { x: from.x, y: from.y },
+          { x: 1115, y: from.y },
+          { x: 1115, y: 1005 },
+          { x: 1345, y: 1005 },
+          { x: 1345, y: 410 },
+          { x: to.x, y: 410 },
+          { x: to.x, y: to.y }
+        ];
+      }
+      if (wire.id === 'w_boost_pca_gnd') {
+        return [
+          { x: from.x, y: from.y },
+          { x: 1125, y: from.y },
+          { x: 1125, y: 995 },
+          { x: 1355, y: 995 },
+          { x: 1355, y: 400 },
+          { x: to.x, y: 400 },
+          { x: to.x, y: to.y }
+        ];
+      }
+      if (wire.id === 'w_boost_amp_v') {
+        return [
+          { x: from.x, y: from.y },
+          { x: 1080, y: 1005 },
+          { x: 700, y: 1005 },
+          { x: 700, y: to.y },
+          { x: to.x, y: to.y }
+        ];
+      }
+      if (wire.id === 'w_tp_gnd') {
+        return [
+          { x: from.x, y: from.y },
+          { x: from.x + 20, y: from.y },
+          { x: from.x + 20, y: 1205 },
+          { x: to.x - 20, y: 1205 },
+          { x: to.x - 20, y: to.y },
+          { x: to.x, y: to.y }
+        ];
+      }
+      if (wire.id === 'w_boost_esp_gnd') {
+        return [
+          { x: from.x, y: from.y },
+          { x: 1080, y: 1210 },
+          { x: 690, y: 1210 },
+          { x: 690, y: to.y },
+          { x: to.x, y: to.y }
+        ];
+      }
+      return null;
+    }
+
+    // --- Dynamic Pin Direction & Organic Router ---
+    function getSideVector(side) {
+      switch (side) {
+        case 'left': return { x: -1, y: 0 };
+        case 'right': return { x: 1, y: 0 };
+        case 'top': return { x: 0, y: -1 };
+        case 'bottom': return { x: 0, y: 1 };
+        default: return { x: 0, y: 0 };
+      }
+    }
+
+    // --- Channel Bus Ribbon Waypoint Calculator & Conflict Resolver ---
+    function computeAllWireWaypoints(activeWires) {
+      const routes = [];
+      const bundles = new Map();
+
+      activeWires.forEach(w => {
+        const from = getPinPos(w.from);
+        const to = getPinPos(w.to);
+        if (!from || !to) return;
+
+        const bypass = getSpecialBypassWaypoints(from, to, w);
+        if (bypass) {
+          routes.push({ wireId: w.id, wire: w, from, to, pts: bypass });
+          return;
+        }
+
+        const c1 = from.comp.id;
+        const c2 = to.comp.id;
+        const bundleKey = (c1 === c2) ? `${c1}--self` : [c1, c2].sort().join('--');
+        if (!bundles.has(bundleKey)) bundles.set(bundleKey, []);
+        bundles.get(bundleKey).push({ wire: w, from, to });
+      });
+
+      bundles.forEach((bundleItems, bundleKey) => {
+        if (bundleKey.endsWith('--self')) {
+          bundleItems.forEach((item, idx) => {
+            const vFrom = getSideVector(item.from.pin.side || 'right');
+            const stub = 24 + idx * 12;
+            const pts = [
+              { x: item.from.x, y: item.from.y },
+              { x: item.from.x + vFrom.x * stub, y: item.from.y },
+              { x: item.to.x + vFrom.x * stub, y: item.to.y },
+              { x: item.to.x, y: item.to.y }
+            ];
+            routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
+          });
+          return;
+        }
+
+        const item0 = bundleItems[0];
+        const dx = Math.abs(item0.to.x - item0.from.x);
+        const dy = Math.abs(item0.to.y - item0.from.y);
+
+        if (dx >= dy) {
+          // Horizontal Corridor (Vertical Trunks with Parallel Lanes)
+          const compLeftId = (item0.from.x < item0.to.x) ? item0.from.comp.id : item0.to.comp.id;
+
+          // Order wires to prevent crossing lines
+          bundleItems.sort((a, b) => {
+            const aPtR = (a.from.comp.id === compLeftId) ? a.to : a.from;
+            const bPtR = (b.from.comp.id === compLeftId) ? b.to : b.from;
+            return aPtR.y - bPtR.y;
+          });
+
+          let leftBound = -Infinity;
+          let rightBound = Infinity;
+          bundleItems.forEach(item => {
+            const ptL = (item.from.comp.id === compLeftId) ? item.from : item.to;
+            const ptR = (item.from.comp.id === compLeftId) ? item.to : item.from;
+            leftBound = Math.max(leftBound, ptL.x + 20);
+            rightBound = Math.min(rightBound, ptR.x - 20);
+          });
+
+          const N = bundleItems.length;
+          let corridorWidth = rightBound - leftBound;
+          let pitch = 14;
+          if (corridorWidth > 20) {
+            pitch = Math.min(14, Math.max(8, (corridorWidth - 24) / Math.max(N, 1)));
+          }
+          const totalSpan = (N - 1) * pitch;
+          const midCorridor = (leftBound + rightBound) / 2;
+          const startX = midCorridor - totalSpan / 2;
+
+          bundleItems.forEach((item, idx) => {
+            const trunkX = (corridorWidth > 20)
+              ? (startX + idx * pitch)
+              : (midCorridor + (idx - (N - 1) / 2) * 12);
+
+            const pts = [
+              { x: item.from.x, y: item.from.y },
+              { x: trunkX, y: item.from.y },
+              { x: trunkX, y: item.to.y },
+              { x: item.to.x, y: item.to.y }
+            ];
+            routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
+          });
+        } else {
+          // Vertical Corridor (Horizontal Trunks)
+          const N = bundleItems.length;
+          const pitch = 12;
+          const totalSpan = (N - 1) * pitch;
+          const midY = (item0.from.y + item0.to.y) / 2;
+          const startY = midY - totalSpan / 2;
+
+          bundleItems.forEach((item, idx) => {
+            const trunkY = startY + idx * pitch;
+            const pts = [
+              { x: item.from.x, y: item.from.y },
+              { x: item.from.x, y: trunkY },
+              { x: item.to.x, y: trunkY },
+              { x: item.to.x, y: item.to.y }
+            ];
+            routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
+          });
+        }
+      });
+
+      // Global Vertical Trunk Conflict Resolver (Eliminates all overlapping vertical lines)
+      const vTrunks = [];
+      routes.forEach(r => {
+        for (let i = 0; i < r.pts.length - 1; i++) {
+          const p1 = r.pts[i], p2 = r.pts[i + 1];
+          if (Math.abs(p1.x - p2.x) < 0.5 && Math.abs(p1.y - p2.y) > 10) {
+            vTrunks.push({
+              wireId: r.wireId,
+              route: r,
+              idx: i,
+              x: p1.x,
+              yMin: Math.min(p1.y, p2.y),
+              yMax: Math.max(p1.y, p2.y)
+            });
+          }
+        }
+      });
+
+      for (let pass = 0; pass < 6; pass++) {
+        vTrunks.sort((a, b) => a.x - b.x || a.yMin - b.yMin);
+        let changed = false;
+        for (let i = 0; i < vTrunks.length; i++) {
+          for (let j = i + 1; j < vTrunks.length; j++) {
+            const t1 = vTrunks[i], t2 = vTrunks[j];
+            if (Math.abs(t1.x - t2.x) > 8) break;
+            if (t1.wireId === t2.wireId) continue;
+            const ov = Math.min(t1.yMax, t2.yMax) - Math.max(t1.yMin, t2.yMin);
+            if (ov > 6) {
+              t2.x += 14;
+              t2.route.pts[t2.idx].x = t2.x;
+              t2.route.pts[t2.idx + 1].x = t2.x;
+              changed = true;
+            }
+          }
+        }
+        if (!changed) break;
+      }
+
+      // Simplify collinear redundant points
+      routes.forEach(r => {
+        const clean = [];
+        for (let i = 0; i < r.pts.length; i++) {
+          const p = r.pts[i];
+          if (clean.length >= 2) {
+            const pPrev1 = clean[clean.length - 1];
+            const pPrev2 = clean[clean.length - 2];
+            // If colinear horizontal
+            if (Math.abs(pPrev2.y - pPrev1.y) < 0.5 && Math.abs(pPrev1.y - p.y) < 0.5) {
+              clean.pop();
+            } else if (Math.abs(pPrev2.x - pPrev1.x) < 0.5 && Math.abs(pPrev1.x - p.x) < 0.5) {
+              clean.pop();
+            }
+          }
+          if (clean.length === 0 || Math.hypot(p.x - clean[clean.length - 1].x, p.y - clean[clean.length - 1].y) > 1.5) {
+            clean.push(p);
+          }
+        }
+        r.pts = clean;
+      });
+
+      return routes;
+    }
+
+    // --- Filleted Manhattan Orthogonal Router with Semicircular Crossing Hops ---
+    function buildFilletedPathWithHops(pts, horizontalSegments, wireId, radius = 8, hopR = 6) {
+      if (!pts || pts.length < 2) return '';
+      if (pts.length === 2) return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`;
+
+      const corners = [];
+      for (let i = 1; i < pts.length - 1; i++) {
+        const prev = pts[i - 1];
+        const curr = pts[i];
+        const next = pts[i + 1];
+
+        const dInX = curr.x - prev.x;
+        const dInY = curr.y - prev.y;
+        const lenIn = Math.hypot(dInX, dInY);
+
+        const dOutX = next.x - curr.x;
+        const dOutY = next.y - curr.y;
+        const lenOut = Math.hypot(dOutX, dOutY);
+
+        const cross = dInX * dOutY - dInY * dOutX;
+        if (Math.abs(cross) < 1e-4 || lenIn < 2 || lenOut < 2) {
+          corners.push(null);
+        } else {
+          const r = Math.min(radius, lenIn / 2, lenOut / 2);
+          const inX = curr.x - (dInX / lenIn) * r;
+          const inY = curr.y - (dInY / lenIn) * r;
+          const outX = curr.x + (dOutX / lenOut) * r;
+          const outY = curr.y + (dOutY / lenOut) * r;
+          corners.push({ r, inX, inY, outX, outY, currX: curr.x, currY: curr.y });
+        }
+      }
+
+      let d = `M ${pts[0].x} ${pts[0].y}`;
+
+      for (let i = 0; i < pts.length - 1; i++) {
+        const pStart = pts[i];
+        const pEnd = pts[i + 1];
+
+        const startX = (i === 0 || !corners[i - 1]) ? pStart.x : corners[i - 1].outX;
+        const startY = (i === 0 || !corners[i - 1]) ? pStart.y : corners[i - 1].outY;
+
+        const endX = (i === pts.length - 2 || !corners[i]) ? pEnd.x : corners[i].inX;
+        const endY = (i === pts.length - 2 || !corners[i]) ? pEnd.y : corners[i].inY;
+
+        const isVert = Math.abs(pStart.x - pEnd.x) < 0.5;
+
+        if (!isVert) {
+          d += ` L ${endX} ${endY}`;
+        } else {
+          const x = pStart.x;
+          const yMin = Math.min(startY, endY);
+          const yMax = Math.max(startY, endY);
+          const goingDown = endY > startY;
+
+          const crossings = [];
+          if (horizontalSegments && horizontalSegments.length) {
+            for (const h of horizontalSegments) {
+              if (h.wireId === wireId) continue;
+              if (x > h.xMin + 5 && x < h.xMax - 5) {
+                if (h.y > yMin + hopR + 2 && h.y < yMax - hopR - 2) {
+                  crossings.push(h.y);
+                }
+              }
+            }
+          }
+
+          if (goingDown) crossings.sort((a, b) => a - b);
+          else crossings.sort((a, b) => b - a);
+
+          const cleanCrossings = [];
+          for (const cy of crossings) {
+            if (!cleanCrossings.length || Math.abs(cy - cleanCrossings[cleanCrossings.length - 1]) >= hopR * 2 + 2) {
+              cleanCrossings.push(cy);
+            }
+          }
+
+          cleanCrossings.forEach(cy => {
+            if (goingDown) {
+              d += ` L ${x} ${cy - hopR}`;
+              d += ` A ${hopR} ${hopR} 0 0 1 ${x} ${cy + hopR}`;
+            } else {
+              d += ` L ${x} ${cy + hopR}`;
+              d += ` A ${hopR} ${hopR} 0 0 0 ${x} ${cy - hopR}`;
+            }
+          });
+
+          d += ` L ${endX} ${endY}`;
+        }
+
+        if (i < pts.length - 2 && corners[i]) {
+          const c = corners[i];
+          d += ` Q ${c.currX} ${c.currY}, ${c.outX} ${c.outY}`;
+        }
+      }
+
+      return d;
+    }
+
+    // Smooth Directional Cubic Bezier Curve (for organic curved mode)
+    function buildCurvedPath(from, to, wire = {}) {
+      const vFrom = getSideVector(from.pin ? from.pin.side : 'right');
+      const vTo = getSideVector(to.pin ? to.pin.side : 'left');
+
+      let vfX = vFrom.x, vfY = vFrom.y;
+      let vtX = vTo.x, vtY = vTo.y;
+      if (vfX === 0 && vfY === 0) vfX = (from.x < to.x) ? 1 : -1;
+      if (vtX === 0 && vtY === 0) vtX = (to.x < from.x) ? 1 : -1;
+
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.hypot(dx, dy);
+      const tension = Math.min(Math.max(dist * 0.45, 45), 240);
+
+      const cx1 = from.x + vfX * tension;
+      const cy1 = from.y + vfY * tension;
+      const cx2 = to.x + vtX * tension;
+      const cy2 = to.y + vtY * tension;
+
+      return `M ${from.x} ${from.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${to.x} ${to.y}`;
+    }
+
+    // Cached paths for high-performance hover & top-overlay rendering
+    const computedWirePaths = new Map();
+
     // --- Dynamic Wire Rendering ---
     function renderWires() {
       const svg = document.getElementById('wire-canvas');
@@ -2340,25 +2801,62 @@
           </filter>
         </defs>`;
 
-      wires.forEach(w => {
+      computedWirePaths.clear();
+
+      // Filter visible wires
+      const activeWires = wires.filter(w => {
         const from = getPinPos(w.from);
         const to = getPinPos(w.to);
-        if (!from || !to) return;
-        if (from.comp.hidden || to.comp.hidden) return;
+        if (!from || !to) return false;
+        if (from.comp.hidden || to.comp.hidden) return false;
+        return true;
+      });
+
+      if (wireMode === 'orthogonal') {
+        const routes = computeAllWireWaypoints(activeWires);
+
+        // Collect all horizontal segments for crossing detection
+        const hSegs = [];
+        routes.forEach(r => {
+          for (let i = 0; i < r.pts.length - 1; i++) {
+            const p1 = r.pts[i], p2 = r.pts[i + 1];
+            if (Math.abs(p1.y - p2.y) < 0.5 && Math.abs(p1.x - p2.x) > 4) {
+              hSegs.push({
+                wireId: r.wireId,
+                y: p1.y,
+                xMin: Math.min(p1.x, p2.x),
+                xMax: Math.max(p1.x, p2.x)
+              });
+            }
+          }
+        });
+
+        routes.forEach(r => {
+          const pathData = buildFilletedPathWithHops(r.pts, hSegs, r.wireId, 8, 6);
+          computedWirePaths.set(r.wireId, pathData);
+        });
+      } else if (wireMode === 'curved') {
+        activeWires.forEach(w => {
+          const from = getPinPos(w.from);
+          const to = getPinPos(w.to);
+          computedWirePaths.set(w.id, buildCurvedPath(from, to, w));
+        });
+      } else {
+        activeWires.forEach(w => {
+          const from = getPinPos(w.from);
+          const to = getPinPos(w.to);
+          computedWirePaths.set(w.id, `M ${from.x} ${from.y} L ${to.x} ${to.y}`);
+        });
+      }
+
+      activeWires.forEach(w => {
+        const pathData = computedWirePaths.get(w.id);
+        if (!pathData) return;
 
         const active = isWireActive(w);
         const isSelected = (selectedWireId === w.id);
         const isNetHighlighted = selectedNetId && (w.net === selectedNetId);
         const isDimmed = selectedNetId ? !isNetHighlighted : (!active && !isSelected);
-
-        let pathData = '';
-        if (wireMode === 'orthogonal') {
-          pathData = buildOrthogonalPath(from, to, w);
-        } else if (wireMode === 'curved') {
-          pathData = buildCurvedPath(from, to, w);
-        } else {
-          pathData = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
-        }
 
         // 1. Glow Layer for Selection / Net Highlight
         if (isSelected || isNetHighlighted) {
@@ -2405,126 +2903,22 @@
       });
     }
 
-    // --- Dynamic Pin Direction & Organic Router ---
-    function getSideVector(side) {
-      switch (side) {
-        case 'left': return { x: -1, y: 0 };
-        case 'right': return { x: 1, y: 0 };
-        case 'top': return { x: 0, y: -1 };
-        case 'bottom': return { x: 0, y: 1 };
-        default: return { x: 0, y: 0 };
-      }
-    }
-
-    // Smooth Directional Cubic Bezier Curve (No kinks, no loops, fully dynamic)
-    function buildCurvedPath(from, to, wire = {}) {
-      const vFrom = getSideVector(from.pin ? from.pin.side : 'right');
-      const vTo = getSideVector(to.pin ? to.pin.side : 'left');
-
-      let vfX = vFrom.x, vfY = vFrom.y;
-      let vtX = vTo.x, vtY = vTo.y;
-      if (vfX === 0 && vfY === 0) vfX = (from.x < to.x) ? 1 : -1;
-      if (vtX === 0 && vtY === 0) vtX = (to.x < from.x) ? 1 : -1;
-
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-      const dist = Math.hypot(dx, dy);
-      const tension = Math.min(Math.max(dist * 0.45, 45), 240);
-
-      const cx1 = from.x + vfX * tension;
-      const cy1 = from.y + vfY * tension;
-      const cx2 = to.x + vtX * tension;
-      const cy2 = to.y + vtY * tension;
-
-      return `M ${from.x} ${from.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${to.x} ${to.y}`;
-    }
-
-    // Elegant Filleted Manhattan Orthogonal Router
-    function buildOrthogonalPath(from, to, wire = {}) {
-      const vFrom = getSideVector(from.pin ? from.pin.side : 'right');
-      const vTo = getSideVector(to.pin ? to.pin.side : 'left');
-
-      let vfX = vFrom.x, vfY = vFrom.y;
-      let vtX = vTo.x, vtY = vTo.y;
-      if (vfX === 0 && vfY === 0) vfX = (from.x < to.x) ? 1 : -1;
-      if (vtX === 0 && vtY === 0) vtX = (to.x < from.x) ? 1 : -1;
-
-      const stub = 24;
-      const p1 = { x: from.x, y: from.y };
-      const p2 = { x: from.x + vfX * stub, y: from.y + vfY * stub };
-      const p5 = { x: to.x + vtX * stub, y: to.y + vtY * stub };
-      const p6 = { x: to.x, y: to.y };
-
-      const pts = [p1, p2];
-
-      if (vfX !== 0 && vtX !== 0) {
-        if ((vfX > 0 && vtX < 0 && p2.x < p5.x) || (vfX < 0 && vtX > 0 && p2.x > p5.x)) {
-          const midX = (p2.x + p5.x) / 2;
-          pts.push({ x: midX, y: p2.y });
-          pts.push({ x: midX, y: p5.y });
-        } else {
-          let midX = (vfX > 0) ? Math.max(p2.x, p5.x) + 30 : Math.min(p2.x, p5.x) - 30;
-          pts.push({ x: midX, y: p2.y });
-          pts.push({ x: midX, y: p5.y });
+    let activeDragPointerId = null;
+    let wireRenderFrame = null;
+    function scheduleWireRender() {
+      if (wireRenderFrame) return;
+      wireRenderFrame = requestAnimationFrame(() => {
+        wireRenderFrame = null;
+        renderWires();
+        if (selectedWireId) {
+          const selWire = wires.find(x => x.id === selectedWireId);
+          if (selWire) {
+            showEndpointCallouts(selWire);
+            const pathData = computedWirePaths.get(selWire.id);
+            if (pathData) renderTopOverlayWire(selWire, pathData);
+          }
         }
-      } else if (vfY !== 0 && vtY !== 0) {
-        const midY = (p2.y + p5.y) / 2;
-        pts.push({ x: p2.x, y: midY });
-        pts.push({ x: p5.x, y: midY });
-      } else if (vfX !== 0) {
-        pts.push({ x: p5.x, y: p2.y });
-      } else {
-        pts.push({ x: p2.x, y: p5.y });
-      }
-
-      pts.push(p5);
-      pts.push(p6);
-
-      const cleanPts = [];
-      for (let i = 0; i < pts.length; i++) {
-        if (i === 0 || Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y) > 2) {
-          cleanPts.push(pts[i]);
-        }
-      }
-
-      return createFilletedPath(cleanPts, 8);
-    }
-
-    // Creates smooth filleted circular arcs (radius 8px) at every 90° turn
-    function createFilletedPath(pts, radius = 8) {
-      if (pts.length < 2) return '';
-      if (pts.length === 2) return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`;
-
-      let d = `M ${pts[0].x} ${pts[0].y}`;
-      for (let i = 1; i < pts.length - 1; i++) {
-        const pPrev = pts[i - 1];
-        const pCurr = pts[i];
-        const pNext = pts[i + 1];
-
-        const dInX = pCurr.x - pPrev.x;
-        const dInY = pCurr.y - pPrev.y;
-        const lenIn = Math.hypot(dInX, dInY);
-
-        const dOutX = pNext.x - pCurr.x;
-        const dOutY = pNext.y - pCurr.y;
-        const lenOut = Math.hypot(dOutX, dOutY);
-
-        const cross = dInX * dOutY - dInY * dOutX;
-        if (Math.abs(cross) < 1e-4 || lenIn < 2 || lenOut < 2) {
-          d += ` L ${pCurr.x} ${pCurr.y}`;
-          continue;
-        }
-
-        const r = Math.min(radius, lenIn / 2, lenOut / 2);
-        const entryX = pCurr.x - (dInX / lenIn) * r;
-        const entryY = pCurr.y - (dInY / lenIn) * r;
-        const exitX = pCurr.x + (dOutX / lenOut) * r;
-        const exitY = pCurr.y + (dOutY / lenOut) * r;
-
-        d += ` L ${entryX} ${entryY} Q ${pCurr.x} ${pCurr.y}, ${exitX} ${exitY}`;
-      }
-      d += ` L ${pts[pts.length - 1].x} ${pts[pts.length - 1].y}`;
-      return d;
+      });
     }
 
     // --- HTML Components & Pin Badges Placement ---
@@ -2543,25 +2937,105 @@
         card.style.top = `${comp.y}px`;
         card.style.width = `${comp.w}px`;
         card.style.height = `${comp.h}px`;
+        card.style.touchAction = 'none';
 
         // Card header bar with drag hint and quick hide button
         const headerBar = `
           <div class="comp-header-bar">
-            <span class="comp-drag-hint" title="Kéo thả để dời vị trí linh kiện">⋮⋮ Kéo</span>
+            <span class="comp-drag-hint" title="Kéo thả để dời vị trí linh kiện">⋮⋮ Di chuyển</span>
             <button class="comp-vis-btn" onclick="toggleComponentVisibility('${comp.id}', event)" title="Ẩn linh kiện này">👁️</button>
           </div>
         `;
         card.innerHTML = headerBar + getComponentSvg(comp);
 
-        card.onmousedown = (e) => startCompDrag(e, comp.id);
-        card.ontouchstart = (e) => startCompDrag(e, comp.id);
+        card.onpointerdown = (e) => {
+          if (e.target.closest('.pin-badge') || e.target.closest('.comp-vis-btn') || e.target.closest('button')) return;
+          if (e.button !== undefined && e.button !== 0) return;
+          if (e.isPrimary === false) return;
 
-        card.onclick = (e) => {
+          activeDragPointerId = e.pointerId;
+          draggedCompId = comp.id;
+          compDragStartPos = {
+            mouseX: e.clientX,
+            mouseY: e.clientY,
+            compX: comp.x,
+            compY: comp.y
+          };
+          hasDraggedComp = false;
+
+          try {
+            card.setPointerCapture(e.pointerId);
+          } catch (_) {}
+
           e.stopPropagation();
-          if (hasDraggedComp) return;
-          selectComponent(comp.id);
         };
-        card.onmouseenter = (e) => showCompTooltip(e, comp);
+
+        card.onpointermove = (e) => {
+          if (draggedCompId !== comp.id || e.pointerId !== activeDragPointerId) return;
+
+          const dx = (e.clientX - compDragStartPos.mouseX) / zoom;
+          const dy = (e.clientY - compDragStartPos.mouseY) / zoom;
+
+          if (!hasDraggedComp && Math.hypot(dx, dy) > 4) {
+            hasDraggedComp = true;
+            card.classList.add('is-dragging');
+          }
+
+          if (hasDraggedComp) {
+            comp.x = Math.round(compDragStartPos.compX + dx);
+            comp.y = Math.round(compDragStartPos.compY + dy);
+
+            comp.x = Math.max(10, Math.min(3100 - comp.w, comp.x));
+            comp.y = Math.max(10, Math.min(1900 - comp.h, comp.y));
+
+            card.style.left = `${comp.x}px`;
+            card.style.top = `${comp.y}px`;
+
+            comp.pins.forEach(pin => {
+              const badge = document.getElementById(`pin-${pin.id}`);
+              if (badge) {
+                badge.style.left = `${comp.x + pin.x}px`;
+                badge.style.top = `${comp.y + pin.y}px`;
+              }
+              const label = document.getElementById(`label-${pin.id}`);
+              if (label) {
+                label.style.left = `${comp.x + pin.x}px`;
+                label.style.top = `${comp.y + pin.y}px`;
+              }
+            });
+
+            scheduleWireRender();
+          }
+        };
+
+        const handlePointerEnd = (e) => {
+          if (draggedCompId !== comp.id || e.pointerId !== activeDragPointerId) return;
+
+          try {
+            card.releasePointerCapture(e.pointerId);
+          } catch (_) {}
+
+          card.classList.remove('is-dragging');
+          activeDragPointerId = null;
+
+          if (hasDraggedComp) {
+            saveComponentPositions();
+            scheduleWireRender();
+            showToast(`✓ Đã lưu vị trí: ${comp.title || comp.id}`);
+          } else {
+            selectComponent(comp.id);
+          }
+
+          draggedCompId = null;
+          setTimeout(() => { hasDraggedComp = false; }, 60);
+        };
+
+        card.onpointerup = handlePointerEnd;
+        card.onpointercancel = handlePointerEnd;
+
+        card.onmouseenter = (e) => {
+          if (!hasDraggedComp) showCompTooltip(e, comp);
+        };
         card.onmousemove = moveTooltip;
         card.onmouseleave = hideTooltip;
 
@@ -2571,7 +3045,6 @@
         comp.pins.forEach(pin => {
           const isPinUsed = wires.some(w => w.from === pin.id || w.to === pin.id);
 
-          // Pin circular dot
           const badge = document.createElement('div');
           badge.id = `pin-${pin.id}`;
           badge.className = `pin-badge role-${pin.role} ${isPinUsed ? 'pin-used' : 'pin-unused'} whitespace-nowrap shrink-0`;
@@ -2588,7 +3061,6 @@
 
           container.appendChild(badge);
 
-          // Pin readable text label
           const label = document.createElement('div');
           label.id = `label-${pin.id}`;
           label.className = `pin-label-text side-${pin.side || 'left'} ${isPinUsed ? 'used' : 'unused'} ${pin.role}`;
@@ -2600,82 +3072,6 @@
       });
 
       updateVisibilityUI();
-    }
-
-    // --- Component Drag & Drop Handlers ---
-    function startCompDrag(e, compId) {
-      if (e.target.closest('.pin-badge') || e.target.closest('.comp-vis-btn')) return;
-      e.stopPropagation();
-      draggedCompId = compId;
-      const comp = components[compId];
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      compDragStartPos = {
-        mouseX: clientX,
-        mouseY: clientY,
-        compX: comp.x,
-        compY: comp.y
-      };
-      hasDraggedComp = false;
-
-      const card = document.getElementById(`comp-${compId}`);
-      if (card) card.classList.add('is-dragging');
-    }
-
-    function onCompDragMove(e) {
-      if (!draggedCompId) return;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const dx = (clientX - compDragStartPos.mouseX) / zoom;
-      const dy = (clientY - compDragStartPos.mouseY) / zoom;
-
-      if (!hasDraggedComp && Math.hypot(dx, dy) > 3) {
-        hasDraggedComp = true;
-      }
-
-      if (hasDraggedComp) {
-        const comp = components[draggedCompId];
-        comp.x = Math.round(compDragStartPos.compX + dx);
-        comp.y = Math.round(compDragStartPos.compY + dy);
-
-        // Move card directly
-        const card = document.getElementById(`comp-${comp.id}`);
-        if (card) {
-          card.style.left = `${comp.x}px`;
-          card.style.top = `${comp.y}px`;
-        }
-
-        // Move pins and labels
-        comp.pins.forEach(pin => {
-          const badge = document.getElementById(`pin-${pin.id}`);
-          if (badge) {
-            badge.style.left = `${comp.x + pin.x}px`;
-            badge.style.top = `${comp.y + pin.y}px`;
-          }
-          const label = document.getElementById(`label-${pin.id}`);
-          if (label) {
-            label.style.left = `${comp.x + pin.x}px`;
-            label.style.top = `${comp.y + pin.y}px`;
-          }
-        });
-
-        // Re-render wires in real-time
-        renderWires();
-      }
-    }
-
-    function endCompDrag() {
-      if (!draggedCompId) return;
-      const card = document.getElementById(`comp-${draggedCompId}`);
-      if (card) card.classList.remove('is-dragging');
-
-      if (hasDraggedComp) {
-        saveComponentPositions();
-        showToast('✓ Đã cập nhật & lưu vị trí linh kiện');
-      }
-
-      draggedCompId = null;
-      setTimeout(() => { hasDraggedComp = false; }, 80);
     }
 
     function saveComponentPositions() {
@@ -3002,23 +3398,18 @@
       } else {
         selectedWireId = wireId;
         selectedCompId = null;
-        const w = wires.find(x => x.id === wireId);
-        if (w) {
-          openWireDrawer(w);
-          showEndpointCallouts(w);
-          const from = getPinPos(w.from);
-          const to = getPinPos(w.to);
-          if (from && to) {
-            let pathData = '';
-            if (wireMode === 'orthogonal') pathData = buildOrthogonalPath(from, to, w);
-            else if (wireMode === 'curved') pathData = buildCurvedPath(from, to, w);
-            else pathData = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
-            renderTopOverlayWire(w, pathData);
-          }
-        }
       }
       renderComponents();
       renderWires();
+      if (selectedWireId) {
+        const w = wires.find(x => x.id === selectedWireId);
+        if (w) {
+          openWireDrawer(w);
+          showEndpointCallouts(w);
+          const pathData = computedWirePaths.get(w.id);
+          if (pathData) renderTopOverlayWire(w, pathData);
+        }
+      }
     }
 
     function highlightPinWires(pinId) {
@@ -3338,13 +3729,23 @@
     function fitView() {
       const vWidth = viewport.clientWidth;
       const vHeight = viewport.clientHeight;
-      const contentWidth = 2100;
-      const contentHeight = 1250;
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      Object.values(components).forEach(c => {
+        if (c.hidden) return;
+        minX = Math.min(minX, c.x);
+        minY = Math.min(minY, c.y);
+        maxX = Math.max(maxX, c.x + c.w);
+        maxY = Math.max(maxY, c.y + c.h);
+      });
+      if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 2100; maxY = 1250; }
+      const pad = 60;
+      const contentWidth = Math.max(800, (maxX - minX) + pad * 2);
+      const contentHeight = Math.max(600, (maxY - minY) + pad * 2);
       const scaleX = vWidth / contentWidth;
       const scaleY = vHeight / contentHeight;
-      zoom = Math.max(0.35, Math.min(scaleX, scaleY) * 0.95);
-      panX = (vWidth - contentWidth * zoom) / 2;
-      panY = (vHeight - contentHeight * zoom) / 2;
+      zoom = Math.max(0.35, Math.min(2.5, Math.min(scaleX, scaleY) * 0.95));
+      panX = (vWidth - (minX + maxX) * zoom) / 2;
+      panY = (vHeight - (minY + maxY) * zoom) / 2;
       updateTransform();
     }
 
@@ -3378,10 +3779,6 @@
     };
 
     window.onmousemove = (e) => {
-      if (draggedCompId) {
-        onCompDragMove(e);
-        return;
-      }
       if (!isDragging) return;
       panX = e.clientX - startX;
       panY = e.clientY - startY;
@@ -3389,9 +3786,6 @@
     };
 
     window.onmouseup = () => {
-      if (draggedCompId) {
-        endCompDrag();
-      }
       isDragging = false;
     };
 
@@ -3429,10 +3823,6 @@
     }, { passive: true });
 
     viewport.addEventListener('touchmove', (e) => {
-      if (draggedCompId) {
-        onCompDragMove(e);
-        return;
-      }
       if (e.touches.length === 1 && isDragging) {
         panX = e.touches[0].clientX - startX;
         panY = e.touches[0].clientY - startY;
@@ -3455,9 +3845,6 @@
     }, { passive: true });
 
     viewport.addEventListener('touchend', (e) => {
-      if (draggedCompId) {
-        endCompDrag();
-      }
       if (e.touches.length === 0) {
         isDragging = false;
         touchStartDist = 0;

@@ -1,4 +1,5 @@
 #include "sensors.h"
+#include "imu_sensor.h"
 #include "../include/pins.h"
 #include "calib.h"
 #include <Arduino.h>
@@ -31,13 +32,17 @@ void init() {
   attachInterruptArg(digitalPinToInterrupt(pins::IR_L), isrTach, (void*)0, CHANGE);
   attachInterruptArg(digitalPinToInterrupt(pins::IR_R), isrTach, (void*)1, CHANGE);
 
-  // Battery ADC
+  // Battery ADC (pull-down floating pin to prevent spurious 15V reading when on USB)
+  pinMode(pins::BAT_ADC, INPUT_PULLDOWN);
   analogReadResolution(12);
 }
 
 float readBatteryVoltage() {
   // ESP32 ADC1 calibration read
   uint32_t mv = analogReadMilliVolts(pins::BAT_ADC);
+  if (mv < 100) {
+    return 0.0f; // Floating or grounded = USB power bypass
+  }
   return (float)mv * BAT_DIV / 1000.0f;
 }
 
@@ -105,6 +110,28 @@ void sampleTach(uint32_t ms, uint32_t& edgesL, uint32_t& edgesR, float& rpmL, fl
   getTachCounts(edgesL, edgesR);
   rpmL = calib::rpmFromEdges(edgesL, ms, TACH_EDGES_PER_REV);
   rpmR = calib::rpmFromEdges(edgesR, ms, TACH_EDGES_PER_REV);
+}
+
+bool isFallen() {
+  if (imu_sensor::isAvailable()) {
+    return imu_sensor::getState().isFallen;
+  }
+  return false;
+}
+
+bool isBellyUp() {
+  if (imu_sensor::isAvailable()) {
+    return imu_sensor::getState().isBellyUp;
+  }
+  return false;
+}
+
+bool isEmergencyStop() {
+  if (imu_sensor::isAvailable()) {
+    const auto& st = imu_sensor::getState();
+    return (st.isBellyUp || st.isFallen || st.isFreefall);
+  }
+  return false;
 }
 
 }

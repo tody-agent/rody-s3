@@ -73,7 +73,7 @@ void playTone(float freqHz, uint32_t durationMs, float volume) {
       if (phase >= 2.0f * (float)M_PI) phase -= 2.0f * (float)M_PI;
     }
     size_t bytesWritten = 0;
-    i2s_write(SPK_I2S_PORT, buffer, n * 2 * sizeof(int16_t), &bytesWritten, portMAX_DELAY);
+    i2s_write(SPK_I2S_PORT, buffer, n * 2 * sizeof(int16_t), &bytesWritten, pdMS_TO_TICKS(50));
     samplesRemaining -= n;
   }
 

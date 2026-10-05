@@ -1,11 +1,19 @@
 #include "web.h"
 #include "drive.h"
 #include "sensors.h"
+#include "imu_sensor.h"
 #include "store.h"
 #include "behaviors.h"
 #include "emotion_gfx.h"
+#include "oled_diag.h"
 #include "audio_player.h"
+#include "../include/debug_log.h"
+#include "../include/display_policy.h"
+#include "../include/pin_catalog.h"
+#include "../include/pins.h"
+#include "../include/wheel_cmd.h"
 #include <Arduino.h>
+#include <string.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Wire.h>
@@ -16,6 +24,8 @@ namespace web {
 static WebServer server(80);
 static uint32_t lastClientPing = 0;
 static bool webControlActive = false;
+static bool rebootPending = false;
+static uint32_t rebootAt = 0;
 
 static const char INDEX_HTML[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -106,7 +116,7 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      gap: 8px;
     }
 
     .brand-wrap {
@@ -186,6 +196,87 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
       border: 1px solid var(--border);
     }
     .badge.neutral .status-dot { background: var(--fg-subtle); }
+
+    .badge.info {
+      background: var(--primary-subtle);
+      color: var(--primary-text);
+      border: 1px solid var(--primary);
+    }
+    .badge.info .status-dot { background: var(--primary); }
+
+    /* Display rows: one column, equal height */
+    .display-select-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .display-option-card {
+      box-sizing: border-box;
+      height: 76px;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+      user-select: none;
+    }
+    .display-option-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-subtle);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+    .disp-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 18px;
+    }
+    .disp-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--fg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .disp-now {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--success-text);
+      background: var(--success-subtle);
+      border-radius: 999px;
+      padding: 1px 8px;
+    }
+    .disp-sub {
+      font-size: 11px;
+      color: var(--fg-muted);
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .disp-desc {
+      font-size: 11.5px;
+      color: var(--fg-muted);
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .action-line {
+      min-height: 20px;
+      margin: 10px 0 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--fg-muted);
+    }
+    .action-line.ok { color: var(--success-text); }
+    .action-line.err { color: var(--danger-text); font-weight: 600; }
 
     /* Telemetry Horizontal Ribbon */
     .telemetry-bar {
@@ -346,6 +437,8 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
       font-weight: 700;
       color: var(--fg);
       font-variant-numeric: tabular-nums;
+      text-align: right;
+      max-width: 64%;
     }
 
     /* Action Buttons & Grid */
@@ -368,6 +461,10 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
     .btn:active {
       transform: scale(0.98);
       background: var(--surface-active);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: default;
     }
     .btn-primary {
       background: var(--primary);
@@ -397,8 +494,15 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
     }
     .btn-grid-2 {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+    }
+    #card-parts .btn-grid-2 > .btn,
+    #card-display-settings .btn-grid-2 > .btn {
+      width: 100%;
+      height: 44px;
+      min-height: 44px;
+      padding: 0 8px;
     }
     .btn-grid-3 {
       display: grid;
@@ -595,12 +699,10 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
 </head>
 <body>
 
-  <!-- Top Header with Telemetry Ribbon -->
   <header>
     <div class="header-main">
       <div class="brand-wrap">
         <div class="brand-icon">
-          <!-- Monoline CPU chip SVG icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="4" y="4" width="16" height="16" rx="2"></rect>
             <rect x="9" y="9" width="6" height="6"></rect>
@@ -616,46 +718,7 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
         <span class="status-dot"></span>
         <span id="conn-text">Trực Tuyến</span>
       </div>
-    </div>
-
-    <!-- Live Telemetry Ribbon -->
-    <div class="telemetry-bar">
-      <div class="stat-chip">
-        <!-- Bolt icon -->
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-        </svg>
-        <span>Nguồn:</span>
-        <strong id="pill-v">--V</strong>
-      </div>
-      <div class="stat-chip">
-        <!-- Thermometer icon -->
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-        </svg>
-        <span>Nhiệt độ:</span>
-        <strong id="pill-temp">--°C</strong>
-      </div>
-      <div class="stat-chip">
-        <!-- Hard Drive icon -->
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <line x1="22" y1="12" x2="2" y2="12"></line>
-          <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-          <line x1="6" y1="16" x2="6.01" y2="16"></line>
-          <line x1="10" y1="16" x2="10.01" y2="16"></line>
-        </svg>
-        <span>RAM:</span>
-        <strong id="pill-heap">--KB</strong>
-      </div>
-      <div class="stat-chip">
-        <!-- Clock icon -->
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        <span>Uptime:</span>
-        <strong id="pill-uptime">00:00</strong>
-      </div>
+      <span id="sta-count" class="brand-pill whitespace-nowrap shrink-0">0 máy</span>
     </div>
   </header>
 
@@ -759,6 +822,35 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
           </select>
         </div>
       </div>
+
+      <div class="card" id="card-parts">
+        <div class="card-header">
+          <div class="card-title"><span>Thử linh kiện</span></div>
+        </div>
+        <p style="font-size:12px; color:var(--fg-muted); margin:0 0 10px;">Kê bánh lên khỏi mặt bàn trước khi nhích.</p>
+        <div class="btn-grid-2">
+          <button class="btn btn-subtle" onclick="testEmotion('idle','Bình thường')">Bình thường</button>
+          <button class="btn btn-subtle" onclick="testEmotion('happy','Vui')">Vui</button>
+          <button class="btn btn-subtle" onclick="testEmotion('listen','Nghe')">Nghe</button>
+          <button class="btn btn-subtle" onclick="testEmotion('think','Nghĩ')">Nghĩ</button>
+          <button class="btn btn-subtle" onclick="testEmotion('speak','Nói')">Nói</button>
+          <button class="btn btn-subtle" onclick="testEmotion('sleep','Ngủ')">Ngủ</button>
+          <button class="btn btn-subtle" onclick="testBuzzer()">Loa bíp</button>
+          <button class="btn btn-subtle" onclick="testUltrasonic()">Đo khoảng cách</button>
+          <button class="btn btn-subtle" onclick="testMotor('left', 40, 500)">Nhích trái</button>
+          <button class="btn btn-subtle" onclick="testMotor('right', 40, 500)">Nhích phải</button>
+          <button class="btn btn-subtle" onclick="testMotor('both', 40, 1000)">Cả hai</button>
+        </div>
+        <p id="part-status" class="action-line"></p>
+        <div class="metric-row">
+          <span class="metric-key">IR trái</span>
+          <span class="metric-val" id="drive-ir-l">—</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-key">IR phải</span>
+          <span class="metric-val" id="drive-ir-r">—</span>
+        </div>
+      </div>
     </section>
 
     <!-- TAB 2: HARDWARE DIAGNOSTICS -->
@@ -802,6 +894,34 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
           </span>
           <span class="metric-val" id="diag-heap">0 KB</span>
         </div>
+        <div class="metric-row">
+          <span class="metric-key">Thời gian chạy:</span>
+          <span class="metric-val" id="diag-uptime">00:00</span>
+        </div>
+      </div>
+
+      <div class="card" id="card-links">
+        <div class="card-header">
+          <div class="card-title">
+            <span>Trạng Thái Kết Nối</span>
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--fg-muted); margin-bottom:8px;">
+          Wi-Fi AP, chip đã biết trên I2C, IMU và màn hình. Làm mới mỗi 2 giây. Không quét full bus.
+        </p>
+        <div id="link-box" style="font-size:12.5px;">Đang đọc...</div>
+      </div>
+
+      <div class="card" id="card-pins">
+        <div class="card-header">
+          <div class="card-title">
+            <span>Chân Pin</span>
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--fg-muted); margin-bottom:8px;">
+          Chỉ đọc. Chân bus (I2C, I2S, SPI, LED) không bị đổi mode. IR là IO10 và IO11.
+        </p>
+        <div id="pin-box" style="font-size:12.5px;">Đang đọc...</div>
       </div>
 
       <!-- I2C Bus Scanner -->
@@ -836,7 +956,7 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
           </div>
         </div>
         <p style="font-size:12px; color:var(--fg-muted); margin-bottom:10px;">
-          Bánh Trái (IO4) & Bánh Phải (IO5). Có hẹn giờ tự ngắt xung an toàn.
+          Bánh trái PCA9685 CH0, bánh phải CH1. Xung tự ngắt. Kê bánh lên trước khi nhích.
         </p>
         <div class="btn-grid-3">
           <button class="btn btn-subtle" onclick="testMotor('left', 40, 500)">Nhích Trái (0.5s)</button>
@@ -857,12 +977,12 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
           </div>
         </div>
         <div class="meter-item">
-          <span class="meter-label">Trái (IO6):</span>
+          <span class="meter-label">Trái (IO10):</span>
           <div class="meter-track"><div id="meter-ir-l" class="meter-fill"></div></div>
           <span class="meter-val" id="val-ir-l">XA (1)</span>
         </div>
         <div class="meter-item">
-          <span class="meter-label">Phải (IO7):</span>
+          <span class="meter-label">Phải (IO11):</span>
           <div class="meter-track"><div id="meter-ir-r" class="meter-fill"></div></div>
           <span class="meter-val" id="val-ir-r">XA (1)</span>
         </div>
@@ -889,13 +1009,29 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
         <div class="btn-grid-2">
           <button class="btn btn-subtle" onclick="testBuzzer()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            Kêu Bíp Còi (IO42)
+            Kêu Bíp Loa I2S
           </button>
           <button class="btn btn-subtle" onclick="testEmotion('happy')">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
             Mặt Vui Vẻ
           </button>
         </div>
+      </div>
+
+      <div class="card" id="card-display-settings" data-od-id="display-settings-card">
+        <div class="card-header">
+          <div class="card-title"><span>Màn hình</span></div>
+          <span class="badge info whitespace-nowrap shrink-0" id="disp-active-badge">Đang tải</span>
+        </div>
+        <p style="font-size:12px; color:var(--fg-muted); margin:0 0 10px;">Chạm một dòng để chọn. Lưu ghi vào bộ nhớ rồi khởi động lại.</p>
+        <div class="display-select-grid" id="display-options-container"></div>
+        <div class="btn-grid-2" style="margin-top:12px;">
+          <button class="btn btn-subtle" onclick="scanOledUi()">Quét</button>
+          <button class="btn btn-subtle" onclick="testDisplayPatternUI()">Thử hình</button>
+          <button class="btn btn-subtle" onclick="loadDisplayConfig(true)">Bỏ chọn</button>
+          <button class="btn btn-primary" id="btn-save-display" onclick="applyDisplayAndReset()">Lưu</button>
+        </div>
+        <p id="disp-action-line" class="action-line">Đang đọc cấu hình màn hình...</p>
       </div>
     </section>
 
@@ -1020,13 +1156,10 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
           badge.className = 'badge pass whitespace-nowrap shrink-0';
           document.getElementById('conn-text').textContent = 'Trực Tuyến';
 
-          document.getElementById('pill-v').textContent = `${data.v.toFixed(2)}V`;
-          document.getElementById('pill-temp').textContent = `${data.temp.toFixed(1)}°C`;
-          document.getElementById('pill-heap').textContent = `${Math.round(data.heap / 1024)}KB`;
-
           const mins = Math.floor(data.uptime / 60);
           const secs = data.uptime % 60;
-          document.getElementById('pill-uptime').textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+          const uptime = document.getElementById('diag-uptime');
+          if (uptime) uptime.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
 
           document.getElementById('diag-v').textContent = `${data.v.toFixed(2)} V`;
           document.getElementById('diag-temp').textContent = `${data.temp.toFixed(1)} °C`;
@@ -1057,6 +1190,10 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
             document.getElementById('meter-ir-r').style.background = data.ir_r === 0 ? 'var(--success)' : 'var(--fg-subtle)';
             document.getElementById('val-ir-r').textContent = data.ir_r === 0 ? 'GẦN (0)' : 'XA (1)';
           }
+          const driveL = document.getElementById('drive-ir-l');
+          const driveR = document.getElementById('drive-ir-r');
+          if (driveL && data.ir_l !== undefined) driveL.textContent = data.ir_l === 0 ? 'GẦN' : 'XA';
+          if (driveR && data.ir_r !== undefined) driveR.textContent = data.ir_r === 0 ? 'GẦN' : 'XA';
 
           document.getElementById('sel-mode').value = data.mode;
         })
@@ -1093,48 +1230,86 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
         });
     }
 
+    function setPartStatus(text, bad) {
+      const el = document.getElementById('part-status');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'action-line' + (bad ? ' err' : ' ok');
+    }
+
     function testMotor(wheel, speed, ms) {
+      const names = { left: 'trái', right: 'phải', both: 'cả hai' };
+      const label = names[wheel] || wheel;
       log(`Test động cơ: Bánh=${wheel}, Tốc độ=${speed}%, Thời gian=${ms}ms`);
       fetch(`/test_motor?wheel=${wheel}&speed=${speed}&ms=${ms}`)
         .then(r => r.json())
         .then(data => {
-          if (data.ok) log(`Động cơ ${wheel} nhích thành công`, 'ok');
-          else log(`Động cơ ${wheel} lỗi: ${data.err}`, 'warn');
+          if (data.ok) {
+            setPartStatus(`Đã nhích bánh ${label}`, false);
+            log(`Động cơ ${wheel} nhích thành công`, 'ok');
+          } else {
+            setPartStatus(`Không nhích được: ${data.err || 'lỗi'}`, true);
+            log(`Động cơ ${wheel} lỗi: ${data.err}`, 'warn');
+          }
         })
-        .catch(err => log(`Lỗi gọi test motor: ${err}`, 'err'));
+        .catch(err => {
+          setPartStatus('Không gửi được lệnh nhích', true);
+          log(`Lỗi gọi test motor: ${err}`, 'err');
+        });
     }
 
     function testUltrasonic() {
       log("Bắn xung kiểm tra khoảng cách siêu âm...");
-      document.getElementById('us-dist').textContent = 'Đang đo...';
+      setPartStatus('Đang đo khoảng cách...', false);
+      const diag = document.getElementById('us-dist');
+      if (diag) diag.textContent = 'Đang đo...';
       fetch('/test_us')
         .then(r => r.json())
         .then(data => {
           if (data.ok && data.cm > 0) {
-            document.getElementById('us-dist').textContent = `${data.cm.toFixed(1)} cm`;
+            const text = `Khoảng cách ${data.cm.toFixed(1)} cm`;
+            setPartStatus(text, false);
+            if (diag) diag.textContent = `${data.cm.toFixed(1)} cm`;
             log(`Khoảng cách đo được: ${data.cm.toFixed(1)} cm`, 'ok');
           } else {
-            document.getElementById('us-dist').textContent = 'Chưa cắm / Xa';
+            setPartStatus('Không đo được khoảng cách', true);
+            if (diag) diag.textContent = 'Chưa cắm / Xa';
             log("Siêu âm không phản hồi (chưa cắm cảm biến hoặc ngoài tầm)", 'warn');
           }
         })
-        .catch(err => log(`Lỗi siêu âm: ${err}`, 'err'));
+        .catch(err => {
+          setPartStatus('Không gửi được lệnh đo', true);
+          log(`Lỗi siêu âm: ${err}`, 'err');
+        });
     }
 
     function testBuzzer() {
       log("Phát âm thanh còi Buzzer (2000Hz, 150ms)");
       fetch('/test_buzzer')
         .then(r => r.json())
-        .then(d => log("Còi đã kêu beep", 'ok'))
-        .catch(err => log(`Lỗi còi: ${err}`, 'err'));
+        .then(() => {
+          setPartStatus('Đã kêu bíp', false);
+          log("Còi đã kêu beep", 'ok');
+        })
+        .catch(err => {
+          setPartStatus('Không kêu được loa', true);
+          log(`Lỗi còi: ${err}`, 'err');
+        });
     }
 
-    function testEmotion(emo) {
+    function testEmotion(emo, label) {
+      const name = label || emo;
       log(`Đổi biểu cảm khuôn mặt AI: ${emo}`);
       fetch(`/test_face?emo=${emo}`)
         .then(r => r.json())
-        .then(d => log(`Đã đổi mặt sang: ${emo}`, 'ok'))
-        .catch(err => log(`Lỗi đổi mặt: ${err}`, 'err'));
+        .then(() => {
+          setPartStatus(`Đã đổi mặt: ${name}`, false);
+          log(`Đã đổi mặt sang: ${emo}`, 'ok');
+        })
+        .catch(err => {
+          setPartStatus('Không đổi được mặt', true);
+          log(`Lỗi đổi mặt: ${err}`, 'err');
+        });
     }
 
     function runSelfTest() {
@@ -1168,15 +1343,257 @@ static const char INDEX_HTML[] PROGMEM = R"rawliteral(
         });
     }
 
+    let currentDisplayId = 0;
+    let selectedDisplayId = 0;
+
+    const DISPLAY_MODELS = [
+      { id: 0, name: "1.54\" ST7789 Vuông", res: "240x240 (SPI)", desc: "Mặc định chuẩn, mắt to góc bo nét" },
+      { id: 1, name: "1.28\" GC9A01 Tròn", res: "240x240 (SPI)", desc: "Màn tròn kính cong, mắt Mochi co cụm chống lẹm viền" },
+      { id: 2, name: "1.8\" ST7735 Chữ Nhật", res: "160x128 (SPI)", desc: "Màn hình chữ nhật nằm ngang tỉ lệ 5:4" },
+      { id: 3, name: "0.96\" ST7735 Nhỏ", res: "160x80 (SPI IPS)", desc: "Màn màu IPS 80x160 cắm cổng SPI (7-8 chân)" },
+      { id: 4, name: "0.96\" SSD1306 OLED I2C", res: "128x64 (I2C)", desc: "Màn OLED đen trắng cắm cổng I2C (4 chân 0x3C)" },
+      { id: 5, name: "0.96\" SSD1306 OLED SPI", res: "128x64 (SPI)", desc: "Màn OLED đen trắng cắm cổng SPI (7 chân)" }
+    ];
+
+    function setDispLine(text, kind) {
+      const line = document.getElementById('disp-action-line');
+      if (!line) return;
+      line.textContent = text;
+      line.className = 'action-line' + (kind ? ' ' + kind : '');
+    }
+
+    function saveErrorText(err) {
+      if (err === 'nvs_save_failed') return 'Không ghi được cấu hình vào bộ nhớ.';
+      if (err === 'invalid_id') return 'Loại màn hình không hợp lệ.';
+      if (err === 'missing_id') return 'Thiếu mã loại màn hình.';
+      return err ? `Lỗi lưu: ${err}` : 'Lỗi lưu cấu hình.';
+    }
+
+    function renderDisplayCards() {
+      const container = document.getElementById('display-options-container');
+      if (!container) return;
+      let html = '';
+      DISPLAY_MODELS.forEach(m => {
+        const isSel = (m.id === selectedDisplayId);
+        const isCur = (m.id === currentDisplayId);
+        html += `
+          <div class="display-option-card ${isSel ? 'selected' : ''}" onclick="selectDisplayOption(${m.id})">
+            <div class="disp-row">
+              <span class="disp-title">${m.name}</span>
+              ${isCur ? '<span class="disp-now">Đang dùng</span>' : ''}
+            </div>
+            <div class="disp-sub">${m.res}</div>
+            <div class="disp-desc">${m.desc}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function selectDisplayOption(id) {
+      selectedDisplayId = id;
+      renderDisplayCards();
+    }
+
+    function loadDisplayConfig(fromDiscard) {
+      fetch('/display')
+        .then(r => r.json())
+        .then(data => {
+          if (!data.ok) {
+            setDispLine('Không đọc được cấu hình màn hình.', 'err');
+            renderDisplayCards();
+            return;
+          }
+          currentDisplayId = data.current_id;
+          selectedDisplayId = data.current_id;
+          const badge = document.getElementById('disp-active-badge');
+          if (badge) badge.textContent = data.source === 'saved' ? 'Đã lưu' : 'Tự chọn';
+          renderDisplayCards();
+          if (fromDiscard) setDispLine('Đã trả về loại đang chạy.', 'ok');
+          else setDispLine(`Đang chạy: ${data.current_name}`, '');
+          log(`Màn hình hiện tại: ${data.current_name} (${data.width}x${data.height})`, 'ok');
+        })
+        .catch(err => {
+          renderDisplayCards();
+          setDispLine('Không đọc được cấu hình màn hình.', 'err');
+          log(`Lỗi đọc cấu hình màn hình: ${err}`, 'err');
+        });
+    }
+
+    function applyDisplayAndReset() {
+      const targetId = selectedDisplayId;
+      const model = DISPLAY_MODELS.find(m => m.id === targetId);
+      const modelName = model ? model.name : `ID ${targetId}`;
+      const btn = document.getElementById('btn-save-display');
+      if (btn) btn.disabled = true;
+      setDispLine('Đang lưu...', '');
+      log(`Đang lưu cấu hình màn hình: ${modelName}...`);
+
+      fetch(`/set_display?id=${targetId}`)
+        .then(r => r.json().then(d => ({ status: r.status, d }), () => ({ status: r.status, d: null })))
+        .then(({ status, d }) => {
+          if (!d) {
+            setDispLine('Robot trả về dữ liệu lỗi.', 'err');
+            if (btn) btn.disabled = false;
+            return;
+          }
+          if (status >= 400 || !d.ok) {
+            setDispLine(saveErrorText(d.err), 'err');
+            log(`Lỗi lưu: ${d.err || status}`, 'err');
+            if (btn) btn.disabled = false;
+            return;
+          }
+          setDispLine('Đã lưu, robot đang khởi động lại', 'ok');
+          log(`Đã lưu ${modelName}. Robot đang khởi động lại.`, 'ok');
+          let attempts = 0;
+          let sawDrop = false;
+          const checkTimer = setInterval(() => {
+            attempts++;
+            if (attempts >= 15) {
+              clearInterval(checkTimer);
+              window.location.reload();
+              return;
+            }
+            fetch('/display')
+              .then(res => res.json())
+              .then(data => {
+                if (data.ok && sawDrop) {
+                  clearInterval(checkTimer);
+                  window.location.reload();
+                }
+              })
+              .catch(() => { sawDrop = true; });
+          }, 1000);
+        })
+        .catch(err => {
+          setDispLine('Không gửi được lệnh lưu.', 'err');
+          log(`Lỗi kết nối lưu cấu hình: ${err}`, 'err');
+          if (btn) btn.disabled = false;
+        });
+    }
+
+    let lastEventSeq = 0;
+
+    function refreshLinks() {
+      fetch('/links')
+        .then(r => r.json())
+        .then(data => {
+          const sta = document.getElementById('sta-count');
+          if (sta && data.wifi) sta.textContent = `${data.wifi.clients} máy`;
+          const box = document.getElementById('link-box');
+          if (!box || !data.wifi) return;
+          const imu = data.imu || {};
+          const disp = data.display || {};
+          const imuText = imu.avail
+            ? `${imu.chip} pitch ${Number(imu.pitch).toFixed(1)} roll ${Number(imu.roll).toFixed(1)}`
+            : (data.imu_addr ? 'có địa chỉ, driver chưa sẵn' : 'không ACK');
+          const rows = [
+            ['Wi-Fi AP', `${data.wifi.ssid} · ${data.wifi.ip} · ${data.wifi.clients} máy`],
+            ['PCA9685', data.pca ? 'ACK 0x40' : 'không ACK'],
+            ['IMU', imuText],
+            ['OLED', data.oled_boot ? `ACK lúc boot ${data.oled_addr} SDA=${data.oled_sda} SCL=${data.oled_scl}` : (data.oled_bus ? 'ACK trên I2C IO8/IO9' : 'không ACK')],
+            ['Màn hình', `${disp.name || '—'} · ${disp.w}x${disp.h} · ${disp.init_ok ? 'init OK' : 'init chưa OK'} · ${disp.source || ''}`],
+            ['Nguồn', `${Number(data.v).toFixed(2)} V · ${Number(data.temp).toFixed(1)} °C · RAM ${Math.round(data.heap / 1024)} KB`]
+          ];
+          box.innerHTML = rows.map(([k, v]) => `<div class="metric-row"><span class="metric-key">${k}</span><span class="metric-val">${v}</span></div>`).join('');
+        })
+        .catch(() => {
+          const box = document.getElementById('link-box');
+          if (box) box.textContent = 'Chưa đọc được trạng thái kết nối.';
+        });
+    }
+
+    function refreshPins() {
+      fetch('/pins')
+        .then(r => r.json())
+        .then(data => {
+          const box = document.getElementById('pin-box');
+          if (!box || !data.pins) return;
+          box.innerHTML = data.pins.map(p => {
+            let val = p.bus;
+            if (p.level !== undefined) val = `${p.level} · ${p.bus}`;
+            else if (p.mv !== undefined) val = `${(p.mv / 1000).toFixed(2)} V`;
+            return `<div class="metric-row"><span class="metric-key">IO${p.gpio} ${p.name}</span><span class="metric-val">${val}<div style="font-weight:500;color:var(--fg-muted);font-size:11px;">${p.note || ''}</div></span></div>`;
+          }).join('');
+        })
+        .catch(() => {});
+    }
+
+    function pullEvents() {
+      fetch(`/events?since=${lastEventSeq}`)
+        .then(r => r.json())
+        .then(data => {
+          (data.events || []).forEach(ev => {
+            if (ev.seq > lastEventSeq) lastEventSeq = ev.seq;
+            log(`[fw] ${ev.text}`, 'info');
+          });
+        })
+        .catch(() => {});
+    }
+
+    function scanOledUi() {
+      setDispLine('Đang quét...', '');
+      log('Quét OLED trên header I2C, TFT, IR, siêu âm.');
+      fetch('/scan_oled')
+        .then(r => r.json())
+        .then(data => {
+          const text = data.found
+            ? `Thấy OLED ${data.addr}, SDA ${data.sda}, SCL ${data.scl}. Chưa đổi loại màn.`
+            : 'Không thấy OLED trên các header đã biết.';
+          setDispLine(text, data.found ? 'ok' : '');
+          log(text, data.found ? 'ok' : 'warn');
+        })
+        .catch(err => {
+          setDispLine('Không quét được.', 'err');
+          log(`Lỗi quét OLED: ${err}`, 'err');
+        });
+    }
+
+    function testDisplayPatternUI() {
+      log("Đang gửi lệnh kiểm thử hiển thị (Color Bars & Backlight)...");
+      fetch('/test_display')
+        .then(r => r.json())
+        .then(d => {
+          if (d.ok) {
+            setDispLine('Đã gửi hình thử.', 'ok');
+            log("Đã kích hoạt chu trình kiểm thử màn hình thành công!", 'ok');
+          } else {
+            setDispLine('Không thử được hình.', 'err');
+            log("Không thể thực hiện kiểm thử màn hình.", 'err');
+          }
+        })
+        .catch(err => {
+          setDispLine('Không gửi được lệnh thử hình.', 'err');
+          log(`Lỗi kết nối kiểm thử: ${err}`, 'err');
+        });
+    }
+
     setInterval(refreshTelemetry, 1500);
+    setInterval(refreshLinks, 2000);
+    setInterval(refreshPins, 1000);
+    setInterval(pullEvents, 3000);
     window.addEventListener('DOMContentLoaded', () => {
       refreshTelemetry();
+      refreshLinks();
+      refreshPins();
+      loadDisplayConfig();
+      pullEvents();
       log("Hệ thống chẩn đoán Rody S3 đã sẵn sàng.");
     });
   </script>
 </body>
 </html>
 )rawliteral";
+
+static String jsonEscape(const char* raw) {
+  String out;
+  if (!raw) return out;
+  for (const char* p = raw; *p; ++p) {
+    if (*p == '\\' || *p == '"') out += '\\';
+    out += *p;
+  }
+  return out;
+}
 
 void init() {
   WiFi.mode(WIFI_AP);
@@ -1201,6 +1618,17 @@ void init() {
     int irL = 1, irR = 1;
     sensors::readLine(irL, irR);
 
+    bool imuAvail = imu_sensor::isAvailable();
+    float pitch = 0.0f, roll = 0.0f;
+    bool fallen = false, bellyUp = false;
+    if (imuAvail) {
+      const auto& st = imu_sensor::getState();
+      pitch = st.pitch;
+      roll = st.roll;
+      fallen = st.isFallen;
+      bellyUp = st.isBellyUp;
+    }
+
     String json = "{";
     json += "\"v\":" + String(v, 2) + ",";
     json += "\"temp\":" + String(temp, 1) + ",";
@@ -1209,7 +1637,15 @@ void init() {
     json += "\"cal\":" + String(cal ? "true" : "false") + ",";
     json += "\"mode\":\"" + String(m) + "\",";
     json += "\"ir_l\":" + String(irL) + ",";
-    json += "\"ir_r\":" + String(irR);
+    json += "\"ir_r\":" + String(irR) + ",";
+    json += "\"imu\":{";
+    json += "\"avail\":" + String(imuAvail ? "true" : "false") + ",";
+    json += "\"chip\":\"" + String(imu_sensor::getChipName()) + "\",";
+    json += "\"pitch\":" + String(pitch, 1) + ",";
+    json += "\"roll\":" + String(roll, 1) + ",";
+    json += "\"fallen\":" + String(fallen ? "true" : "false") + ",";
+    json += "\"belly_up\":" + String(bellyUp ? "true" : "false");
+    json += "}";
     json += "}";
     server.send(200, "application/json", json);
   });
@@ -1242,6 +1678,9 @@ void init() {
       if (i + 1 < names.size()) json += ",";
     }
     json += "]}";
+    char line[96];
+    snprintf(line, sizeof(line), "I2C scan %u thiet bi", (unsigned)found.size());
+    debug_log::push(line);
     server.send(200, "application/json", json);
   });
 
@@ -1280,18 +1719,40 @@ void init() {
 
   // 7. Isolated Motor Test (Left / Right / All)
   server.on("/test_motor", HTTP_GET, []() {
-    String wheel = server.hasArg("wheel") ? server.arg("wheel") : "ALL";
+    String wheel = server.hasArg("wheel") ? server.arg("wheel") : "both";
     float speed = server.hasArg("speed") ? server.arg("speed").toFloat() : 35.0f;
     uint32_t ms = server.hasArg("ms") ? server.arg("ms").toInt() : 400;
     if (ms > 2000) ms = 2000;
 
+    wheel_cmd::Side side = wheel_cmd::Side::Both;
+    if (!wheel_cmd::parse(wheel.c_str(), &side)) {
+      server.send(400, "application/json", "{\"ok\":false,\"err\":\"bad_wheel\"}");
+      return;
+    }
+
     float spdL = 0.0f, spdR = 0.0f;
-    if (wheel == "L") spdL = speed;
-    else if (wheel == "R") spdR = speed;
-    else { spdL = speed; spdR = speed; }
+    if (side == wheel_cmd::Side::Left || side == wheel_cmd::Side::Both) spdL = speed;
+    if (side == wheel_cmd::Side::Right || side == wheel_cmd::Side::Both) spdR = speed;
 
     const char* err = nullptr;
-    if (drive::drive(spdL, spdR, ms, err)) {
+    bool ok = false;
+    if (store::gCalValid) {
+      ok = drive::drive(spdL, spdR, ms, err);
+    } else {
+      // Uncalibrated bench test mode: generate safe pulses around neutral 1500us
+      if (side == wheel_cmd::Side::Left || side == wheel_cmd::Side::Both) {
+        uint16_t usL = (uint16_t)(1500 + (int)(spdL * 3.5f));
+        drive::setPwmRaw(CH_L, usL, ms);
+      }
+      if (side == wheel_cmd::Side::Right || side == wheel_cmd::Side::Both) {
+        // Continuous servo right side is mounted opposite, pulse moves wheel
+        uint16_t usR = (uint16_t)(1500 - (int)(spdR * 3.5f));
+        drive::setPwmRaw(CH_R, usR, ms);
+      }
+      ok = true;
+    }
+
+    if (ok) {
       server.send(200, "application/json", "{\"ok\":true}");
     } else {
       String json = "{\"ok\":false,\"err\":\"" + String(err ? err : "motor_error") + "\"}";
@@ -1387,13 +1848,15 @@ void init() {
 
     // Item 4: IMU Accelerometer / Gyro (MPU6050 / GY-6500 / GY-9250)
     json += "{\"name\":\"4. Cảm Biến Gia Tốc IMU (MPU6050/6500/9250)\",";
-    if (hasMpu) {
-      String msg = "Phát hiện IMU tại địa chỉ I2C 0x" + String(mpuAddr, HEX);
-      if (hasMag) {
+    if (imu_sensor::isAvailable()) {
+      String msg = "Phát hiện " + String(imu_sensor::getChipName()) + " (0x" + String(imu_sensor::getActiveAddress(), HEX) + ")";
+      if (imu_sensor::hasMagnetometer()) {
         msg += " + AK8963 Magnetometer (0x0C)";
       }
-      msg += ". Sẵn sàng cho biểu cảm thú cưng.";
+      msg += ". Pitch: " + String(imu_sensor::getState().pitch, 1) + "°, Roll: " + String(imu_sensor::getState().roll, 1) + "°";
       json += "\"status\":\"PASS\",\"msg\":\"" + msg + "\"}";
+    } else if (hasMpu) {
+      json += "\"status\":\"PASS\",\"msg\":\"Phát hiện chip IMU tại địa chỉ I2C 0x" + String(mpuAddr, HEX) + "\"}";
     } else {
       json += "\"status\":\"WARN\",\"msg\":\"Chưa thấy IMU (0x68/0x69). (Lắp đặt sau khi hoàn thiện cơ khí).\"}";
     }
@@ -1401,9 +1864,220 @@ void init() {
 
     // Item 5: IR Line Sensors
     json += "{\"name\":\"5. Cảm Biến Dò Đường Hồng Ngoại\",";
-    json += "\"status\":\"PASS\",\"msg\":\"Chân đọc IO6=" + String(irL) + ", IO7=" + String(irR) + ". Cả 2 mắt đều kéo trở treo logic chuẩn.\"}";
+    json += "\"status\":\"PASS\",\"msg\":\"IR trai IO" + String(pins::IR_L) + "=" + String(irL) +
+            ", IR phai IO" + String(pins::IR_R) + "=" + String(irR) + ".\"}";
     json += "]}";
 
+    server.send(200, "application/json", json);
+  });
+
+  // 12. Display Configuration API
+  server.on("/display", HTTP_GET, []() {
+    uint8_t curId = (uint8_t)store::getDisplayType();
+    String name = jsonEscape(store::getDisplayTypeName((store::DisplayType)curId));
+    int w = emotion_gfx::getWidth();
+    int h = emotion_gfx::getHeight();
+    const char* source = store::getDisplaySourceName();
+    int savedId = (strcmp(source, "saved") == 0) ? (int)curId : -1;
+    String json = "{\"ok\":true,\"current_id\":" + String(curId) +
+                  ",\"saved_id\":" + String(savedId) +
+                  ",\"current_name\":\"" + name + "\"" +
+                  ",\"source\":\"" + String(source) + "\"" +
+                  ",\"width\":" + String(w) +
+                  ",\"height\":" + String(h) +
+                  ",\"init_ok\":" + String(emotion_gfx::isReady() ? "true" : "false") +
+                  ",\"oled_detected\":" + String(store::isOledDetected() ? "true" : "false") +
+                  ",\"oled_sda\":" + String(store::getOledSdaPin()) +
+                  ",\"oled_scl\":" + String(store::getOledSclPin()) +
+                  ",\"oled_addr\":\"0x" + String(store::getOledAddr(), HEX) + "\"}";
+    server.send(200, "application/json", json);
+  });
+
+  // 13. Set Display Configuration & Auto Reset
+  server.on("/set_display", HTTP_GET, []() {
+    if (!server.hasArg("id")) {
+      server.send(400, "application/json", "{\"ok\":false,\"err\":\"missing_id\"}");
+      return;
+    }
+    int id = server.arg("id").toInt();
+    if (!display_policy::isValidId(id)) {
+      server.send(400, "application/json", "{\"ok\":false,\"err\":\"invalid_id\"}");
+      return;
+    }
+    bool ok = store::setDisplayType((store::DisplayType)id);
+    if (!ok) {
+      server.send(500, "application/json", "{\"ok\":false,\"err\":\"nvs_save_failed\"}");
+      return;
+    }
+    String name = jsonEscape(store::getDisplayTypeName((store::DisplayType)id));
+    debug_log::push((String("Luu man hinh id ") + String(id)).c_str());
+    server.send(200, "application/json",
+                "{\"ok\":true,\"id\":" + String(id) + ",\"name\":\"" + name + "\"}");
+    rebootPending = true;
+    rebootAt = millis() + 1200;
+  });
+
+  // 14. Test Display Pattern
+  server.on("/test_display", HTTP_GET, []() {
+    emotion_gfx::testDisplayPattern();
+    server.send(200, "application/json", "{\"ok\":true,\"msg\":\"test_pattern_executed\"}");
+  });
+
+  // 14b. Test OLED Directly (Hardware Force Light-Up)
+  server.on("/oled_test", HTTP_GET, []() {
+    auto scan = oled_diag::scanAllCandidatePins();
+    String report = oled_diag::getPinDiagnosticsReport();
+    report.replace("\n", "\\n");
+    report.replace("\"", "\\\"");
+    bool spiHeader = oled_diag::spiHeaderConnected();
+    int sda = scan.found ? scan.sdaPin : store::getOledSdaPin();
+    int scl = scan.found ? scan.sclPin : store::getOledSclPin();
+    uint8_t addr = scan.found ? scan.address : store::getOledAddr();
+    store::DisplayType before = store::getDisplayType();
+    bool ok = false;
+    const char* bus = "none";
+    if (scan.found) {
+      bus = "i2c";
+      ok = oled_diag::runVisualTest(sda, scl, addr);
+    } else if (spiHeader) {
+      bus = "spi";
+      ok = oled_diag::forceSpiPanelOn();
+      delay(1000);
+    }
+    bool switched = false;
+    if (!scan.found && spiHeader && before == store::DisplayType::SSD1306_096) {
+      switched = store::setDisplayType(store::DisplayType::SSD1306_096_SPI);
+    }
+    int disp = (int)store::getDisplayType();
+    String json = "{\"ok\":true,\"found\":" + String(scan.found ? "true" : "false") +
+                  ",\"bus\":\"" + String(bus) + "\"" +
+                  ",\"spi_header\":" + String(spiHeader ? "true" : "false") +
+                  ",\"display_id\":" + String(disp) +
+                  ",\"sda\":" + String(sda) + ",\"scl\":" + String(scl) +
+                  ",\"addr\":\"0x" + String(addr, HEX) + "\"" +
+                  ",\"tested\":" + String(ok ? "true" : "false") +
+                  ",\"report\":\"" + report + "\"" +
+                  ",\"help\":\"Cum SPI IO38-42 co dien. I2C khong thay. Lua chon OLED I2C cu doi sang 0.96 OLED SPI. Neu kinh la IPS mau, chon 0.96 ST7735 roi Luu. Giu nguyen day.\"}";
+    server.send(200, "application/json", json);
+    if (switched) {
+      rebootPending = true;
+      rebootAt = millis() + 400;
+    } else if (!scan.found && spiHeader) {
+      emotion_gfx::init();
+    }
+  });
+
+  // 15. System Reboot
+  server.on("/reboot", HTTP_GET, []() {
+    server.send(200, "application/json", "{\"ok\":true,\"msg\":\"rebooting\"}");
+    rebootPending = true;
+    rebootAt = millis() + 400;
+  });
+
+  server.on("/links", HTTP_GET, []() {
+    auto ack = [](uint8_t addr) {
+      Wire.beginTransmission(addr);
+      return Wire.endTransmission() == 0;
+    };
+    bool pca = ack(0x40);
+    bool imu68 = ack(0x68);
+    bool imu69 = ack(0x69);
+    bool mag = ack(0x0C);
+    bool oled = ack(0x3C) || ack(0x3D);
+    bool imuAvail = imu_sensor::isAvailable();
+    float pitch = 0.0f, roll = 0.0f;
+    if (imuAvail) {
+      const auto& st = imu_sensor::getState();
+      pitch = st.pitch;
+      roll = st.roll;
+    }
+    uint8_t curId = (uint8_t)store::getDisplayType();
+    String json = "{\"ok\":true";
+    json += ",\"wifi\":{\"ssid\":\"" + WiFi.softAPSSID() + "\",\"ip\":\"" + WiFi.softAPIP().toString() +
+            "\",\"clients\":" + String(WiFi.softAPgetStationNum()) + "}";
+    json += ",\"pca\":" + String(pca ? "true" : "false");
+    json += ",\"imu_addr\":" + String((imu68 || imu69) ? "true" : "false");
+    json += ",\"mag\":" + String(mag ? "true" : "false");
+    json += ",\"oled_bus\":" + String(oled ? "true" : "false");
+    json += ",\"oled_boot\":" + String(store::isOledDetected() ? "true" : "false");
+    json += ",\"oled_sda\":" + String(store::getOledSdaPin());
+    json += ",\"oled_scl\":" + String(store::getOledSclPin());
+    json += ",\"oled_addr\":\"0x" + String(store::getOledAddr(), HEX) + "\"";
+    json += ",\"imu\":{\"avail\":" + String(imuAvail ? "true" : "false");
+    json += ",\"chip\":\"" + String(imu_sensor::getChipName()) + "\"";
+    json += ",\"pitch\":" + String(pitch, 1);
+    json += ",\"roll\":" + String(roll, 1) + "}";
+    json += ",\"display\":{\"id\":" + String(curId);
+    json += ",\"name\":\"" + jsonEscape(store::getDisplayTypeName((store::DisplayType)curId)) + "\"";
+    json += ",\"w\":" + String(emotion_gfx::getWidth());
+    json += ",\"h\":" + String(emotion_gfx::getHeight());
+    json += ",\"init_ok\":" + String(emotion_gfx::isReady() ? "true" : "false");
+    json += ",\"source\":\"" + String(store::getDisplaySourceName()) + "\"}";
+    json += ",\"v\":" + String(sensors::readBatteryVoltage(), 2);
+    json += ",\"temp\":" + String(temperatureRead(), 1);
+    json += ",\"heap\":" + String(ESP.getFreeHeap());
+    json += ",\"uptime\":" + String(millis() / 1000);
+    json += "}";
+    server.send(200, "application/json", json);
+  });
+
+  server.on("/pins", HTTP_GET, []() {
+    size_t count = 0;
+    const pin_catalog::Entry* rows = pin_catalog::entries(&count);
+    float bat = sensors::readBatteryVoltage();
+    String json = "{\"ok\":true,\"pins\":[";
+    for (size_t i = 0; i < count; i++) {
+      if (i) json += ",";
+      const pin_catalog::Entry& entry = rows[i];
+      json += "{\"gpio\":" + String(entry.gpio);
+      json += ",\"name\":\"" + String(entry.name) + "\"";
+      json += ",\"bus\":\"" + String(pin_catalog::busName(entry.bus)) + "\"";
+      if (pin_catalog::readsLevel(entry.bus)) {
+        json += ",\"level\":" + String(digitalRead(entry.gpio));
+        json += ",\"note\":\"muc logic, khong doi mode\"";
+      } else if (entry.bus == pin_catalog::Bus::Adc) {
+        json += ",\"mv\":" + String((int)(bat * 1000.0f));
+        json += ",\"note\":\"dien ap pin\"";
+      } else if (entry.bus == pin_catalog::Bus::Led) {
+        json += ",\"note\":\"WS2812, khong doc muc\"";
+      } else {
+        json += ",\"note\":\"bus dang giu chan\"";
+      }
+      json += "}";
+    }
+    json += "]}";
+    server.send(200, "application/json", json);
+  });
+
+  server.on("/events", HTTP_GET, []() {
+    uint32_t since = server.hasArg("since") ? (uint32_t)server.arg("since").toInt() : 0;
+    debug_log::View views[debug_log::kCap];
+    int n = debug_log::copySince(since, views, debug_log::kCap);
+    String json = "{\"ok\":true,\"events\":[";
+    for (int i = 0; i < n; i++) {
+      if (i) json += ",";
+      json += "{\"seq\":" + String(views[i].seq) + ",\"text\":\"" + String(views[i].text) + "\"}";
+    }
+    json += "]}";
+    server.send(200, "application/json", json);
+  });
+
+  server.on("/scan_oled", HTTP_GET, []() {
+    auto scan = oled_diag::scanKnownHeaders();
+    if (scan.found) {
+      store::setOledConfig(scan.sdaPin, scan.sclPin, scan.address);
+    }
+    char line[96];
+    if (scan.found) {
+      snprintf(line, sizeof(line), "Quet OLED ACK 0x%02X SDA %d SCL %d", scan.address, scan.sdaPin, scan.sclPin);
+    } else {
+      snprintf(line, sizeof(line), "Quet OLED khong thay");
+    }
+    debug_log::push(line);
+    String json = "{\"ok\":true,\"found\":" + String(scan.found ? "true" : "false") +
+                  ",\"sda\":" + String(scan.found ? scan.sdaPin : -1) +
+                  ",\"scl\":" + String(scan.found ? scan.sclPin : -1) +
+                  ",\"addr\":\"0x" + String(scan.found ? scan.address : 0, HEX) + "\"}";
     server.send(200, "application/json", json);
   });
 
@@ -1412,6 +2086,10 @@ void init() {
 
 void update() {
   server.handleClient();
+  if (rebootPending && (int32_t)(millis() - rebootAt) >= 0) {
+    rebootPending = false;
+    ESP.restart();
+  }
   if (webControlActive && (millis() - lastClientPing > 1000)) {
     // Client connection timeout in manual mode
     drive::stop();

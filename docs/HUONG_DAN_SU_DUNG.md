@@ -159,6 +159,8 @@ Toàn bộ chân GPIO được quy định duy nhất tại [`include/pins.h`](i
 
 ## 4. Cài Đặt Môi Trường & Nạp Firmware
 
+> 💡 *Để tìm hiểu kiến trúc bộ nhớ (PSRAM/Flash), giải mã lỗi crash dump, bắt bệnh FreeRTOS và bảng tra cứu lỗi firmware toàn diện, xem chi tiết tại: [**`docs/FIRMWARE_GUIDE.md`**](FIRMWARE_GUIDE.md)*
+
 Dự án phát triển bằng công cụ **PlatformIO** (tương thích cả VSCode Extension và PlatformIO CLI).
 
 ### Bước 1: Mở dự án trong PlatformIO

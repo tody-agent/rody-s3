@@ -1896,6 +1896,319 @@
       return w.subsystem === currentFilter;
     }
 
+
+    // --- Dynamic Pin Direction & Organic Router ---
+    function getSideVector(side) {
+      switch (side) {
+        case 'left': return { x: -1, y: 0 };
+        case 'right': return { x: 1, y: 0 };
+        case 'top': return { x: 0, y: -1 };
+        case 'bottom': return { x: 0, y: 1 };
+        default: return { x: 0, y: 0 };
+      }
+    }
+
+    // --- Curated Perimeter Bypass Routes (for power loops when specified) ---
+    function getSpecialBypassWaypoints(from, to, wire) {
+      if (wire.waypoints && wire.waypoints.length > 0) {
+        return [{ x: from.x, y: from.y }, ...wire.waypoints, { x: to.x, y: to.y }];
+      }
+      return null;
+    }
+
+    // --- Channel Bus Ribbon Waypoint Calculator & Conflict Resolver ---
+    function computeAllWireWaypoints(activeWires) {
+      const routes = [];
+      const bundles = new Map();
+
+      activeWires.forEach(w => {
+        const from = getPinPos(w.from);
+        const to = getPinPos(w.to);
+        if (!from || !to) return;
+
+        const bypass = getSpecialBypassWaypoints(from, to, w);
+        if (bypass) {
+          routes.push({ wireId: w.id, wire: w, from, to, pts: bypass });
+          return;
+        }
+
+        const c1 = from.comp.id;
+        const c2 = to.comp.id;
+        const bundleKey = (c1 === c2) ? `${c1}--self` : [c1, c2].sort().join('--');
+        if (!bundles.has(bundleKey)) bundles.set(bundleKey, []);
+        bundles.get(bundleKey).push({ wire: w, from, to });
+      });
+
+      bundles.forEach((bundleItems, bundleKey) => {
+        if (bundleKey.endsWith('--self')) {
+          bundleItems.forEach((item, idx) => {
+            const vFrom = getSideVector(item.from.pin ? item.from.pin.side : 'right');
+            const stub = 24 + idx * 12;
+            const pts = [
+              { x: item.from.x, y: item.from.y },
+              { x: item.from.x + vFrom.x * stub, y: item.from.y },
+              { x: item.to.x + vFrom.x * stub, y: item.to.y },
+              { x: item.to.x, y: item.to.y }
+            ];
+            routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
+          });
+          return;
+        }
+
+        const item0 = bundleItems[0];
+        const dx = Math.abs(item0.to.x - item0.from.x);
+        const dy = Math.abs(item0.to.y - item0.from.y);
+
+        if (dx >= dy) {
+          // Horizontal Corridor (Vertical Trunks with Parallel Lanes)
+          const compLeftId = (item0.from.x < item0.to.x) ? item0.from.comp.id : item0.to.comp.id;
+
+          // Order wires to prevent crossing lines
+          bundleItems.sort((a, b) => {
+            const aPtR = (a.from.comp.id === compLeftId) ? a.to : a.from;
+            const bPtR = (b.from.comp.id === compLeftId) ? b.to : b.from;
+            return aPtR.y - bPtR.y;
+          });
+
+          let leftBound = -Infinity;
+          let rightBound = Infinity;
+          bundleItems.forEach(item => {
+            const ptL = (item.from.comp.id === compLeftId) ? item.from : item.to;
+            const ptR = (item.from.comp.id === compLeftId) ? item.to : item.from;
+            leftBound = Math.max(leftBound, ptL.x + 20);
+            rightBound = Math.min(rightBound, ptR.x - 20);
+          });
+
+          const N = bundleItems.length;
+          let corridorWidth = rightBound - leftBound;
+          let pitch = 14;
+          if (corridorWidth > 20) {
+            pitch = Math.min(14, Math.max(8, (corridorWidth - 24) / Math.max(N, 1)));
+          }
+          const totalSpan = (N - 1) * pitch;
+          const midCorridor = (leftBound + rightBound) / 2;
+          const startX = midCorridor - totalSpan / 2;
+
+          bundleItems.forEach((item, idx) => {
+            const trunkX = (corridorWidth > 20)
+              ? (startX + idx * pitch)
+              : (midCorridor + (idx - (N - 1) / 2) * 12);
+
+            const pts = [
+              { x: item.from.x, y: item.from.y },
+              { x: trunkX, y: item.from.y },
+              { x: trunkX, y: item.to.y },
+              { x: item.to.x, y: item.to.y }
+            ];
+            routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
+          });
+        } else {
+          // Vertical Corridor (Horizontal Trunks)
+          const N = bundleItems.length;
+          const pitch = 12;
+          const totalSpan = (N - 1) * pitch;
+          const midY = (item0.from.y + item0.to.y) / 2;
+          const startY = midY - totalSpan / 2;
+
+          bundleItems.forEach((item, idx) => {
+            const trunkY = startY + idx * pitch;
+            const pts = [
+              { x: item.from.x, y: item.from.y },
+              { x: item.from.x, y: trunkY },
+              { x: item.to.x, y: trunkY },
+              { x: item.to.x, y: item.to.y }
+            ];
+            routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
+          });
+        }
+      });
+
+      // Global Vertical Trunk Conflict Resolver (Eliminates all overlapping vertical lines)
+      const vTrunks = [];
+      routes.forEach(r => {
+        for (let i = 0; i < r.pts.length - 1; i++) {
+          const p1 = r.pts[i], p2 = r.pts[i + 1];
+          if (Math.abs(p1.x - p2.x) < 0.5 && Math.abs(p1.y - p2.y) > 10) {
+            vTrunks.push({
+              wireId: r.wireId,
+              route: r,
+              idx: i,
+              x: p1.x,
+              yMin: Math.min(p1.y, p2.y),
+              yMax: Math.max(p1.y, p2.y)
+            });
+          }
+        }
+      });
+
+      for (let pass = 0; pass < 6; pass++) {
+        vTrunks.sort((a, b) => a.x - b.x || a.yMin - b.yMin);
+        let changed = false;
+        for (let i = 0; i < vTrunks.length; i++) {
+          for (let j = i + 1; j < vTrunks.length; j++) {
+            const t1 = vTrunks[i], t2 = vTrunks[j];
+            if (Math.abs(t1.x - t2.x) > 8) break;
+            if (t1.wireId === t2.wireId) continue;
+            const ov = Math.min(t1.yMax, t2.yMax) - Math.max(t1.yMin, t2.yMin);
+            if (ov > 6) {
+              t2.x += 14;
+              t2.route.pts[t2.idx].x = t2.x;
+              t2.route.pts[t2.idx + 1].x = t2.x;
+              changed = true;
+            }
+          }
+        }
+        if (!changed) break;
+      }
+
+      // Simplify collinear redundant points
+      routes.forEach(r => {
+        const clean = [];
+        for (let i = 0; i < r.pts.length; i++) {
+          const p = r.pts[i];
+          if (clean.length >= 2) {
+            const pPrev1 = clean[clean.length - 1];
+            const pPrev2 = clean[clean.length - 2];
+            if (Math.abs(pPrev2.y - pPrev1.y) < 0.5 && Math.abs(pPrev1.y - p.y) < 0.5) {
+              clean.pop();
+            } else if (Math.abs(pPrev2.x - pPrev1.x) < 0.5 && Math.abs(pPrev1.x - p.x) < 0.5) {
+              clean.pop();
+            }
+          }
+          if (clean.length === 0 || Math.hypot(p.x - clean[clean.length - 1].x, p.y - clean[clean.length - 1].y) > 1.5) {
+            clean.push(p);
+          }
+        }
+        r.pts = clean;
+      });
+
+      return routes;
+    }
+
+    // --- Filleted Manhattan Orthogonal Router with Semicircular Crossing Hops ---
+    function buildFilletedPathWithHops(pts, horizontalSegments, wireId, radius = 8, hopR = 6) {
+      if (!pts || pts.length < 2) return '';
+      if (pts.length === 2) return `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y}`;
+
+      const corners = [];
+      for (let i = 1; i < pts.length - 1; i++) {
+        const prev = pts[i - 1];
+        const curr = pts[i];
+        const next = pts[i + 1];
+
+        const dInX = curr.x - prev.x;
+        const dInY = curr.y - prev.y;
+        const lenIn = Math.hypot(dInX, dInY);
+
+        const dOutX = next.x - curr.x;
+        const dOutY = next.y - curr.y;
+        const lenOut = Math.hypot(dOutX, dOutY);
+
+        const cross = dInX * dOutY - dInY * dOutX;
+        if (Math.abs(cross) < 1e-4 || lenIn < 2 || lenOut < 2) {
+          corners.push(null);
+        } else {
+          const r = Math.min(radius, lenIn / 2, lenOut / 2);
+          const inX = curr.x - (dInX / lenIn) * r;
+          const inY = curr.y - (dInY / lenIn) * r;
+          const outX = curr.x + (dOutX / lenOut) * r;
+          const outY = curr.y + (dOutY / lenOut) * r;
+          corners.push({ r, inX, inY, outX, outY, currX: curr.x, currY: curr.y });
+        }
+      }
+
+      let d = `M ${pts[0].x} ${pts[0].y}`;
+
+      for (let i = 0; i < pts.length - 1; i++) {
+        const pStart = pts[i];
+        const pEnd = pts[i + 1];
+
+        const startX = (i === 0 || !corners[i - 1]) ? pStart.x : corners[i - 1].outX;
+        const startY = (i === 0 || !corners[i - 1]) ? pStart.y : corners[i - 1].outY;
+
+        const endX = (i === pts.length - 2 || !corners[i]) ? pEnd.x : corners[i].inX;
+        const endY = (i === pts.length - 2 || !corners[i]) ? pEnd.y : corners[i].inY;
+
+        const isVert = Math.abs(pStart.x - pEnd.x) < 0.5;
+
+        if (!isVert) {
+          d += ` L ${endX} ${endY}`;
+        } else {
+          const x = pStart.x;
+          const yMin = Math.min(startY, endY);
+          const yMax = Math.max(startY, endY);
+          const goingDown = endY > startY;
+
+          const crossings = [];
+          if (horizontalSegments && horizontalSegments.length) {
+            for (const h of horizontalSegments) {
+              if (h.wireId === wireId) continue;
+              if (x > h.xMin + 5 && x < h.xMax - 5) {
+                if (h.y > yMin + hopR + 2 && h.y < yMax - hopR - 2) {
+                  crossings.push(h.y);
+                }
+              }
+            }
+          }
+
+          if (goingDown) crossings.sort((a, b) => a - b);
+          else crossings.sort((a, b) => b - a);
+
+          const cleanCrossings = [];
+          for (const cy of crossings) {
+            if (!cleanCrossings.length || Math.abs(cy - cleanCrossings[cleanCrossings.length - 1]) >= hopR * 2 + 2) {
+              cleanCrossings.push(cy);
+            }
+          }
+
+          cleanCrossings.forEach(cy => {
+            if (goingDown) {
+              d += ` L ${x} ${cy - hopR}`;
+              d += ` A ${hopR} ${hopR} 0 0 1 ${x} ${cy + hopR}`;
+            } else {
+              d += ` L ${x} ${cy + hopR}`;
+              d += ` A ${hopR} ${hopR} 0 0 0 ${x} ${cy - hopR}`;
+            }
+          });
+
+          d += ` L ${endX} ${endY}`;
+        }
+
+        if (i < pts.length - 2 && corners[i]) {
+          const c = corners[i];
+          d += ` Q ${c.currX} ${c.currY}, ${c.outX} ${c.outY}`;
+        }
+      }
+
+      return d;
+    }
+
+    // Smooth Directional Cubic Bezier Curve (for organic curved mode)
+    function buildCurvedPath(from, to, wire = {}) {
+      const vFrom = getSideVector(from.pin ? from.pin.side : 'right');
+      const vTo = getSideVector(to.pin ? to.pin.side : 'left');
+
+      let vfX = vFrom.x, vfY = vFrom.y;
+      let vtX = vTo.x, vtY = vTo.y;
+      if (vfX === 0 && vfY === 0) vfX = (from.x < to.x) ? 1 : -1;
+      if (vtX === 0 && vtY === 0) vtX = (to.x < from.x) ? 1 : -1;
+
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.hypot(dx, dy);
+      const tension = Math.min(Math.max(dist * 0.45, 45), 240);
+
+      const cx1 = from.x + vfX * tension;
+      const cy1 = from.y + vfY * tension;
+      const cx2 = to.x + vtX * tension;
+      const cy2 = to.y + vtY * tension;
+
+      return `M ${from.x} ${from.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${to.x} ${to.y}`;
+    }
+
+    // Cached paths for high-performance hover & top-overlay rendering
+    const computedWirePaths = new Map();
+
     // --- Dynamic Wire Path Rendering with Electrical Jumper Bridges ---
     function renderWires() {
       const svg = document.getElementById('wire-canvas');
@@ -1907,46 +2220,73 @@
           </filter>
         </defs>`;
 
-      const drawnSegments = []; // Register drawn segments for bridge hop intersections
+      computedWirePaths.clear();
 
-      wires.forEach(w => {
+      // Filter visible wires
+      const activeWires = wires.filter(w => {
         const from = getPinPos(w.from);
         const to = getPinPos(w.to);
-        if (!from || !to) return;
+        if (!from || !to) return false;
+        const active = isWireActive(w);
+        const isSelected = (selectedWireId === w.id);
+        if (!active && filterDisplayMode === 'hide' && !isSelected) return false;
+        return true;
+      });
+
+      if (wireMode === 'orthogonal') {
+        const routes = computeAllWireWaypoints(activeWires);
+
+        // Collect all horizontal segments for crossing detection
+        const hSegs = [];
+        routes.forEach(r => {
+          for (let i = 0; i < r.pts.length - 1; i++) {
+            const p1 = r.pts[i], p2 = r.pts[i + 1];
+            if (Math.abs(p1.y - p2.y) < 0.5 && Math.abs(p1.x - p2.x) > 4) {
+              hSegs.push({
+                wireId: r.wireId,
+                y: p1.y,
+                xMin: Math.min(p1.x, p2.x),
+                xMax: Math.max(p1.x, p2.x)
+              });
+            }
+          }
+        });
+
+        routes.forEach(r => {
+          const pathData = buildFilletedPathWithHops(r.pts, hSegs, r.wireId, 8, 6);
+          computedWirePaths.set(r.wireId, pathData);
+        });
+      } else if (wireMode === 'curved') {
+        activeWires.forEach(w => {
+          const from = getPinPos(w.from);
+          const to = getPinPos(w.to);
+          computedWirePaths.set(w.id, buildCurvedPath(from, to, w));
+        });
+      } else {
+        activeWires.forEach(w => {
+          const from = getPinPos(w.from);
+          const to = getPinPos(w.to);
+          computedWirePaths.set(w.id, `M ${from.x} ${from.y} L ${to.x} ${to.y}`);
+        });
+      }
+
+      activeWires.forEach(w => {
+        const pathData = computedWirePaths.get(w.id);
+        if (!pathData) return;
 
         const active = isWireActive(w);
         const isSelected = (selectedWireId === w.id);
-
-        if (!active && filterDisplayMode === 'hide' && !isSelected) {
-          return; // Skip rendering hidden wires
-        }
-
         const isDimmed = !active && !isSelected;
 
-        let pathData = '';
-        if (wireMode === 'orthogonal') {
-          // Only active wires register into drawnSegments to prevent phantom jumper arches!
-          pathData = buildOrthogonalWithHops(from, to, drawnSegments, active, w);
-        } else if (wireMode === 'curved') {
-          // Smooth Bezier Curve Spline
-          const dx = Math.abs(to.x - from.x) * 0.45;
-          const dy = Math.abs(to.y - from.y) * 0.45;
-          const cx1 = from.x + (from.x < to.x ? dx : -dx);
-          const cy1 = from.y + (from.y < to.y ? dy : -dy);
-          const cx2 = to.x + (from.x < to.x ? -dx : dx);
-          const cy2 = to.y + (from.y < to.y ? -dy : dy);
-          pathData = `M ${from.x} ${from.y} C ${cx1} ${from.y}, ${cx2} ${to.y}, ${to.x} ${to.y}`;
-        } else {
-          // Straight Line
-          pathData = `M ${from.x} ${from.y} L ${to.x} ${to.y}`;
-        }
-
         // 1. Glow Layer for Selection
-        const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        glow.setAttribute('d', pathData);
-        glow.setAttribute('class', `wire-glow ${isSelected ? 'selected' : ''}`);
-        glow.setAttribute('stroke', w.color);
-        svg.appendChild(glow);
+        if (isSelected) {
+          const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          glow.setAttribute('d', pathData);
+          glow.setAttribute('class', `wire-glow selected`);
+          glow.setAttribute('stroke', w.color);
+          glow.setAttribute('stroke-width', (w.thick || 3.5) + 6);
+          svg.appendChild(glow);
+        }
 
         // 2. Core Wire Path
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -1957,7 +2297,6 @@
         path.setAttribute('stroke-width', w.thick || 3.5);
 
         path.onmouseenter = () => {
-          highlightWire(w.id);
           showEndpointCallouts(w);
           renderTopOverlayWire(w, pathData);
         };
@@ -1965,6 +2304,13 @@
           if (selectedWireId !== w.id) {
             hideEndpointCallouts();
             clearTopOverlay();
+          } else {
+            const selWire = wires.find(x => x.id === selectedWireId);
+            if (selWire) {
+              showEndpointCallouts(selWire);
+              const selPath = computedWirePaths.get(selWire.id);
+              if (selPath) renderTopOverlayWire(selWire, selPath);
+            }
           }
         };
         path.onclick = (e) => {
@@ -1974,85 +2320,15 @@
 
         svg.appendChild(path);
       });
-    }
 
-    // --- Intelligent Obstacle-Avoidance Router with Semi-Circular Jumper Hops ---
-    function getSmartRouteWaypoints(from, to, wire = {}) {
-      if (wire.waypoints && wire.waypoints.length > 0) {
-        return [{ x: from.x, y: from.y }, ...wire.waypoints, { x: to.x, y: to.y }];
-      }
-
-      // Default orthogonal 3-point routing
-      let midX = (from.x + to.x) / 2;
-      if (Math.abs(from.x - to.x) < 40) midX = Math.max(from.x, to.x) + 30;
-      return [
-        { x: from.x, y: from.y },
-        { x: midX, y: from.y },
-        { x: midX, y: to.y },
-        { x: to.x, y: to.y }
-      ];
-    }
-
-    // Router with Semi-Circular Jumper Hops over arbitrary waypoints
-    function buildOrthogonalWithHops(from, to, registeredSegments, shouldRegister = true, wire = {}) {
-      const pts = getSmartRouteWaypoints(from, to, wire);
-      const segs = [];
-      for (let i = 0; i < pts.length - 1; i++) {
-        segs.push({
-          x1: pts[i].x, y1: pts[i].y,
-          x2: pts[i+1].x, y2: pts[i+1].y,
-          isVert: (pts[i].x === pts[i+1].x)
-        });
-      }
-
-      let d = `M ${pts[0].x} ${pts[0].y}`;
-
-      segs.forEach(seg => {
-        if (!seg.isVert) {
-          d += ` L ${seg.x2} ${seg.y2}`;
-          if (shouldRegister) registeredSegments.push(seg);
-        } else {
-          const yStart = Math.min(seg.y1, seg.y2);
-          const yEnd = Math.max(seg.y1, seg.y2);
-          const x = seg.x1;
-
-          const crossings = [];
-          registeredSegments.forEach(hSeg => {
-            if (!hSeg.isVert) {
-              const hxStart = Math.min(hSeg.x1, hSeg.x2);
-              const hxEnd = Math.max(hSeg.x1, hSeg.x2);
-              const hy = hSeg.y1;
-              if (x > hxStart + 6 && x < hxEnd - 6 && hy > yStart + 8 && hy < yEnd - 8) {
-                crossings.push(hy);
-              }
-            }
-          });
-
-          const isDown = (seg.y2 >= seg.y1);
-          if (isDown) crossings.sort((a, b) => a - b);
-          else crossings.sort((a, b) => b - a);
-
-          const r = 7; // Jumper arch radius
-          let currY = seg.y1;
-
-          crossings.forEach(cy => {
-            if (isDown) {
-              d += ` L ${x} ${cy - r}`;
-              d += ` A ${r} ${r} 0 0 1 ${x} ${cy + r}`;
-              currY = cy + r;
-            } else {
-              d += ` L ${x} ${cy + r}`;
-              d += ` A ${r} ${r} 0 0 1 ${x} ${cy - r}`;
-              currY = cy - r;
-            }
-          });
-
-          d += ` L ${x} ${seg.y2}`;
-          if (shouldRegister) registeredSegments.push(seg);
+      if (selectedWireId) {
+        const selWire = wires.find(x => x.id === selectedWireId);
+        if (selWire) {
+          showEndpointCallouts(selWire);
+          const pathData = computedWirePaths.get(selWire.id);
+          if (pathData) renderTopOverlayWire(selWire, pathData);
         }
-      });
-
-      return d;
+      }
     }
 
     // --- Dual-Endpoint Interactive Callout Badges ---
@@ -2153,22 +2429,11 @@
       const fromPos = getPinPos(wire.from);
       const toPos = getPinPos(wire.to);
 
-      showEndpointCallouts(wire);
+      renderWires();
 
       if (fromPos && toPos) {
-        let pData = '';
-        if (wireMode === 'orthogonal') pData = buildOrthogonalWithHops(fromPos, toPos, [], false, wire);
-        else if (wireMode === 'curved') {
-          const dx = Math.abs(toPos.x - fromPos.x) * 0.45;
-          const dy = Math.abs(toPos.y - fromPos.y) * 0.45;
-          const cx1 = fromPos.x + (fromPos.x < toPos.x ? dx : -dx);
-          const cy1 = fromPos.y + (fromPos.y < toPos.y ? dy : -dy);
-          const cx2 = toPos.x + (fromPos.x < toPos.x ? -dx : dx);
-          const cy2 = toPos.y + (fromPos.y < toPos.y ? -dy : dy);
-          pData = `M ${fromPos.x} ${fromPos.y} C ${cx1} ${fromPos.y}, ${cx2} ${toPos.y}, ${toPos.x} ${toPos.y}`;
-        } else {
-          pData = `M ${fromPos.x} ${fromPos.y} L ${toPos.x} ${toPos.y}`;
-        }
+        showEndpointCallouts(wire);
+        const pData = computedWirePaths.get(wire.id) || `M ${fromPos.x} ${fromPos.y} L ${toPos.x} ${toPos.y}`;
         renderTopOverlayWire(wire, pData);
       }
 
@@ -2188,7 +2453,6 @@
           📌 <b>Lưu ý kỹ thuật:</b> ${wire.note}
         </div>
       `;
-      renderWires();
     }
 
     function highlightWire(wireId) {

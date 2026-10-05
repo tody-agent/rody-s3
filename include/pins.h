@@ -35,6 +35,7 @@ constexpr int RGB     = 48;                // WS2812 onboard
 }
 
 constexpr uint8_t PCA_ADDR = 0x40, CH_L = 0, CH_R = 1;
-constexpr float   BAT_DIV = 5.0f, BAT_LOW_V = 3.4f;
+constexpr uint8_t MPU6050_ADDR = 0x68, MPU_ADDR_ALT = 0x69, AK8963_MAG_ADDR = 0x0C;
+constexpr float   BAT_DIV = 2.0f, BAT_LOW_V = 3.4f;
 constexpr uint8_t TACH_EDGES_PER_REV = 8;
 constexpr int     OBSTACLE_CM = 20;

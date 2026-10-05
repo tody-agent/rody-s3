@@ -12,4 +12,7 @@ void readLine(int& l, int& r);
 void resetTach();
 void getTachCounts(uint32_t& l, uint32_t& r);
 void sampleTach(uint32_t ms, uint32_t& edgesL, uint32_t& edgesR, float& rpmL, float& rpmR);
+bool isEmergencyStop();
+bool isFallen();
+bool isBellyUp();
 }

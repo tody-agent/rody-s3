@@ -1,4 +1,5 @@
 # Debug playbook (agent dùng khi test FAIL)
+> 💡 *Xem cẩm nang chuyên sâu về toolchain, debug crash dump và xử lý sự cố toàn diện tại: [**`docs/FIRMWARE_GUIDE.md`**](../FIRMWARE_GUIDE.md)*
 
 | Triệu chứng | Nguyên nhân hay gặp | Kiểm tra / xử lý |
 |---|---|---|

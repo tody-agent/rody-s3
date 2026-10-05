@@ -3,6 +3,7 @@
 #include "../include/pins.h"
 #include "store.h"
 #include "sensors.h"
+#include "imu_sensor.h"
 #include "drive.h"
 #include "console.h"
 #include "behaviors.h"
@@ -20,33 +21,48 @@ static void setLedColor(uint8_t r, uint8_t g, uint8_t b) {
 
 void setup() {
   console::init();
-  delay(100);
+#if ARDUINO_USB_CDC_ON_BOOT
+  Serial.setTxTimeoutMs(10);
+#endif
+  delay(150);
+
   Serial.println("# =========================================");
   Serial.println("# [boot] Rody S3 (ESP32-S3 N16R8) Initializing");
-  Serial.println("# [boot] Mochi/Xiaozhi TFT + I2S Audio Active");
+  Serial.println("# [boot] Multi-Display Auto-Detection & Self-Test Active");
   Serial.println("# =========================================");
+  Serial.flush();
 
   // Status LED
   statusLed.begin();
-  statusLed.setBrightness(40);
-  setLedColor(0, 50, 200); // Blue during boot
+  statusLed.setBrightness(50);
+  setLedColor(0, 100, 255); // Cyan-Blue during boot
 
-  // Mochi / Xiaozhi TFT Display
+  // NVS Storage & OLED Auto-Probe
+  store::init();
+
+  // Screen Hardware Initialization & Visual Splash
   emotion_gfx::init();
   emotion_gfx::setEmotion(emotion_gfx::Emotion::HAPPY);
+  setLedColor(0, 255, 60); // Bright Green: Screen initialized!
 
   // Audio Output (MAX98357A)
   audio_player::init();
   audio_player::playSfx(audio_player::SoundEffect::BOOT);
 
+
   // Audio Input (INMP441)
   voice_control::init();
 
-  // NVS Storage
-  store::init();
-
   // Sensors & Tachometer
   sensors::init();
+
+  // IMU Accelerometer / Gyro (MPU6050 / GY-6500 / GY-9250)
+  imu_sensor::init();
+  if (imu_sensor::isAvailable()) {
+    Serial.printf("# [boot] IMU Active: %s at 0x%02X\n", imu_sensor::getChipName(), imu_sensor::getActiveAddress());
+  } else {
+    Serial.println("# [boot] IMU: Not detected (optional)");
+  }
 
   // PCA9685 Motor Driver
   drive::init();
@@ -77,10 +93,12 @@ void setup() {
   }
 
   Serial.println("# [boot] Setup complete. Listening for commands...");
+  Serial.flush();
 }
 
 void loop() {
   console::process();
+  imu_sensor::update();
   drive::update();
   behaviors::update();
   web::update();
@@ -89,6 +107,17 @@ void loop() {
   emotion_gfx::update();
   audio_player::update();
   voice_control::update();
+
+  // Periodic heartbeat log every 3s
+  static uint32_t lastHb = 0;
+  if (millis() - lastHb > 3000) {
+    lastHb = millis();
+    Serial.printf("# [hb] Active Display: %s (%dx%d), Heap=%u\n",
+                  store::getDisplayTypeName(store::getDisplayType()),
+                  emotion_gfx::getWidth(), emotion_gfx::getHeight(),
+                  (unsigned int)ESP.getFreeHeap());
+    Serial.flush();
+  }
 
   // Transition from boot HAPPY to IDLE after 3.5s
   static bool bootHappyDone = false;

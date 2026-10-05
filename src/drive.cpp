@@ -14,14 +14,16 @@ static uint32_t stopDeadlineMs = 0;
 static bool activeMotion = false;
 
 bool init() {
-  Wire.begin(pins::I2C_SDA, pins::I2C_SCL);
+  Wire.begin(pins::I2C_SDA, pins::I2C_SCL, 400000);
+  Wire.setTimeOut(20);
+  Wire.setClock(400000);
   if (!pca.begin()) {
     Serial.println("# [drive] PCA9685 connection failed at 0x40");
     return false;
   }
   pca.setPWMFreq(50); // 50 Hz for standard analog/digital servos
   stop();
-  Serial.println("# [drive] PCA9685 initialized at 50Hz, channels full-off");
+  Serial.println("# [drive] PCA9685 initialized at 50Hz, channels full-off, I2C 400kHz");
   return true;
 }
 
@@ -36,18 +38,18 @@ bool isMoving() {
   return activeMotion;
 }
 
-bool setPwmRaw(int ch, uint16_t us) {
+bool setPwmRaw(int ch, uint16_t us, uint32_t durationMs) {
   if (ch != CH_L && ch != CH_R) return false;
   if (us == 0) {
     pca.setPin(ch, 0, false);
   } else {
-    if (sensors::isBatteryLow()) {
+    if (sensors::isBatteryLow() || sensors::isEmergencyStop()) {
       stop();
       return false;
     }
     pca.writeMicroseconds(ch, us);
     activeMotion = true;
-    stopDeadlineMs = millis() + 10000; // max 10s watchdog for raw pwm
+    stopDeadlineMs = millis() + (durationMs > 0 ? durationMs : 10000);
   }
   return true;
 }
@@ -56,6 +58,11 @@ bool drive(float speedL, float speedR, uint32_t durationMs, const char*& err) {
   if (sensors::isBatteryLow()) {
     stop();
     err = "low_battery";
+    return false;
+  }
+  if (sensors::isEmergencyStop()) {
+    stop();
+    err = "emergency_stop_tilt";
     return false;
   }
   if (!store::gCalValid) {
@@ -92,6 +99,11 @@ void update() {
   if (activeMotion) {
     if (sensors::isBatteryLow()) {
       Serial.println("# [drive] Low battery detected during motion! Emergency stop.");
+      stop();
+      return;
+    }
+    if (sensors::isEmergencyStop()) {
+      Serial.println("# [drive] Emergency tilt/fall detected! Cutting motor power.");
       stop();
       return;
     }

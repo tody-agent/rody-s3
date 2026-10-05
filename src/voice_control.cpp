@@ -183,7 +183,7 @@ void update() {
   if (!micInitialized || !listeningActive) return;
 
   size_t bytesRead = 0;
-  esp_err_t res = i2s_read(MIC_I2S_PORT, rawSampleBuffer, sizeof(rawSampleBuffer), &bytesRead, 10);
+  esp_err_t res = i2s_read(MIC_I2S_PORT, rawSampleBuffer, sizeof(rawSampleBuffer), &bytesRead, 0);
   if (res != ESP_OK || bytesRead == 0) return;
 
   size_t samples = bytesRead / sizeof(int32_t);
