@@ -47,6 +47,10 @@ Use this skill whenever:
 9. NEVER BLEACH OR RECOLOR COMPONENT SVGS INTO MONOCHROME — PRESERVE AUTHENTIC SOLDER MASK & SILKSCREEN COLORS (ESP32 Navy/Matte Black, MPU6050 Blue, ST7789 Red, TTP223 Red).
 10. DUAL-THEME CAD IS MANDATORY (DARK CAD #090d16 & LIGHT BLUEPRINT #f8fafc) WITH HIGH-CONTRAST SATURATED WIRES (WCAG AA ≥ 4.5:1) AND CASING SLEEVES.
 11. NEVER LEAVE UNBALANCED CSS BRACES OR BROKEN MEDIA QUERIES (CANONICAL AUDIT BEFORE DEPLOYING).
+12. HARD IRON ANCHOR GUARANTEE: ENDPOINTS pts[0] AND pts[pts.length - 1] ARE STRICTLY IMMUTABLE. CONFLICT RESOLVERS MUST NEVER MUTATE PIN ANCHORS.
+13. GEOMETRY-AWARE CORRIDORS: NEVER CLASSIFY A BUNDLE'S CORRIDOR FROM A SINGLE WIRE (e.g. GND); EVALUATE COMPONENT BOUNDING BOX GAPS & PIN SIDES.
+14. ZERO ACCIDENTAL POPUPS: SINGLE-TAP ONLY ISOLATES WIRES; LONG-PRESS (>=450MS) OR (i) OPENS DETAILED INSPECTOR; HIDE QUICK-JUMP ON MOBILE.
+15. DUAL-THEME CONTRAST INTEGRITY: NEVER HARDCODE color:#fff ON TEXT/TABLE CELLS; USE color:var(--fg) (.pin-name-cell) FOR 100% READABILITY.
 ```
 
 ---
@@ -119,14 +123,38 @@ When generating circuit documentation, NEVER provide flat ASCII text, messy over
 
 **Mandatory Visual Design Rules:**
 1. **Clear Pin Labels & Toggle Mode (Chế Độ Hiện Tên Chân Pin):** Display legible monospace text labels right next to every component pin dot (`3V3`, `IO4`, `SDA`, `SCL`, `GND`, `DIN`...). Distinct visual badges for Power (`red`), Ground (`black`), Signal (`blue/cyan/gold`), and Reserved/Forbidden (`gray/red outline`). Provide a prominent top toolbar toggle button `[🏷️ Tên Chân]` (Keyboard Shortcut `L`) so makers can view all pin labels at a glance without hover guessing.
-2. **Channel Ribbon Bus Routing (Phân Luồng Dây Băng Ribbon - Pitch 12-14px):**
+2. **Channel Ribbon Bus Routing & Geometry-Aware Corridors (Phân Luồng Dây Băng Ribbon & Nhận Diện Hành Lang):**
    - NEVER collapse wires between two components into a single midpoint X (`(from.x + to.x) / 2`). That creates an unreadable clump.
    - Bundle wires by connected component pairs (`[c1, c2].sort().join('--')`).
+   - **Geometry-Aware Corridor Classification:** NEVER classify a bundle's corridor using only the first wire's $\Delta x \ge \Delta y$. (If wire 0 is a long diagonal ground wire from $y=927$ to $y=392$, $\Delta y > \Delta x$, which would wrongly force the entire bundle into a vertical corridor!). Instead, evaluate component bounding boxes and pin orientation:
+     ```javascript
+     const gapX = Math.max(c1.x, c2.x) - Math.min(c1.x + c1.w, c2.x + c2.w);
+     const gapY = Math.max(c1.y, c2.y) - Math.min(c1.y + c1.h, c2.y + c2.h);
+     const horizontalPinSides = ['left', 'right'];
+     const pinsFaceHorizontal = bundleItems.some(it => 
+       horizontalPinSides.includes(it.from.pin.side) && horizontalPinSides.includes(it.to.pin.side)
+     );
+     const isHorizontalCorridor = pinsFaceHorizontal || (gapX >= gapY) || (gapX > 30);
+     ```
    - **Monotonic Pin Ordering:** Sort pins within each bundle monotonically by destination Y coordinate (`b.to.y - a.to.y`) so parallel wires flow naturally without internal crossing.
    - Allocate discrete vertical trunks spaced by a pitch of 12-14px: $X_{\text{trunk}} = X_{\text{start}} + \text{idx} \times \text{pitch}$.
-3. **Global Vertical Trunk Conflict Resolver (Bộ Giải Quyết Xung Đột Đường Thân):**
+   - **Pin Approach Vectors & Directional Stubs:**
+     - Pins with `side: 'right'` MUST enter/exit horizontally to the right ($+X$).
+     - Pins with `side: 'left'` MUST enter/exit horizontally to the left ($-X$).
+     - Even in vertical corridors, insert a horizontal lead stub ($\ge 20\text{px}$) before turning, preventing diagonal cuts through component solder pads.
+3. **Global Vertical Trunk Conflict Resolver & Anchor Immutability (Bộ Chống Chập Dây & Bất Biến Điểm Neo):**
    - Perform a multi-pass sweep (up to 6 passes) scanning all vertical trunks across different wire bundles.
    - If two vertical segments share nearly the same X coordinate ($|x_1 - x_2| < 8\text{px}$) and their vertical Y spans overlap by $> 6\text{px}$, push the second trunk outward by $+14\text{px}$ until 0 vertical trunk overlaps remain.
+   - **CRITICAL ANCHOR PROTECTION:** The conflict resolver MUST ONLY scan and shift *internal waypoints* (`for (let i = 1; i < r.pts.length - 2; i++)`). It MUST NEVER touch `pts[0]` (start pin) or `pts[pts.length - 1]` (end pin). Shifting index 0 or index `pts.length - 1` pulls wires away from pins and leaves hanging stubs.
+   - **Hard Iron Guarantee:** At the exit of waypoint calculation, explicitly enforce:
+     ```javascript
+     routes.forEach(r => {
+       if (r.pts && r.pts.length >= 2) {
+         r.pts[0].x = r.from.x; r.pts[0].y = r.from.y;
+         r.pts[r.pts.length - 1].x = r.to.x; r.pts[r.pts.length - 1].y = r.to.y;
+       }
+     });
+     ```
 4. **Directional Semicircular Crossing Bridge Hops (Cầu Nhảy Dây Bán Nguyệt R=6px):**
    - Wires MUST NEVER cross as ambiguous intersecting lines. Wires only connect when a junction dot (`●`) is present.
    - Any vertical trunk crossing another wire's horizontal segment must insert a semicircular arch ($R=6\text{px}$):
@@ -232,6 +260,18 @@ Before claiming any circuit design is ready:
    - [ ] All CSS `@media` queries and style blocks have balanced, matching `{}` braces (verify with Node.js parser or bracket balance check).
    - [ ] Dual-Theme check: Both Dark CAD and Light Blueprint modes render cleanly with zero visual polygon artifacts.
    - [ ] Authentic PCB visual audit: Component SVGs retain realistic board colors (zero monochrome bleaching or `recolorArtwork`).
+   - [ ] High-contrast typography audit: Zero occurrences of hardcoded `color: #fff;` on table cells or text blocks (use `color: var(--fg)` via `.pin-name-cell`).
+
+4. **Wire Pin Anchor & Zero-Disconnection Audit:**
+   Validate that every wire in the rendered schematic strictly starts at `from` pin position and ends at `to` pin position with 0 disconnected stubs:
+   ```javascript
+   routes.forEach(r => {
+     const s = Math.hypot(r.pts[0].x - r.from.x, r.pts[0].y - r.from.y);
+     const e = Math.hypot(r.pts[r.pts.length - 1].x - r.to.x, r.pts[r.pts.length - 1].y - r.to.y);
+     if (s > 0.1 || e > 0.1) throw new Error(`Wire ${r.wireId} detached from pin!`);
+   });
+   ```
+   Target: **0 disconnected or dangling wires**.
 
 ---
 

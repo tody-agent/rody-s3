@@ -551,6 +551,124 @@
       color: #fff;
     }
 
+    /* Quick Card Header Actions (Info / Details Button) */
+    .comp-header-bar {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 25;
+      pointer-events: auto;
+    }
+    .comp-info-btn {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #38bdf8;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      transition: all 0.15s;
+    }
+    .comp-info-btn:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: scale(1.12);
+    }
+    .pin-name-cell {
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .shopee-btn {
+      background: linear-gradient(135deg, #ff5722, #ea580c) !important;
+      color: #ffffff !important;
+      border: none !important;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35) !important;
+      font-weight: 700 !important;
+    }
+    .shopee-btn:hover, .shopee-btn:active {
+      filter: brightness(1.1) !important;
+    }
+
+    /* Active Device Floating Capsule (Minimalist Mobile & Desktop Indicator) */
+    #active-device-capsule {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(25px);
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 1005;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #active-device-capsule.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .capsule-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .capsule-action-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .capsule-action-btn:hover {
+      background: var(--primary-hover);
+      transform: scale(1.03);
+    }
+    .capsule-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 4px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    .capsule-close-btn:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.15);
+    }
+
     /* Floating Quick Jumper Bar */
     #quick-jump-bar {
       position: fixed;
@@ -939,17 +1057,13 @@
       #zoom-widget {
         display: none !important;
       }
-      /* Mobile Quick Jumper: full width, zero collision */
+      /* Mobile Quick Jumper: hidden on mobile to maximize canvas viewport */
       #quick-jump-bar {
-        bottom: 12px;
-        left: 10px;
-        right: 10px;
-        max-width: calc(100vw - 20px);
-        padding: 4px 8px;
-        scrollbar-width: none;
+        display: none !important;
       }
-      #quick-jump-bar::-webkit-scrollbar {
-        display: none;
+      #active-device-capsule {
+        bottom: 14px;
+        max-width: calc(100vw - 20px);
       }
 
       /* Inspector Bottom Sheet on Mobile */
@@ -1322,6 +1436,21 @@
   <div id="quick-jump-bar">
     <span class="jump-title whitespace-nowrap shrink-0">🧭 Xem nhanh:</span>
     <button class="jump-chip reset-chip whitespace-nowrap shrink-0" onclick="fitToScreen()" title="Căn toàn bộ linh kiện vừa màn hình" style="color:var(--accent); font-weight:700;">↺ Vừa Màn Hình</button>
+  </div>
+
+  <!-- Floating Active Device Control Capsule (Appears when a device is isolated) -->
+  <div id="active-device-capsule">
+    <div class="capsule-title">
+      <span style="font-size:14px;">🎯</span>
+      <span id="capsule-comp-name">Tên Linh Kiện</span>
+    </div>
+    <button class="capsule-btn" onclick="openActiveDeviceDrawer()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Chi Tiết
+    </button>
+    <button class="capsule-btn capsule-close" onclick="clearIsolatedComponent()" title="Hiện lại tất cả dây">
+      ✕ Đóng
+    </button>
   </div>
 
   
@@ -1928,8 +2057,14 @@
         div.style.width = `${comp.w}px`;
         div.style.height = `${comp.h}px`;
 
-        // Render Realistic PCB artwork
-        div.innerHTML = getComponentSvg(comp);
+        // Card header bar with Info/Details (ⓘ) button
+        const headerBar = `
+          <div class="comp-header-bar">
+            <span class="comp-drag-hint" title="Kéo thả để dời vị trí linh kiện">⋮⋮ Di chuyển</span>
+            <button class="comp-info-btn" onclick="openComponentDetails('${comp.id}', event)" title="Xem thông số kỹ thuật & Shopee BOM">ⓘ</button>
+          </div>
+        `;
+        div.innerHTML = headerBar + getComponentSvg(comp);
 
         // Render Component Pins & Clear Pin Labels
         comp.pins.forEach(pin => {
@@ -1972,12 +2107,6 @@
           }
           div.appendChild(labelEl);
         });
-
-        // Click on component shows Shopping & Spec Info in Inspector
-        div.onclick = (e) => {
-          if (e.target.classList.contains('pin')) return;
-          selectComponent(comp.id);
-        };
 
         container.appendChild(div);
         setupDraggable(div, comp);
@@ -2871,11 +3000,6 @@
       const compEl = document.getElementById(`comp-${compId}`);
       if (compEl) compEl.classList.add('selected-comp');
 
-      if (window.innerWidth <= 768) {
-        const insp = document.getElementById('inspector');
-        if (insp) insp.classList.add('sheet-expanded');
-      }
-
       const comp = components[compId];
       if (!comp) return;
 
@@ -2901,17 +3025,16 @@
         <div class="info-row"><span class="info-label">Giá tham khảo</span><span class="info-val" style="color:var(--success); font-weight:700;">${comp.price}</span></div>
         <div class="info-row"><span class="info-label">Thông số chuẩn</span><span class="info-val" style="font-size:11px;">${comp.spec}</span></div>
         
-        
         <button class="action-btn" style="margin-top:10px; width:100%; justify-content:center; min-height:38px; ${isIsolated ? 'background:var(--primary); color:#fff;' : ''}" onclick="toggleIsolateComponent('${compId}')">
           ${isolateBtnLabel}
         </button>
 
         <div style="margin-top:10px; padding:10px; background:var(--surface-deep); border:1px solid var(--border); border-radius:8px;">
           <div style="font-size:11px; color:var(--fg-muted); margin-bottom:4px;">Từ khóa tìm mua trên Shopee:</div>
-          <div style="font-size:12px; font-weight:700; color:#fff; font-family:monospace; word-break:break-all;">
+          <div style="font-size:12px; font-weight:700; color:var(--fg); font-family:monospace; word-break:break-all;">
             "${comp.searchKw}"
           </div>
-          <button class="copy-btn" onclick="copyText('${comp.searchKw}', this)">
+          <button class="copy-btn shopee-btn" onclick="copyText('${comp.searchKw}', this)">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Sao chép từ khóa
           </button>
@@ -2925,14 +3048,77 @@
       renderWires();
     }
 
+    function openComponentDetails(compId, event) {
+      if (event) {
+        try { event.stopPropagation(); } catch (_) {}
+      }
+      const comp = components[compId];
+      if (comp) {
+        isolatedCompId = comp.id;
+        selectedCompId = comp.id;
+        showActiveDeviceCapsule(comp);
+        selectComponent(comp.id);
+        const insp = document.getElementById('inspector');
+        if (insp) {
+          if (window.innerWidth <= 768) {
+            insp.classList.add('sheet-expanded');
+            insp.classList.remove('minimized');
+          } else {
+            insp.classList.remove('minimized');
+          }
+        }
+      }
+    }
+
     function toggleIsolateComponent(compId) {
       if (isolatedCompId === compId) {
         isolatedCompId = null;
+        selectedCompId = null;
+        hideActiveDeviceCapsule();
+        document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
+        showToast('👁️ Đã hiển thị lại toàn bộ dây');
       } else {
         isolatedCompId = compId;
+        selectedCompId = compId;
+        const comp = components[compId];
+        showActiveDeviceCapsule(comp);
+        document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
+        const compEl = document.getElementById(`comp-${compId}`);
+        if (compEl) compEl.classList.add('selected-comp');
+        showToast(`🎯 Đang cô lập dây của: ${comp ? comp.title : compId}`);
       }
-      selectComponent(compId);
       renderWires();
+    }
+
+    function showActiveDeviceCapsule(comp) {
+      const capsule = document.getElementById('active-device-capsule');
+      const nameEl = document.getElementById('capsule-comp-name');
+      if (capsule && nameEl && comp) {
+        nameEl.textContent = comp.title || comp.id;
+        capsule.classList.add('show');
+      }
+    }
+
+    function hideActiveDeviceCapsule() {
+      const capsule = document.getElementById('active-device-capsule');
+      if (capsule) capsule.classList.remove('show');
+    }
+
+    function clearIsolatedComponent() {
+      isolatedCompId = null;
+      selectedCompId = null;
+      hideActiveDeviceCapsule();
+      document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
+      renderWires();
+      showToast('👁️ Đã hiển thị lại toàn bộ dây');
+    }
+
+    function openActiveDeviceDrawer() {
+      if (isolatedCompId && components[isolatedCompId]) {
+        openComponentDetails(isolatedCompId);
+      } else if (selectedCompId && components[selectedCompId]) {
+        openComponentDetails(selectedCompId);
+      }
     }
 
     // --- BOM Shopping Modal Generator ---
@@ -2952,10 +3138,10 @@
             ${comp.id.startsWith('servo') ? '2' : (comp.id.startsWith('ir') ? '2' : '1')}
           </td>
           <td>
-            <div style="font-family:monospace; font-size:11.5px; color:#fff; background:var(--surface-deep); padding:4px 8px; border-radius:4px; border:1px solid var(--border); margin-bottom:6px;">
+            <div style="font-family:monospace; font-size:11.5px; color:var(--fg); background:var(--surface-deep); padding:4px 8px; border-radius:4px; border:1px solid var(--border); margin-bottom:6px;">
               ${comp.searchKw}
             </div>
-            <button class="copy-btn" onclick="copyText('${comp.searchKw}', this)">
+            <button class="copy-btn shopee-btn" onclick="copyText('${comp.searchKw}', this)">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Sao chép
             </button>
@@ -3136,47 +3322,84 @@
       renderWires();
     }
 
-    // --- Interactive Dragging Components ---
+    // --- Interactive Dragging Components & Touch Gestures ---
     function setupDraggable(el, comp) {
       let isDragging = false;
+      let hasDragged = false;
       let startX, startY;
+      let compLongPressTimer = null;
+      let isCompLongPress = false;
 
       el.addEventListener('pointerdown', (e) => {
-        if (e.target.classList.contains('pin')) return;
+        if (e.target.classList.contains('pin') || e.target.closest('.comp-info-btn') || e.target.closest('button')) return;
+        if (e.button !== undefined && e.button !== 0) return;
         isDragging = true;
-        el.classList.add('dragging');
+        hasDragged = false;
+        isCompLongPress = false;
         startX = e.clientX - comp.x;
         startY = e.clientY - comp.y;
-        el.setPointerCapture(e.pointerId);
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+
+        // Long press timer (450ms) to open details bottom sheet
+        compLongPressTimer = setTimeout(() => {
+          isCompLongPress = true;
+          try { navigator.vibrate?.(45); } catch (_) {}
+          openComponentDetails(comp.id, e);
+          showToast(`ℹ️ Chi tiết linh kiện: ${comp.title}`);
+        }, 450);
       });
 
       el.addEventListener('pointermove', (e) => {
         if (!isDragging) return;
-        comp.x = e.clientX - startX;
-        comp.y = e.clientY - startY;
-        el.style.left = `${comp.x}px`;
-        el.style.top = `${comp.y}px`;
+        const dx = (e.clientX - startX) - comp.x;
+        const dy = (e.clientY - startY) - comp.y;
+        if (Math.hypot(dx, dy) > 5) {
+          clearTimeout(compLongPressTimer);
+        }
+        if (!hasDragged && Math.hypot(dx, dy) > 4) {
+          hasDragged = true;
+          el.classList.add('dragging');
+        }
+        if (hasDragged) {
+          comp.x = Math.round(e.clientX - startX);
+          comp.y = Math.round(e.clientY - startY);
+          el.style.left = `${comp.x}px`;
+          el.style.top = `${comp.y}px`;
 
-        // Update checkpoint badges attached to this component
-        checkpoints.forEach(cp => {
-          if (cp.targetComp === comp.id) {
-            const b = document.getElementById(`badge-${cp.id}`);
-            if (b) {
-              b.style.left = `${comp.x + cp.x}px`;
-              b.style.top = `${comp.y + cp.y}px`;
+          // Update checkpoint badges attached to this component
+          checkpoints.forEach(cp => {
+            if (cp.targetComp === comp.id) {
+              const b = document.getElementById(`badge-${cp.id}`);
+              if (b) {
+                b.style.left = `${comp.x + cp.x}px`;
+                b.style.top = `${comp.y + cp.y}px`;
+              }
             }
-          }
-        });
+          });
 
-        renderWires();
+          renderWires();
+        }
       });
 
-      el.addEventListener('pointerup', (e) => {
+      const handlePointerEnd = (e) => {
+        clearTimeout(compLongPressTimer);
         if (!isDragging) return;
         isDragging = false;
         el.classList.remove('dragging');
-        el.releasePointerCapture(e.pointerId);
-      });
+        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+
+        if (hasDragged) {
+          renderWires();
+          showToast(`✓ Đã lưu vị trí: ${comp.title || comp.id}`);
+        } else if (!isCompLongPress) {
+          // Single tap: ONLY isolate wires! Do NOT open popup/drawer!
+          toggleIsolateComponent(comp.id);
+        }
+        setTimeout(() => { hasDragged = false; isCompLongPress = false; }, 60);
+      };
+
+      el.addEventListener('pointerup', handlePointerEnd);
+      el.addEventListener('pointercancel', handlePointerEnd);
     }
 
     // --- Enhanced Viewport Pan & Zoom Engine (macOS Trackpad & Gesture Optimized) ---

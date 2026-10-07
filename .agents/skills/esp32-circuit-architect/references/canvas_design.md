@@ -126,3 +126,52 @@ Secondary CAD controls are housed in a sliding drawer (`right: 0`, `z-index: 250
   - Double-tap empty canvas to auto-fit screen (`fitView()` / `fitToScreen()`).
   - Single-tap empty canvas to clear selection, close bottom sheet, un-isolate wires, and hide the capsule.
 
+---
+
+## 6. Wire Endpoint Immutability, Conflict Resolution & Geometry-Aware Corridors
+
+### The Iron Anchor Invariant
+In CAD circuit diagrams, a wire that terminates even $5\text{px}$ away from its pin destroys user trust and creates ambiguity.
+1. **Endpoint Protection in Conflict Solvers:**
+   - Global Vertical Trunk Conflict Resolver sweeps vertical segments to eliminate overlapping lines ($|x_1 - x_2| < 8\text{px}$ and vertical overlap $> 6\text{px}$).
+   - **Crucial Rule:** The conflict resolver MUST NEVER include index $0$ (`p1 = pts[0]`) or index $N-2$ (`p2 = pts[N-1]`). Only *internal trunk waypoints* (`for (let i = 1; i < pts.length - 2; i++)`) may be shifted by $+14\text{px}$.
+   - Mutating index $0$ or index $N-1$ pulls the wire off the component solder pad, producing floating wire stubs.
+2. **Hard Iron Assertion:**
+   - Every waypoint calculator MUST conclude with an explicit assertion enforcing pin anchoring:
+     ```javascript
+     routes.forEach(r => {
+       if (r.pts && r.pts.length >= 2) {
+         r.pts[0].x = r.from.x; r.pts[0].y = r.from.y;
+         r.pts[r.pts.length - 1].x = r.to.x; r.pts[r.pts.length - 1].y = r.to.y;
+       }
+     });
+     ```
+3. **Geometry-Aware Corridor Classification:**
+   - NEVER determine whether a bundle is horizontal or vertical using only the first wire's $\Delta x \ge \Delta y$.
+   - A single diagonal power or ground wire from the bottom of an MCU ($y=927$) to the top of a peripheral ($y=392$) has $\Delta y > \Delta x$. If tested alone, it forces an entire side-by-side bundle into a vertical corridor!
+   - **Correct Approach:**
+     ```javascript
+     const gapX = Math.max(c1.x, c2.x) - Math.min(c1.x + c1.w, c2.x + c2.w);
+     const gapY = Math.max(c1.y, c2.y) - Math.min(c1.y + c1.h, c2.y + c2.h);
+     const horizontalPinSides = ['left', 'right'];
+     const pinsFaceHorizontal = bundleItems.some(it => 
+       horizontalPinSides.includes(it.from.pin.side) && horizontalPinSides.includes(it.to.pin.side)
+     );
+     const isHorizontalCorridor = pinsFaceHorizontal || (gapX >= gapY) || (gapX > 30);
+     ```
+
+---
+
+## 7. High-Contrast Dual-Theme Typography & Clean UI Standards
+
+1. **Zero White-on-White Text in Light Mode:**
+   - Never use inline `color: #fff;` or `color: white;` inside component inspector tables, modals, or headers.
+   - In Light Blueprint mode, white text renders on a white card background, rendering pin names and labels completely invisible.
+   - Use CSS semantic variable `color: var(--fg);` (via class `.pin-name-cell`) for 100% contrast in both dark and light modes.
+2. **Shopee BOM Action Button (`.shopee-btn`):**
+   - High-contrast gradient: `linear-gradient(135deg, #ff5722, #ea580c)`.
+   - White text with subtle drop-shadow `0 2px 8px rgba(234, 88, 12, 0.35)`.
+3. **Zero Duplicate Icons:**
+   - In `#menu-drawer` and `#subsystem-bar`, never place an emoji next to an SVG icon or dot indicator (keep clean, professional SVG icons).
+
+
