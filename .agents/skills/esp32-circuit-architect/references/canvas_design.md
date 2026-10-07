@@ -106,17 +106,23 @@ Secondary CAD controls are housed in a sliding drawer (`right: 0`, `z-index: 250
 2. **Hiển Thị & Thao Tác:** Bật/tắt tên chân pin (`L`), Căn vừa màn hình (`F`), Ẩn/hiện khối linh kiện, Khôi phục vị trí mặc định.
 3. **Tài Liệu Hướng Dẫn:** Danh mục Shopee BOM, Sổ tay lắp ráp & đo kiểm M1–M8.
 
-### Contextual Progressive Disclosure ("Ấn vào thiết bị rồi mới cần tuỳ chọn")
-Device-specific actions do not pollute the global canvas. Selecting a component opens the inspector bottom sheet / side drawer containing:
-- 🎯 `[Cô Lập Dây Thiết Bị / Focus Wires]`: Dims all unrelated wiring, highlighting only the pins and wires connected to this device (`isolatedCompId`).
-- 🛒 `[Mua Shopee]`: 1-click clipboard copy of component search keyword.
-- Pin table & voltage ratings.
+### Contextual Progressive Disclosure & Non-Intrusive Wire Isolation ("Ấn thiết bị hiện dây - Giữ hoặc ấn ⓘ mới hiện Chi Tiết")
+- **Single Tap / Click on Component:** MUST NOT open a popup or bottom sheet! When a user taps or clicks any component card, it only highlights and isolates connected wires (`toggleIsolateComponent(compId)`), dimming unrelated wires and displaying a compact floating capsule `[🎯 Device Name | ⓘ Chi Tiết | ✕]` (`#active-device-capsule`) at the bottom. This leaves 100% of the canvas visible so users can trace wires unobstructed.
+- **Triggering Detailed Bottom Sheet / Drawer:** Detailed specs and pinout tables are revealed ONLY when the user:
+  1. Long-presses on the component card for $\ge 450\text{ms}$ (with haptic feedback vibration).
+  2. OR taps the explicit `ⓘ` button in the component card header (`.comp-info-btn`).
+  3. OR taps `ⓘ Chi Tiết` on the floating active device capsule.
+- **Inside the Drawer / Bottom Sheet:**
+  - 🎯 `[Cô Lập Dây Thiết Bị / Focus Wires]`: Toggle wire isolation state with `background: var(--surface-elevated); color: var(--fg);`.
+  - 🛒 `[Mua Shopee]`: Distinctive vibrant gradient button (`.shopee-btn`: `#ff5722` to `#ea580c`) with 1-click clipboard copy of exact commercial search keyword.
+  - **High-Contrast Pin Table:** Pin names MUST use `color: var(--fg);` (`.pin-name-cell`). NEVER hardcode `color: #fff;` on table cells (which becomes invisible white-on-white in Light Blueprint Mode).
+- **Zero Duplicate Icons:** In `#subsystem-bar` and `#menu-drawer`, never place an emoji next to an SVG icon or dot indicator (keep clean, professional SVG icons).
 
 ### Mobile Touch Ergonomics (Zero Collision Architecture)
+- **Zero Screen Clutter on Mobile:** Hide `#quick-jump-bar` on mobile viewports ($\le 768\text{px}$) with `display: none !important;` to reclaim valuable vertical screen real estate. The floating `#active-device-capsule` only appears when a component is actively isolated, providing a non-intrusive action bar (`[🎯 Name | ⓘ Chi Tiết | ✕]`).
 - **Eliminate Floating Zoom Widget:** On mobile viewports ($\le 768\text{px}$), `#nav-controls` is hidden (`display: none !important;`). Touchscreen users have intuitive multi-touch:
   - 1-Finger drag to pan.
   - 2-Finger pinch to zoom centered at touch midpoint.
   - Double-tap empty canvas to auto-fit screen (`fitView()` / `fitToScreen()`).
-  - Single-tap empty canvas to clear selection, close bottom sheet, and un-isolate wires.
-- **Full-Width Quick Jump Bar (`#quick-jump-bar`):** Expands across the entire bottom (`bottom: 12px; left: 10px; right: 10px; max-width: calc(100vw - 20px)`) with smooth horizontal touch scrolling.
+  - Single-tap empty canvas to clear selection, close bottom sheet, un-isolate wires, and hide the capsule.
 

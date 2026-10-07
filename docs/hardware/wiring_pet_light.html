@@ -464,7 +464,7 @@
       transition: none !important;
     }
 
-    /* Quick Card Header Actions (Visibility Hide Button & Drag Indicator) */
+    /* Quick Card Header Actions (Info / Details Button) */
     .comp-header-bar {
       position: absolute;
       top: 6px;
@@ -475,25 +475,41 @@
       z-index: 25;
       pointer-events: auto;
     }
-    .comp-vis-btn {
+    .comp-info-btn {
       background: rgba(15, 23, 42, 0.88);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #94a3b8;
-      width: 22px;
-      height: 22px;
-      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #38bdf8;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 11px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
       transition: all 0.15s;
     }
-    .comp-vis-btn:hover {
-      background: var(--danger);
+    .comp-info-btn:hover {
+      background: var(--primary);
       color: #fff;
-      border-color: var(--danger);
-      transform: scale(1.1);
+      border-color: var(--primary);
+      transform: scale(1.12);
+    }
+    .pin-name-cell {
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .shopee-btn {
+      background: linear-gradient(135deg, #ff5722, #ea580c) !important;
+      color: #ffffff !important;
+      border: none !important;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35) !important;
+      font-weight: 700 !important;
+    }
+    .shopee-btn:hover, .shopee-btn:active {
+      filter: brightness(1.1) !important;
     }
     .comp-drag-hint {
       position: absolute;
@@ -1242,6 +1258,74 @@
     }
     .copy-btn:hover, .copy-btn:active { background: var(--border-light); }
 
+    /* Active Device Floating Capsule (Minimalist Mobile & Desktop Indicator) */
+    #active-device-capsule {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(25px);
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      border-radius: 30px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      z-index: 1005;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #active-device-capsule.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .capsule-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--fg);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .capsule-btn {
+      background: var(--primary);
+      color: #ffffff !important;
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      min-height: 28px;
+    }
+    .capsule-btn:hover {
+      background: var(--primary-hover);
+    }
+    .capsule-close {
+      background: transparent;
+      border: none;
+      color: var(--fg-muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .capsule-close:hover {
+      color: var(--fg);
+    }
+
     /* =========================================================
        📱 MOBILE OPTIMIZATIONS (< 768px and < 480px)
        ========================================================= */
@@ -1342,17 +1426,13 @@
         padding: 14px 16px 30px;
       }
 
-      /* Quick Jumper on Mobile: full width, zero collision! */
+      /* Hide quick-jump-bar on mobile: frees 100% canvas space, users touch components directly */
       #quick-jump-bar {
-        bottom: 12px;
-        left: 10px;
-        right: 10px;
-        max-width: calc(100vw - 20px);
-        padding: 4px 8px;
-        scrollbar-width: none;
+        display: none !important;
       }
-      #quick-jump-bar::-webkit-scrollbar {
-        display: none;
+      #active-device-capsule {
+        bottom: 14px;
+        max-width: calc(100vw - 20px);
       }
       /* Hide zoom buttons on mobile - gestures (pinch-to-zoom & double-tap to fit) provide superior UX */
       #nav-controls {
@@ -1637,7 +1717,7 @@
   <!-- Top Header Navigation -->
   <header>
     <div class="title-group">
-      <span class="badge whitespace-nowrap shrink-0" style="background:linear-gradient(135deg,#0284c7,#10b981);">☀️ Rody S3 Pet (Light Model)</span>
+      <span class="badge whitespace-nowrap shrink-0" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);">🐾 Rody S3 Pet</span>
       <h1>
         Sơ Đồ Đấu Dây Pet Edition
         <span class="sub-title">(MPU6050 + Touch + TFT + Mic + Loa + PCA9685)</span>
@@ -1646,8 +1726,8 @@
 
     <div class="toolbar-tools">
       <button class="action-btn" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối (Phím T)">
-        <span id="theme-btn-icon">🌙</span>
-        <span class="btn-lbl" id="theme-btn-text">Nền Tối</span>
+        <span id="theme-btn-icon">☀️</span>
+        <span class="btn-lbl" id="theme-btn-text">Nền Sáng</span>
       </button>
 
       <button class="action-btn bom-btn" onclick="openBomModal()" title="Danh sách linh kiện & từ khóa mua Shopee (BOM)">
@@ -1670,19 +1750,19 @@
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_5v" onclick="selectNet('net_5v', this)" title="Làm nổi bật toàn bộ đường nguồn 5V/5.1V cấp cho động cơ, loa và ESP32">
       <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-5v);"></span>
-      🔴 Nguồn 5V / 5.1V
+      Nguồn 5V / 5.1V
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_3v3" onclick="selectNet('net_3v3', this)" title="Làm nổi bật toàn bộ đường nguồn 3.3V Logic cấp cho cảm biến và màn hình">
       <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-3v3);"></span>
-      🟡 Nguồn 3.3V Logic
+      Nguồn 3.3V Logic
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_gnd" onclick="selectNet('net_gnd', this)" title="Làm nổi bật toàn bộ hệ thống Mass GND chung (Star Ground)">
       <span class="dot-indicator shrink-0" style="background:var(--wire-gnd-stroke); border:1px solid #475569;"></span>
-      ⚫ Mass GND Chung
+      Mass GND Chung
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-net="net_vbat" onclick="selectNet('net_vbat', this)" title="Làm nổi bật đường nguồn Pin Li-ion 3.7V qua sạc TP4056 và công tắc">
       <span class="dot-indicator shrink-0" style="background:var(--wire-pwr-bat);"></span>
-      🔋 Pin Li-ion 3.7V
+      Pin Li-ion 3.7V
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-filter="drive" onclick="setFilter('drive', this)">
       <span class="dot-indicator shrink-0" style="background:var(--wire-i2c-sda);"></span>
@@ -1698,7 +1778,7 @@
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-filter="pet" onclick="setFilter('pet', this)">
       <span class="dot-indicator shrink-0" style="background:#ec4899;"></span>
-      🐾 Xúc Giác & IMU (Pet)
+      Xúc Giác & IMU (Pet)
     </div>
     <div class="filter-chip whitespace-nowrap shrink-0" data-filter="ir" onclick="setFilter('ir', this)">
       <span class="dot-indicator shrink-0" style="background:var(--wire-irl-do);"></span>
@@ -1769,6 +1849,19 @@
     <div class="tt-desc" id="tt-desc"></div>
   </div>
 
+  <!-- Floating Active Device Control Capsule (Appears when a device is isolated) -->
+  <div id="active-device-capsule">
+    <div class="capsule-title">
+      <span style="font-size:14px;">🎯</span>
+      <span id="capsule-comp-name">Tên Linh Kiện</span>
+    </div>
+    <button class="capsule-btn" onclick="openActiveDeviceDrawer()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Chi Tiết
+    </button>
+    <button class="capsule-close" onclick="clearIsolatedComponent()" title="Hủy chọn">&times;</button>
+  </div>
+
   <!-- Mobile Drawer Backdrop Overlay -->
   <div id="drawer-backdrop" onclick="closeDrawer()"></div>
 
@@ -1822,19 +1915,19 @@
         <div style="display:flex; flex-direction:column; gap:6px;">
           <button class="action-btn active" id="m-btn-toggle-labels" onclick="togglePinLabels(); closeMenuDrawer();" style="width:100%; justify-content:flex-start; min-height:44px; padding:10px 14px; font-size:12.5px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
-            🏷️ Bật/Tắt Tên Chân Pin (Phím L)
+            Bật/Tắt Tên Chân Pin (Phím L)
           </button>
           <button class="action-btn" onclick="fitView(); closeMenuDrawer();" style="width:100%; justify-content:flex-start; min-height:44px; padding:10px 14px; font-size:12.5px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            ↺ Căn Vừa Màn Hình (Phím F hoặc Chạm 2 Lần)
+            Căn Vừa Màn Hình (Phím F hoặc Chạm 2 Lần)
           </button>
           <button class="action-btn" onclick="openVisModal(); closeMenuDrawer();" style="width:100%; justify-content:flex-start; min-height:44px; padding:10px 14px; font-size:12.5px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            👁️ Ẩn/Hiện Linh Kiện Khối
+            Ẩn/Hiện Linh Kiện Khối
           </button>
           <button class="action-btn" onclick="resetComponentPositions(); closeMenuDrawer();" style="width:100%; justify-content:flex-start; min-height:44px; padding:10px 14px; font-size:12.5px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            ↺ Đặt Lại Vị Trí Mặc Định
+            Đặt Lại Vị Trí Mặc Định
           </button>
         </div>
       </div>
@@ -1845,11 +1938,11 @@
         <div style="display:flex; flex-direction:column; gap:6px;">
           <button class="action-btn" onclick="openBomModal(); closeMenuDrawer();" style="width:100%; justify-content:flex-start; min-height:44px; padding:10px 14px; font-size:12.5px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-            🛒 Danh Mục Mua Shopee (BOM)
+            Danh Mục Mua Shopee (BOM)
           </button>
           <a href="../huong_dan_lap_rap_kiem_tra.html" class="action-btn" style="text-decoration:none; color:var(--fg); width:100%; justify-content:flex-start; min-height:44px; padding:10px 14px; font-size:12.5px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-            📖 Sổ Tay Lắp Ráp & Đo Kiểm M1–M8
+            Sổ Tay Lắp Ráp & Đo Kiểm M1–M8
           </a>
         </div>
       </div>
@@ -1860,7 +1953,7 @@
   <div id="bom-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h2 style="font-size: 15px; font-weight:700; color:#fff;">🛒 Danh Sách Linh Kiện Chuẩn Cần Đặt Hàng (Shopee BOM)</h2>
+        <h2 style="font-size: 15px; font-weight:700; color:var(--fg);">🛒 Danh Sách Linh Kiện Chuẩn Cần Đặt Hàng (Shopee BOM)</h2>
         <button class="close-btn" onclick="closeBomModal()">×</button>
       </div>
       <div class="modal-body">
@@ -1890,7 +1983,7 @@
         <div style="display:flex; align-items:center; gap:8px;">
           <span style="font-size:18px;">👁️</span>
           <div>
-            <h2 style="font-size:15px; font-weight:700; color:#fff;">Quản Lý Hiển Thị Linh Kiện</h2>
+            <h2 style="font-size:15px; font-weight:700; color:var(--fg);">Quản Lý Hiển Thị Linh Kiện</h2>
             <div style="font-size:11px; color:var(--fg-muted);">Bật / tắt linh kiện để làm thoáng sơ đồ và tập trung đi dây</div>
           </div>
         </div>
@@ -3310,17 +3403,20 @@
         card.style.height = `${comp.h}px`;
         card.style.touchAction = 'none';
 
-        // Card header bar with drag hint and quick hide button
+        // Card header bar with Info/Details (ⓘ) button
         const headerBar = `
           <div class="comp-header-bar">
             <span class="comp-drag-hint" title="Kéo thả để dời vị trí linh kiện">⋮⋮ Di chuyển</span>
-            <button class="comp-vis-btn" onclick="toggleComponentVisibility('${comp.id}', event)" title="Ẩn linh kiện này">👁️</button>
+            <button class="comp-info-btn" onclick="openComponentDetails('${comp.id}', event)" title="Xem thông số kỹ thuật & Shopee BOM">ⓘ</button>
           </div>
         `;
         card.innerHTML = headerBar + getComponentSvg(comp);
 
+        let compLongPressTimer = null;
+        let isCompLongPress = false;
+
         card.onpointerdown = (e) => {
-          if (e.target.closest('.pin-badge') || e.target.closest('.comp-vis-btn') || e.target.closest('button')) return;
+          if (e.target.closest('.pin-badge') || e.target.closest('.comp-info-btn') || e.target.closest('button')) return;
           if (e.button !== undefined && e.button !== 0) return;
           if (e.isPrimary === false) return;
 
@@ -3333,6 +3429,15 @@
             compY: comp.y
           };
           hasDraggedComp = false;
+          isCompLongPress = false;
+
+          // Start long-press timer to open detailed bottom sheet
+          compLongPressTimer = setTimeout(() => {
+            isCompLongPress = true;
+            try { navigator.vibrate?.(45); } catch (_) {}
+            openComponentDetails(comp.id, e);
+            showToast(`ℹ️ Chi tiết linh kiện: ${comp.title}`);
+          }, 450);
 
           try {
             card.setPointerCapture(e.pointerId);
@@ -3346,6 +3451,10 @@
 
           const dx = (e.clientX - compDragStartPos.mouseX) / zoom;
           const dy = (e.clientY - compDragStartPos.mouseY) / zoom;
+
+          if (Math.hypot(dx, dy) > 5) {
+            clearTimeout(compLongPressTimer);
+          }
 
           if (!hasDraggedComp && Math.hypot(dx, dy) > 4) {
             hasDraggedComp = true;
@@ -3380,6 +3489,7 @@
         };
 
         const handlePointerEnd = (e) => {
+          clearTimeout(compLongPressTimer);
           if (draggedCompId !== comp.id || e.pointerId !== activeDragPointerId) return;
 
           try {
@@ -3393,12 +3503,13 @@
             saveComponentPositions();
             scheduleWireRender();
             showToast(`✓ Đã lưu vị trí: ${comp.title || comp.id}`);
-          } else {
-            selectComponent(comp.id);
+          } else if (!isCompLongPress) {
+            // Single tap: ONLY isolate wires! Do NOT open popup/drawer!
+            toggleIsolateComponent(comp.id);
           }
 
           draggedCompId = null;
-          setTimeout(() => { hasDraggedComp = false; }, 60);
+          setTimeout(() => { hasDraggedComp = false; isCompLongPress = false; }, 60);
         };
 
         card.onpointerup = handlePointerEnd;
@@ -3915,15 +4026,64 @@
     function toggleIsolateComponent(compId) {
       if (isolatedCompId === compId) {
         isolatedCompId = null;
+        selectedCompId = null;
+        hideActiveDeviceCapsule();
         showToast('👁️ Đã hiển thị lại toàn bộ dây');
       } else {
         isolatedCompId = compId;
+        selectedCompId = compId;
         const comp = components[compId];
+        showActiveDeviceCapsule(comp);
         showToast(`🎯 Đang cô lập dây của: ${comp ? comp.title : compId}`);
       }
+      renderComponents();
       renderWires();
-      if (selectedCompId && components[selectedCompId]) {
+      if (drawer && drawer.classList.contains('open') && selectedCompId && components[selectedCompId]) {
         openDrawer(components[selectedCompId]);
+      }
+    }
+
+    function showActiveDeviceCapsule(comp) {
+      const capsule = document.getElementById('active-device-capsule');
+      const nameEl = document.getElementById('capsule-comp-name');
+      if (capsule && nameEl && comp) {
+        nameEl.textContent = comp.title || comp.id;
+        capsule.classList.add('show');
+      }
+    }
+
+    function hideActiveDeviceCapsule() {
+      const capsule = document.getElementById('active-device-capsule');
+      if (capsule) capsule.classList.remove('show');
+    }
+
+    function openActiveDeviceDrawer() {
+      if (isolatedCompId && components[isolatedCompId]) {
+        openDrawer(components[isolatedCompId]);
+      }
+    }
+
+    function clearIsolatedComponent() {
+      isolatedCompId = null;
+      selectedCompId = null;
+      hideActiveDeviceCapsule();
+      renderComponents();
+      renderWires();
+      showToast('👁️ Đã hiển thị lại toàn bộ dây');
+    }
+
+    function openComponentDetails(compId, event) {
+      if (event) {
+        try { event.stopPropagation(); } catch (_) {}
+      }
+      const comp = components[compId];
+      if (comp) {
+        isolatedCompId = comp.id;
+        selectedCompId = comp.id;
+        showActiveDeviceCapsule(comp);
+        renderComponents();
+        renderWires();
+        openDrawer(comp);
       }
     }
 
@@ -3936,12 +4096,12 @@
         
         <!-- Contextual Quick Action Toolbar for This Device -->
         <div style="display:flex; gap:8px; margin-bottom:14px;">
-          <button class="action-btn ${isIsolated ? 'active' : ''}" onclick="toggleIsolateComponent('${comp.id}')" style="flex:1; justify-content:center; min-height:42px; font-weight:600; font-size:12px; background:${isIsolated ? 'var(--primary)' : 'var(--surface-deep)'}; color:#fff; border:1px solid ${isIsolated ? 'var(--primary)' : 'var(--border-light)'}; border-radius:8px;">
-            <span style="font-size:14px;">${isIsolated ? '👁️' : '🎯'}</span>
+          <button class="action-btn ${isIsolated ? 'active' : ''}" onclick="toggleIsolateComponent('${comp.id}')" style="flex:1; justify-content:center; min-height:42px; font-weight:600; font-size:12px; background:${isIsolated ? 'var(--primary)' : 'var(--surface-elevated)'}; color:var(--fg); border:1px solid ${isIsolated ? 'var(--primary)' : 'var(--border-light)'}; border-radius:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
             ${isIsolated ? 'Hiện Tất Cả Dây' : 'Cô Lập Dây Thiết Bị'}
           </button>
-          <button class="action-btn copy-btn" onclick="copyText('${comp.searchKw}', this)" style="flex:1; justify-content:center; min-height:42px; font-weight:600; font-size:12px; border-radius:8px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <button class="action-btn shopee-btn" onclick="copyText('${comp.searchKw}', this)" style="flex:1; justify-content:center; min-height:42px; font-size:12px; border-radius:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             Mua Shopee
           </button>
         </div>
@@ -3976,7 +4136,7 @@
           <tbody>
             ${comp.pins.map(p => `
               <tr>
-                <td style="font-weight:600; color:#fff;">${p.name}</td>
+                <td class="pin-name-cell">${p.name}</td>
                 <td><span class="pin-badge role-${p.role} whitespace-nowrap shrink-0" style="position:static; display:inline-block; margin-right:4px;"></span>${p.role.toUpperCase()}</td>
               </tr>
             `).join('')}
