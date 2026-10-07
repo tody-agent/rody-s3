@@ -43,6 +43,10 @@ Use this skill whenever:
 5. NO SCHEMATIC IS COMPLETE WITHOUT JUMPER HOPS, PIN LABELS, AND PASSED AUDITS.
 6. NEVER COLLAPSE MULTIPLE WIRES ONTO A SINGLE MIDPOINT TRUNK — USE CHANNEL RIBBON BUS (PITCH 12-14PX).
 7. NEVER ALLOW AMBIGUOUS WIRE CROSSINGS — ALL CROSSINGS MUST RENDER SEMICIRCULAR JUMPER HOPS (R=6PX).
+8. ALL SVG WIRE & CASING PATHS MUST EXPLICITLY SET fill="none" (NEVER RELY SOLELY ON CSS — DEFAULT SVG FILL IS SOLID BLACK).
+9. NEVER BLEACH OR RECOLOR COMPONENT SVGS INTO MONOCHROME — PRESERVE AUTHENTIC SOLDER MASK & SILKSCREEN COLORS (ESP32 Navy/Matte Black, MPU6050 Blue, ST7789 Red, TTP223 Red).
+10. DUAL-THEME CAD IS MANDATORY (DARK CAD #090d16 & LIGHT BLUEPRINT #f8fafc) WITH HIGH-CONTRAST SATURATED WIRES (WCAG AA ≥ 4.5:1) AND CASING SLEEVES.
+11. NEVER LEAVE UNBALANCED CSS BRACES OR BROKEN MEDIA QUERIES (CANONICAL AUDIT BEFORE DEPLOYING).
 ```
 
 ---
@@ -144,6 +148,50 @@ When generating circuit documentation, NEVER provide flat ASCII text, messy over
 10. **Component Inspector & BOM Shopping Guide:**
     - Click any component to reveal full electrical ratings, pin table, and DOs/DON'Ts.
     - Top-bar `🛒 BOM Shopping Guide` button displaying exact commercial names, quantities, and 1-click Shopee search keywords.
+11. **SVG Path Fill Safety & Underlay Casing (An Toàn SVG Fill & Vỏ Bọc Dây Cách Ly):**
+    - **CRITICAL SVG SPEC DANGER:** In the SVG specification, `<path>` elements default to `fill: black` if `fill` is omitted. If a stylesheet is dropped (due to unclosed media queries, syntax errors, or browser reset), every wire path will render as a solid black polygon covering the canvas.
+    - **Double-Lock Safety Protocol:**
+      1. *DOM Attribute Level:* Every dynamically created path (`wire-casing`, `wire-path`, `wire-glow`, `wire-bridge-mask`, `wire-top-overlay`) MUST explicitly execute `path.setAttribute('fill', 'none')` or have `fill="none"` written directly into the HTML string.
+      2. *CSS Rule Level:* Always declare `.wire-casing, .wire-path, .wire-glow, .wire-bridge-mask { fill: none !important; }`.
+    - **Altium/KiCad Casing Underlay (Vỏ Bọc Cách Ly):** Render a background casing path under each wire ($W_{\text{casing}} = W_{\text{wire}} + 3\text{px}$) with color `var(--wire-casing)`. This creates a crisp separator outline so parallel bus wires never blur into each other.
+12. **Dual-Theme Standard: Dark CAD & Light Blueprint (Chuẩn Giao Diện Kép Sáng/Tối):**
+    - Both Dark and Light environments MUST be fully supported and look stunning:
+      - **Dark CAD Mode (`#090d16` canvas):** High-contrast neon-glow wiring, dark casing sleeve (`#090d16`), luminous pin dots.
+      - **Light Blueprint Mode (`#f8fafc` canvas):** Crisp engineering paper grid, white casing sleeve (`#ffffff`), and bold, highly saturated wire inks with WCAG AA $\ge 4.5:1$ contrast:
+        - 5V Rail: `#dc2626` (Red-600)
+        - 3.3V Logic: `#d97706` (Amber-600)
+        - Battery Rail: `#ea580c` (Orange-600)
+        - Ground (GND): `#0f172a` (Slate-900 / Charcoal)
+        - I2C Bus: SDA `#b45309`, SCL `#7c3aed`
+        - Peripheral Signals: `#059669` (Emerald), `#2563eb` (Blue), `#c026d3` (Fuchsia), `#0891b2` (Cyan).
+    - **Preserve Component Silicon Realism (Cấm Tẩy Trắng Linh Kiện):**
+      - Real electronic components MUST preserve their physical solder-mask colors in BOTH themes (ESP32 navy/black, MPU6050 royal blue, ST7789 red bezel, TTP223 crimson red, PCA9685 blue).
+      - NEVER apply monochromatic bleaching, `recolorArtwork`, or grayscaling filters. Makers identify parts by visual familiarity.
+    - **Interactive Theme Switcher & Shortcuts:**
+      - Provide a top toolbar button `[☀️/🌙 Nền Sáng/Tối]` (`#btn-theme-toggle`).
+      - Keyboard shortcut `T` toggles theme instantaneously.
+      - Support URL parameters `?theme=light` or `#light`, and persist user preference in `localStorage.setItem('rody_cad_theme', ...)`.
+13. **Minimalist Zen Viewport, Contextual Progressive Disclosure & Mobile Touch Gestures (Tối Giản Thanh Điều Khiển, Bộc Lộ Theo Ngữ Cảnh & Cử Chỉ Di Động):**
+    - **Zen 3-Button Header Toolbar:** Do NOT squeeze 8-10 buttons across the top header. That creates cognitive overload and truncates headers on small screens. The header must contain ONLY 3 clean primary buttons:
+      1. `[☀️/🌙 Nền Sáng / Tối]` (`#btn-theme-toggle`, shortcut `T`)
+      2. `[🛒 Shopee BOM]` (`.bom-btn`, modal with 1-click search keyword copy)
+      3. `[☰ Menu]` (`#btn-open-menu`, opens the slide-over settings drawer `#menu-drawer`)
+    - **Slide-Over Settings & Menu Drawer (`#menu-drawer`):**
+      - Houses secondary options cleanly organized into 3 logical groups:
+        - *Chế độ đi dây CAD:* Gập vuông (Cầu nhảy bán nguyệt), Cong (Bezier), Thẳng trực tiếp (P2P).
+        - *Hiển thị & Thao tác:* Bật/tắt tên chân pin (`L`), Căn vừa màn hình (`F`), Ẩn/Hiện linh kiện khối, Đặt lại vị trí mặc định.
+        - *Tài liệu & Hướng dẫn:* Danh mục mua Shopee (BOM), Sổ tay lắp ráp & đo kiểm M1–M8.
+      - Backed by dark blur overlay (`#menu-drawer-backdrop`), smooth slide animation, accessible close button and `Escape` key handler.
+    - **Contextual Progressive Disclosure ("Ấn vào thiết bị rồi mới cần tuỳ chọn"):**
+      - Do not crowd the global canvas with component-specific actions. When a user taps or clicks any component card, contextually reveal actions inside the inspector bottom sheet / side drawer:
+        - 🎯 `[Cô Lập Dây Thiết Bị / Focus Wires]` (`toggleIsolateComponent(compId)`): Dims all unrelated wires across the board, brightly highlighting only the wires plugged into this device. A second tap (or clicking empty canvas) resets and displays all wires.
+        - 🛒 `[Mua Shopee]`: 1-click clipboard copy of exact commercial search keyword.
+        - Full pinout table & electrical ratings.
+    - **Direct Manipulation & Mobile Touch Ergonomics:**
+      - **Zero Overlap on Mobile:** Completely hide floating zoom buttons (`#nav-controls` / `#zoom-widget`) on mobile viewports ($\le 768\text{px}$) with `display: none !important;`.
+      - Phones feature intuitive touch gestures: 1-finger drag to pan, 2-finger pinch to zoom, double-tap on empty canvas to auto-fit (`fitToScreen()` / `fitView()`). Redundant floating zoom buttons waste screen real estate and collide with component jump chips.
+      - **Full-Width Quick Jump Bar (`#quick-jump-bar`):** On mobile, expand the quick jumper bar to full width (`bottom: 12px; left: 10px; right: 10px; max-width: calc(100vw - 20px)`) with horizontal touch scrolling (`-webkit-overflow-scrolling: touch; scrollbar-width: none;`).
+      - **Canvas Deselection & Un-isolation:** Clicking or tapping empty canvas immediately clears active selection, closes the bottom sheet, and un-isolates wires.
 
 ---
 
@@ -173,6 +221,12 @@ Before claiming any circuit design is ready:
    ```
    Target: **0 Blocker, 0 Major, 0 Minor defects**.
 
+3. **SVG & CSS Structural Integrity Audit:**
+   - [ ] Every SVG `<path>` in wire rendering layers contains `fill="none"` directly on the element.
+   - [ ] All CSS `@media` queries and style blocks have balanced, matching `{}` braces (verify with Node.js parser or bracket balance check).
+   - [ ] Dual-Theme check: Both Dark CAD and Light Blueprint modes render cleanly with zero visual polygon artifacts.
+   - [ ] Authentic PCB visual audit: Component SVGs retain realistic board colors (zero monochrome bleaching or `recolorArtwork`).
+
 ---
 
 ## Red Flags & Rationalization Table
@@ -184,6 +238,11 @@ Before claiming any circuit design is ready:
 | *"GPIO 34 works fine as an LED output on Arduino, so it should work on ESP32."* | **GPIO 34-39 on ESP32 are physically Input-Only (GPI). Writing HIGH does nothing; hardware cannot output current.** |
 | *"I don't need a diode because the user won't plug in USB while the battery is ON."* | **Users WILL plug in USB for debugging while the battery is ON. Without a Schottky diode, back-feeding burns USB ports.** |
 | *"The schematic looks fine even though wire lines cross without hops."* | **Crossing lines without hops cause beginners to solder shorts, confusing cross-overs with shared junctions.** |
+| *"I don't need fill='none' in JS because CSS already has fill: none."* | **If an unclosed media query or syntax glitch occurs, the browser discards the CSS rule and paints giant solid black polygons across the screen.** |
+| *"I should bleach components to monochrome gray to match a clean minimalist theme."* | **Bleaching PCB solder masks ruins physical recognition. Makers cannot identify sensors, chips, or connectors if they are washed out.** |
+| *"Light mode can just use soft pastel wires."* | **Pastel wires on a light background fail WCAG AA contrast. Light mode requires bold, deep saturated colors with white casing sleeves.** |
+| *"I should put all 10 CAD tool buttons in the top header so users have quick access."* | **Crowding 10 buttons cuts off the title on phones and causes cognitive overload. Keep only 3 Zen buttons in header; move secondary settings to slide-over Menu drawer and device-specific actions to contextual inspector.** |
+| *"Mobile users need floating zoom [+] and [-] buttons at the bottom corner."* | **Floating zoom buttons on mobile collide with component jumper chips and block visibility. Phones have native 2-finger pinch zoom and double-tap to fit.** |
 
 ---
 

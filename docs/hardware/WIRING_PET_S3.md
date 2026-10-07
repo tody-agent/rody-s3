@@ -2,7 +2,9 @@
 
 > **Phiên bản:** `v0.3.0-pet`  
 > **Kiến trúc:** ESP32-S3 DevKitC-1 N16R8 + Màn hình TFT 1.54" ST7789 + Mic I2S INMP441 + Amply Loa I2S MAX98357A + Driver PCA9685 + **Gia tốc kế 6 trục MPU6050** + **Cảm biến chạm điện dung TTP223** (hoặc Touch Pad đỉnh đầu).  
-> **Interactive CAD Viewer:** Mở trực tiếp [wiring_pet_interactive.html](file:///Volumes/Builder/Arduino/OtooRobot/docs/hardware/wiring_pet_interactive.html) trong trình duyệt để soi từng đường dây, phóng to thu nhỏ và tra cứu từ khóa Shopee.
+> **Interactive CAD Viewer:**
+> - 🌙 **Bản Dark CAD (Mặc định):** [wiring_pet_interactive.html](file:///Volumes/Builder/Arduino/OtooRobot/docs/hardware/wiring_pet_interactive.html) – Nền tối kỹ thuật sâu, dây phát quang tương phản cao.
+> - ☀️ **Bản Light Model (Nền Sáng Rõ):** [wiring_pet_light.html](file:///Volumes/Builder/Arduino/OtooRobot/docs/hardware/wiring_pet_light.html) – Bản vẽ phong cách giấy kỹ thuật Blueprint, dây và linh kiện đầy đủ màu sắc rực rỡ, sắc nét.
 
 ---
 

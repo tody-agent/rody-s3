@@ -23,7 +23,10 @@
       --warning: #f59e0b;
       --success: #10b981;
       
-      /* High-contrast distinct wire colors */
+      /* Wire Casing Sleeve (Altium/KiCad style ribbon bus separator) */
+      --wire-casing: #090d16;
+
+      /* High-contrast distinct wire colors (Dark Mode) */
       --wire-pwr-main: #ef4444;
       --wire-pwr-sw: #ff7a00;
       --wire-pwr-boost: #dc2626;
@@ -53,6 +56,63 @@
       --wire-irr-do: #14b8a6;
       --wire-bat-adc: #10b981;
       --wire-buzzer: #ec4899;
+    }
+
+    /* Light Mode Tokens (Light Blueprint / Engineering Paper) */
+    body.theme-light {
+      --theme: light;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-elevated: #f1f5f9;
+      --surface-deep: #e2e8f0;
+      --border: #cbd5e1;
+      --border-light: #e2e8f0;
+      --fg: #0f172a;
+      --fg-muted: #475569;
+      --fg-dim: #94a3b8;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --success: #16a34a;
+
+      /* White Casing Sleeve around wires for crisp separation on light canvas */
+      --wire-casing: #ffffff;
+
+      /* High-contrast distinct wire colors (Light Blueprint) */
+      --wire-pwr-main: #dc2626;
+      --wire-pwr-sw: #ea580c;
+      --wire-pwr-boost: #b91c1c;
+      --wire-pwr-diode: #d97706;
+      --wire-pwr-3v3: #d97706;
+      --wire-pwr-5v-shifter: #ea580c;
+      --wire-gnd: #0f172a;
+      --wire-gnd-stroke: #334155;
+
+      /* I2C Bus: Sky Blue & Royal Violet */
+      --wire-i2c-sda: #0284c7;
+      --wire-i2c-scl: #7c3aed;
+
+      /* Servos: Trái (Cam tươi) vs Phải (Fuchsia Tím Hồng) */
+      --wire-srv-l-pwm: #f97316;
+      --wire-srv-l-vcc: #dc2626;
+      --wire-srv-l-gnd: #0f172a;
+
+      --wire-srv-r-pwm: #c026d3;
+      --wire-srv-r-vcc: #dc2626;
+      --wire-srv-r-gnd: #0f172a;
+
+      --wire-trig-lv: #0891b2;
+      --wire-trig-hv: #2563eb;
+      --wire-echo-hv: #4f46e5;
+      --wire-echo-lv: #0284c7;
+
+      --wire-irl-do: #16a34a;
+      --wire-irr-do: #0d9488;
+      --wire-bat-adc: #059669;
+      --wire-buzzer: #db2777;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -216,15 +276,25 @@
       pointer-events: none;
       z-index: 10;
     }
+    /* Wire Casing / Sleeve Underlay (Altium/KiCad style ribbon bus separator) */
+    .wire-casing {
+      fill: none !important;
+      stroke: var(--wire-casing);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+      opacity: 0.95;
+      transition: stroke-width 0.2s, stroke-opacity 0.2s;
+    }
     .wire-bridge-mask {
-      fill: none;
-      stroke: var(--bg);
+      fill: none !important;
+      stroke: var(--wire-casing);
       stroke-width: 9;
       stroke-linecap: round;
       pointer-events: none;
     }
     .wire-path {
-      fill: none;
+      fill: none !important;
       stroke-linecap: round;
       stroke-linejoin: round;
       pointer-events: stroke;
@@ -232,7 +302,7 @@
       transition: stroke-width 0.2s, stroke-opacity 0.2s, filter 0.2s;
     }
     .wire-glow {
-      fill: none;
+      fill: none !important;
       stroke-linecap: round;
       stroke-linejoin: round;
       pointer-events: none;
@@ -479,6 +549,79 @@
     .copy-btn:hover {
       background: var(--primary);
       color: #fff;
+    }
+
+    /* Floating Quick Jumper Bar */
+    #quick-jump-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 4px 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 990;
+      max-width: calc(100vw - 190px);
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    #quick-jump-bar::-webkit-scrollbar { display: none; }
+    .jump-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .jump-chip {
+      background: var(--surface-deep);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .jump-chip:hover, .jump-chip:active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Floating Toast Notification */
+    #toast-notify {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border-light);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #fff;
+      font-weight: 500;
+      z-index: 3000;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      white-space: nowrap;
+    }
+    #toast-notify.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
 
     /* Filter Bar (Fixed below Header) */
@@ -792,10 +935,21 @@
       #trackpad-hint {
         display: none;
       }
+      /* Hide floating zoom widget on mobile - gestures provide superior UX */
       #zoom-widget {
-        bottom: 60px;
-        left: 12px;
-        padding: 2px;
+        display: none !important;
+      }
+      /* Mobile Quick Jumper: full width, zero collision */
+      #quick-jump-bar {
+        bottom: 12px;
+        left: 10px;
+        right: 10px;
+        max-width: calc(100vw - 20px);
+        padding: 4px 8px;
+        scrollbar-width: none;
+      }
+      #quick-jump-bar::-webkit-scrollbar {
+        display: none;
       }
 
       /* Inspector Bottom Sheet on Mobile */
@@ -842,6 +996,187 @@
         padding: 18px 16px 28px 16px;
       }
     }
+
+    /* ==========================================================================
+       Light Mode Design Overrides (High-Contrast Clean Blueprint Canvas)
+       ========================================================================== */
+    body.theme-light {
+      color-scheme: light;
+    }
+    body.theme-light #viewport {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.08) 1px, transparent 0);
+    }
+    body.theme-light header {
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+    }
+    body.theme-light #subsystem-bar {
+      background: rgba(248, 250, 252, 0.95);
+      border-bottom: 1px solid var(--border);
+    }
+    body.theme-light .filter-chip {
+      background: #ffffff;
+      border-color: var(--border);
+      color: var(--fg-muted);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    body.theme-light .filter-chip:hover {
+      border-color: var(--primary);
+      color: var(--fg);
+      background: #f1f5f9;
+    }
+    body.theme-light .filter-chip.active {
+      background: #e0f2fe;
+      border-color: var(--primary);
+      color: var(--primary-hover);
+      font-weight: 600;
+    }
+    body.theme-light .btn-group {
+      background: #f1f5f9;
+      border-color: var(--border);
+    }
+    body.theme-light .tool-btn {
+      color: var(--fg-muted);
+    }
+    body.theme-light .tool-btn:hover {
+      color: var(--fg);
+      background: rgba(15, 23, 42, 0.06);
+    }
+    body.theme-light .tool-btn.active {
+      color: #ffffff;
+      background: var(--primary);
+    }
+    body.theme-light .action-btn {
+      background: #ffffff;
+      border-color: var(--border);
+      color: var(--fg);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    body.theme-light .action-btn:hover {
+      background: #f1f5f9;
+      color: var(--fg);
+      border-color: var(--border-light);
+    }
+    body.theme-light .component-card {
+      filter: drop-shadow(0 6px 14px rgba(15, 23, 42, 0.12));
+    }
+    body.theme-light .component-card:hover {
+      filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.18));
+    }
+    body.theme-light .component-card.selected {
+      filter: drop-shadow(0 0 16px rgba(2, 132, 199, 0.65));
+    }
+    body.theme-light .comp-vis-btn {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      color: var(--fg-muted);
+    }
+    body.theme-light .comp-drag-hint {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+    }
+    body.theme-light .pin-badge {
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.3);
+    }
+    body.theme-light .pin-badge:hover, body.theme-light .pin-badge:active {
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.8);
+    }
+    body.theme-light .pin-label-text {
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 2px #fff;
+    }
+    body.theme-light .pin-label-text.used {
+      color: #0f172a;
+    }
+    body.theme-light .pin-label-text.unused {
+      color: #64748b;
+    }
+    body.theme-light .endpoint-callout {
+      background: rgba(255, 255, 255, 0.96);
+      border-color: var(--primary);
+      color: #0f172a;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.14);
+    }
+    body.theme-light .net-banner {
+      background: rgba(255, 255, 255, 0.96);
+      border-color: var(--primary);
+      color: #0f172a;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14), 0 0 10px rgba(2, 132, 199, 0.2);
+    }
+    body.theme-light .hidden-banner {
+      background: rgba(255, 255, 255, 0.96);
+      color: #b45309;
+      border-color: #f59e0b;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+    }
+    body.theme-light #inspector {
+      background: #ffffff;
+      border-left: 1px solid var(--border);
+      box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+    }
+    body.theme-light .inspector-header {
+      border-bottom: 1px solid var(--border);
+    }
+    body.theme-light .drawer-close-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: var(--fg);
+    }
+    body.theme-light .modal-content {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+    }
+    body.theme-light #nav-controls {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: var(--border);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+    body.theme-light .nav-btn {
+      color: var(--fg);
+    }
+    body.theme-light .nav-btn:hover {
+      background: #f1f5f9;
+    }
+    body.theme-light .zoom-level {
+      color: var(--fg-muted);
+    }
+    body.theme-light #quick-jump-bar {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: var(--border);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+    body.theme-light .quick-jump-chip, body.theme-light .jump-chip {
+      background: #f1f5f9;
+      border-color: var(--border);
+      color: var(--fg-muted);
+    }
+    body.theme-light .quick-jump-chip:hover, body.theme-light .jump-chip:hover {
+      background: #e2e8f0;
+      color: var(--fg);
+    }
+    body.theme-light #toast-notify {
+      background: rgba(255, 255, 255, 0.96);
+      color: #0f172a;
+      border-color: #cbd5e1;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    }
+    body.theme-light .wire-casing {
+      fill: none !important;
+      stroke: var(--wire-casing);
+    }
+    body.theme-light .wire-bridge-mask {
+      fill: none !important;
+      stroke: var(--wire-casing);
+    }
+    body.theme-light .wire-path:hover, body.theme-light .wire-path.selected {
+      filter: drop-shadow(0 0 6px currentColor);
+    }
   </style>
 </head>
 <body>
@@ -856,56 +1191,20 @@
     </div>
 
     
-    <div class="toolbar-tools desktop-only">
-      
-      <div class="btn-group">
-        <button class="tool-btn active" id="btn-ortho" onclick="setWireMode('orthogonal')" title="Đi dây vuông góc với cầu nhảy cong khi giao nhau">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 19h6a3 3 0 0 1 6 0h6"/><path d="M12 4v11"/></svg>
-          Mạch Điện (Cầu Nhảy)
-        </button>
-        <button class="tool-btn" id="btn-curve" onclick="setWireMode('curved')" title="Dây cong Bezier mềm">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 19c6-10 12 10 18-10"/></svg>
-          Dây Cong
-        </button>
-        <button class="tool-btn" id="btn-straight" onclick="setWireMode('straight')" title="Dây thẳng nối điểm">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="19" x2="21" y2="5"/></svg>
-          Dây Thẳng
-        </button>
-      </div>
-
-      <button class="action-btn active" id="btn-toggle-labels" onclick="togglePinLabels()" title="Bật/Tắt hiển thị tên chân pin cạnh nốt hàn (Phím L)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
-        🏷️ Tên Chân
+    <div class="toolbar-tools">
+      <button class="action-btn" id="btn-theme-toggle" onclick="toggleTheme()" title="Chuyển đổi giao diện Sáng / Tối (Phím T)">
+        <span id="theme-btn-icon">☀️</span>
+        <span class="btn-lbl" id="theme-btn-text">Nền Sáng</span>
       </button>
 
-      <button class="action-btn" onclick="openWireFilterModal()" title="Cài đặt ẩn hiện theo khối linh kiện">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Ẩn/Hiện Dây
-      </button>
-
-      <button class="action-btn bom-btn" onclick="openBomModal()">
+      <button class="action-btn bom-btn" onclick="openBomModal()" title="Danh sách đặt mua linh kiện Shopee (BOM)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        🛒 Mua Linh Kiện (BOM)
+        <span class="btn-lbl">Shopee BOM</span>
       </button>
 
-      <button class="action-btn" onclick="openChecklistModal()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        Checklist M1–M8
-      </button>
-
-      <button class="action-btn" onclick="resetLayout()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-        Đặt Lại Vị Trí
-      </button>
-    </div>
-
-    
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <button class="mobile-menu-btn" onclick="openWireFilterModal()" title="Cài đặt ẩn hiện dây" aria-label="Bộ lọc dây">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-      <button class="mobile-menu-btn" onclick="openMobileDrawer()" title="Mở danh mục menu" aria-label="Menu">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button class="action-btn" id="btn-open-menu" onclick="openMobileDrawer()" title="Cài đặt, Chế độ đi dây & Tiện ích">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span class="btn-lbl">Menu</span>
       </button>
     </div>
   </header>
@@ -991,6 +1290,10 @@
           Tiện ích & Danh mục
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="action-btn" id="m-btn-theme-toggle" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="toggleTheme(); closeMobileDrawer();">
+            <span id="m-theme-icon" style="font-size: 16px;">☀️</span>
+            <span id="m-theme-text" style="font-weight: 500;">Nền Sáng (Light Blueprint)</span>
+          </button>
           <button class="action-btn bom-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="openBomModal(); closeMobileDrawer();">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
             🛒 Mua Linh Kiện (BOM)
@@ -1000,7 +1303,7 @@
             📋 Checklist Đo Gate G0
           </button>
           <button class="action-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="openWireFilterModal(); closeMobileDrawer();">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             ⚙️ Cài Đặt Ẩn/Hiện Dây
           </button>
           <button class="action-btn" style="width: 100%; justify-content: flex-start; min-height: 44px; padding: 10px 14px;" onclick="fitToScreen(); closeMobileDrawer();">
@@ -1010,6 +1313,15 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Floating Toast Notification -->
+  <div id="toast-notify"></div>
+
+  <!-- Mobile Quick Component Jumper Carousel -->
+  <div id="quick-jump-bar">
+    <span class="jump-title whitespace-nowrap shrink-0">🧭 Xem nhanh:</span>
+    <button class="jump-chip reset-chip whitespace-nowrap shrink-0" onclick="fitToScreen()" title="Căn toàn bộ linh kiện vừa màn hình" style="color:var(--accent); font-weight:700;">↺ Vừa Màn Hình</button>
   </div>
 
   
@@ -2218,7 +2530,10 @@
             <feGaussianBlur stdDeviation="3.5" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
-        </defs>`;
+        </defs>
+        <g id="wire-casings-layer"></g>
+        <g id="wire-glows-layer"></g>
+        <g id="wire-paths-layer"></g>`;
 
       computedWirePaths.clear();
 
@@ -2270,6 +2585,29 @@
         });
       }
 
+      const casingsLayer = document.getElementById('wire-casings-layer');
+      const glowsLayer = document.getElementById('wire-glows-layer');
+      const pathsLayer = document.getElementById('wire-paths-layer');
+
+      // Pass 1: Render All Casing Sleeves underneath
+      activeWires.forEach(w => {
+        const pathData = computedWirePaths.get(w.id);
+        if (!pathData) return;
+
+        const active = isWireActive(w);
+        const isSelected = (selectedWireId === w.id);
+        const isDimmed = !active && !isSelected;
+
+        const casing = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        casing.setAttribute('d', pathData);
+        casing.setAttribute('class', `wire-casing ${isDimmed ? 'wire-dimmed' : ''}`);
+        casing.setAttribute('fill', 'none');
+        casing.setAttribute('stroke', 'var(--wire-casing)');
+        casing.setAttribute('stroke-width', (w.thick || 3.5) + 3);
+        casingsLayer.appendChild(casing);
+      });
+
+      // Pass 2: Render Glow Highlights and Core Colored Wire Paths on top
       activeWires.forEach(w => {
         const pathData = computedWirePaths.get(w.id);
         if (!pathData) return;
@@ -2283,9 +2621,10 @@
           const glow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           glow.setAttribute('d', pathData);
           glow.setAttribute('class', `wire-glow selected`);
+          glow.setAttribute('fill', 'none');
           glow.setAttribute('stroke', w.color);
           glow.setAttribute('stroke-width', (w.thick || 3.5) + 6);
-          svg.appendChild(glow);
+          glowsLayer.appendChild(glow);
         }
 
         // 2. Core Wire Path
@@ -2293,6 +2632,7 @@
         path.setAttribute('id', `path-${w.id}`);
         path.setAttribute('d', pathData);
         path.setAttribute('class', `wire-path ${isSelected ? 'selected' : ''} ${isDimmed ? 'wire-dimmed' : ''}`);
+        path.setAttribute('fill', 'none');
         path.setAttribute('stroke', w.stroke || w.color);
         path.setAttribute('stroke-width', w.thick || 3.5);
 
@@ -2318,7 +2658,7 @@
           selectWire(w.id);
         };
 
-        svg.appendChild(path);
+        pathsLayer.appendChild(path);
       });
 
       if (selectedWireId) {
@@ -2866,6 +3206,25 @@
       if ((e.key === 'l' || e.key === 'L') && !e.target.matches('input, textarea')) {
         togglePinLabels();
       }
+      if ((e.key === 't' || e.key === 'T') && !e.target.matches('input, textarea')) {
+        toggleTheme();
+      }
+      if ((e.key === 'f' || e.key === 'F') && !e.target.matches('input, textarea')) {
+        fitToScreen();
+        showToast('↺ Đã căn vừa màn hình');
+      }
+      if (e.key === 'Escape') {
+        closeMobileDrawer();
+        document.getElementById('checklist-modal').style.display = 'none';
+        document.getElementById('bom-modal').style.display = 'none';
+        const wModal = document.getElementById('wire-filter-modal');
+        if (wModal) wModal.style.display = 'none';
+        if (isolatedCompId) {
+          isolatedCompId = null;
+          renderWires();
+          showToast('👁️ Đã hiển thị lại toàn bộ dây');
+        }
+      }
     });
     window.addEventListener('keyup', (e) => {
       if (e.code === 'Space') {
@@ -3031,6 +3390,135 @@
       if (e.touches.length === 0) isTouchPanning = false;
     }, { passive: true });
 
+    // --- Contextual Component Camera Focus ---
+    function focusComponent(compId) {
+      const comp = components[compId];
+      if (!comp) return;
+
+      const vWidth = viewport.clientWidth;
+      const vHeight = viewport.clientHeight;
+      const targetZoom = (vWidth < 640) ? 0.75 : 1.0;
+      scale = targetZoom;
+
+      const compCenterX = comp.x + comp.w / 2;
+      const compCenterY = comp.y + comp.h / 2;
+
+      // On mobile, offset slightly higher so bottom sheet doesn't completely block component
+      const yOffset = (vWidth < 640) ? -70 : 0;
+
+      panX = vWidth / 2 - compCenterX * scale;
+      panY = (vHeight / 2 + yOffset) - compCenterY * scale;
+
+      updateTransform();
+      selectComponent(compId);
+    }
+
+    // --- Dynamic Quick Jump Bar Populator ---
+    function initQuickJumpBar() {
+      const bar = document.getElementById('quick-jump-bar');
+      if (!bar) return;
+      if (bar.querySelectorAll('.jump-chip:not(.reset-chip)').length === 0) {
+        const frag = document.createDocumentFragment();
+        Object.keys(components).forEach(compId => {
+          const comp = components[compId];
+          const btn = document.createElement('button');
+          btn.className = 'jump-chip whitespace-nowrap shrink-0';
+          btn.textContent = comp.title || compId;
+          btn.onclick = () => focusComponent(compId);
+          frag.appendChild(btn);
+        });
+        bar.appendChild(frag);
+      }
+    }
+
+    // --- Toast Notifications ---
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notify');
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+
+    // --- Theme Management (Dark CAD vs Light Blueprint) ---
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('theme-light');
+      updateThemeUI(isLight);
+      try {
+        localStorage.setItem('esp32_cad_theme', isLight ? 'light' : 'dark');
+      } catch (e) {}
+      renderWires();
+      showToast(isLight ? '☀️ Đã chuyển sang Nền Sáng (Light Blueprint)' : '🌙 Đã chuyển sang Nền Tối (Dark CAD)');
+    }
+
+    function updateThemeUI(isLight) {
+      const icon = document.getElementById('theme-btn-icon');
+      const text = document.getElementById('theme-btn-text');
+      if (icon) icon.textContent = isLight ? '🌙' : '☀️';
+      if (text) text.textContent = isLight ? 'Nền Tối' : 'Nền Sáng';
+
+      const mIcon = document.getElementById('m-theme-icon');
+      const mText = document.getElementById('m-theme-text');
+      if (mIcon) mIcon.textContent = isLight ? '🌙' : '☀️';
+      if (mText) mText.textContent = isLight ? 'Nền Tối (Dark CAD)' : 'Nền Sáng (Light Blueprint)';
+    }
+
+    function initTheme() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isLightUrl = urlParams.get('theme') === 'light' || window.location.hash === '#light';
+      let savedTheme = null;
+      try {
+        savedTheme = localStorage.getItem('esp32_cad_theme');
+      } catch (e) {}
+
+      const isLight = isLightUrl || savedTheme === 'light';
+      if (isLight) {
+        document.body.classList.add('theme-light');
+      } else {
+        document.body.classList.remove('theme-light');
+      }
+      updateThemeUI(isLight);
+    }
+
+    function copyText(txt, btn) {
+      navigator.clipboard.writeText(txt).then(() => {
+        const old = btn.innerHTML;
+        btn.innerHTML = '✓ Đã chép!';
+        showToast(`✓ Đã sao chép: "${txt}"`);
+        setTimeout(() => { btn.innerHTML = old; }, 1500);
+      });
+    }
+
+    // Desktop Double-Click on Empty Canvas to Fit
+    viewport.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.component') || e.target.closest('.pin-dot') || e.target.closest('.wire-path')) return;
+      fitToScreen();
+      showToast('↺ Đã căn vừa màn hình');
+    });
+
+    // Empty Canvas Click to Deselect and Clear Wire Isolation
+    viewport.addEventListener('click', (e) => {
+      if (e.target === viewport || e.target.id === 'wire-canvas') {
+        if (isolatedCompId) {
+          isolatedCompId = null;
+          renderWires();
+          showToast('👁️ Đã hiển thị lại toàn bộ dây');
+        }
+        if (selectedCompId || selectedWireId) {
+          selectedCompId = null;
+          selectedWireId = null;
+          hideEndpointCallouts();
+          clearTopOverlay();
+          document.querySelectorAll('.component').forEach(c => c.classList.remove('selected-comp'));
+          renderWires();
+        }
+      }
+    });
+
     // Auto-fade trackpad helper hint after 7 seconds
     setTimeout(() => {
       const hint = document.getElementById('trackpad-hint');
@@ -3041,6 +3529,8 @@
 
     // --- Initialization ---
     window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      initQuickJumpBar();
       updateFilterBarCounts();
       renderComponents();
       renderWires();

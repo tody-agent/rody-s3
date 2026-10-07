@@ -909,7 +909,7 @@
           <span class="portal-link">Mở giả lập pet &rarr;</span>
         </a>
 
-        <a href="./hardware/wiring_pet_interactive.html" class="portal-card">
+        <div class="portal-card" style="display:flex; flex-direction:column; justify-content:space-between;">
           <div>
             <div class="portal-icon-wrap" style="background:var(--amber-subtle); color:var(--amber);">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>
@@ -917,8 +917,11 @@
             <h4>Sơ Đồ Mạch Smart CAD (Pet Edition)</h4>
             <p>Bản vẽ thông minh chống cắm nhầm: phân luồng Ribbon Bus song song, cầu nhảy dây 178 bridge hops, hover hiện tên pin 2 đầu, tra cứu linh kiện BOM chi tiết.</p>
           </div>
-          <span class="portal-link">Xem sơ đồ mạch Pet &rarr;</span>
-        </a>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:14px; pt:6px; border-top:1px solid var(--border);">
+            <a href="./hardware/wiring_pet_interactive.html" class="portal-link" style="text-decoration:none; font-weight:700;">🌙 Bản CAD Tối &rarr;</a>
+            <a href="./hardware/wiring_pet_light.html" class="portal-link" style="text-decoration:none; font-weight:700; color:var(--success-text);">☀️ Bản Light Model &rarr;</a>
+          </div>
+        </div>
 
         <a href="./robot_simulator.html" class="portal-card">
           <div>
