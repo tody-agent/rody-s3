@@ -2351,10 +2351,17 @@
         }
 
         const item0 = bundleItems[0];
-        const dx = Math.abs(item0.to.x - item0.from.x);
-        const dy = Math.abs(item0.to.y - item0.from.y);
+        const c1 = item0.from.comp;
+        const c2 = item0.to.comp;
+        const gapX = Math.max(c1.x, c2.x) - Math.min(c1.x + c1.w, c2.x + c2.w);
+        const gapY = Math.max(c1.y, c2.y) - Math.min(c1.y + c1.h, c2.y + c2.h);
+        const horizontalPinSides = ['left', 'right'];
+        const pinsFaceHorizontal = bundleItems.some(it => 
+          horizontalPinSides.includes(it.from.pin.side) && horizontalPinSides.includes(it.to.pin.side)
+        );
+        const isHorizontalCorridor = pinsFaceHorizontal || (gapX >= gapY) || (gapX > 30);
 
-        if (dx >= dy) {
+        if (isHorizontalCorridor) {
           // Horizontal Corridor (Vertical Trunks with Parallel Lanes)
           const compLeftId = (item0.from.x < item0.to.x) ? item0.from.comp.id : item0.to.comp.id;
 
@@ -2399,29 +2406,68 @@
           });
         } else {
           // Vertical Corridor (Horizontal Trunks)
+          const compTopId = (item0.from.y < item0.to.y) ? item0.from.comp.id : item0.to.comp.id;
+
+          bundleItems.sort((a, b) => {
+            const aPtB = (a.from.comp.id === compTopId) ? a.to : a.from;
+            const bPtB = (b.from.comp.id === compTopId) ? b.to : b.from;
+            return aPtB.x - bPtB.x;
+          });
+
+          let topBound = -Infinity;
+          let botBound = Infinity;
+          bundleItems.forEach(item => {
+            const ptT = (item.from.comp.id === compTopId) ? item.from : item.to;
+            const ptB = (item.from.comp.id === compTopId) ? item.to : item.from;
+            topBound = Math.max(topBound, ptT.y + 20);
+            botBound = Math.min(botBound, ptB.y - 20);
+          });
+
           const N = bundleItems.length;
-          const pitch = 12;
+          let corridorHeight = botBound - topBound;
+          let pitch = 12;
+          if (corridorHeight > 20) {
+            pitch = Math.min(12, Math.max(8, (corridorHeight - 20) / Math.max(N, 1)));
+          }
           const totalSpan = (N - 1) * pitch;
-          const midY = (item0.from.y + item0.to.y) / 2;
-          const startY = midY - totalSpan / 2;
+          const midCorridor = (topBound + botBound) / 2;
+          const startY = midCorridor - totalSpan / 2;
 
           bundleItems.forEach((item, idx) => {
-            const trunkY = startY + idx * pitch;
-            const pts = [
-              { x: item.from.x, y: item.from.y },
-              { x: item.from.x, y: trunkY },
-              { x: item.to.x, y: trunkY },
-              { x: item.to.x, y: item.to.y }
-            ];
+            const trunkY = (corridorHeight > 20)
+              ? (startY + idx * pitch)
+              : (midCorridor + (idx - (N - 1) / 2) * 12);
+
+            const vFrom = getSideVector(item.from.pin.side || 'bottom');
+            const vTo = getSideVector(item.to.pin.side || 'top');
+            const stub = 20;
+
+            const pts = [{ x: item.from.x, y: item.from.y }];
+            if (vFrom.x !== 0) {
+              pts.push({ x: item.from.x + vFrom.x * stub, y: item.from.y });
+              pts.push({ x: item.from.x + vFrom.x * stub, y: trunkY });
+            } else {
+              pts.push({ x: item.from.x, y: trunkY });
+            }
+
+            if (vTo.x !== 0) {
+              pts.push({ x: item.to.x + vTo.x * stub, y: trunkY });
+              pts.push({ x: item.to.x + vTo.x * stub, y: item.to.y });
+            } else {
+              pts.push({ x: item.to.x, y: trunkY });
+            }
+            pts.push({ x: item.to.x, y: item.to.y });
+
             routes.push({ wireId: item.wire.id, wire: item.wire, from: item.from, to: item.to, pts });
           });
         }
       });
 
-      // Global Vertical Trunk Conflict Resolver (Eliminates all overlapping vertical lines)
+      // Global Vertical Trunk Conflict Resolver (ONLY intermediate trunks, NEVER touch endpoints pts[0] or pts[pts.length - 1])
       const vTrunks = [];
       routes.forEach(r => {
-        for (let i = 0; i < r.pts.length - 1; i++) {
+        // ONLY internal vertical segments (from index 1 to pts.length - 2)
+        for (let i = 1; i < r.pts.length - 2; i++) {
           const p1 = r.pts[i], p2 = r.pts[i + 1];
           if (Math.abs(p1.x - p2.x) < 0.5 && Math.abs(p1.y - p2.y) > 10) {
             vTrunks.push({
@@ -2447,9 +2493,12 @@
             const ov = Math.min(t1.yMax, t2.yMax) - Math.max(t1.yMin, t2.yMin);
             if (ov > 6) {
               t2.x += 14;
-              t2.route.pts[t2.idx].x = t2.x;
-              t2.route.pts[t2.idx + 1].x = t2.x;
-              changed = true;
+              // Guard: Only adjust internal waypoints, NEVER touch index 0 or index pts.length - 1
+              if (t2.idx > 0 && t2.idx + 1 < t2.route.pts.length - 1) {
+                t2.route.pts[t2.idx].x = t2.x;
+                t2.route.pts[t2.idx + 1].x = t2.x;
+                changed = true;
+              }
             }
           }
         }
@@ -2475,6 +2524,16 @@
           }
         }
         r.pts = clean;
+      });
+
+      // Hard Iron Guarantee: Every wire's first and last points MUST strictly anchor to pin positions
+      routes.forEach(r => {
+        if (r.pts && r.pts.length >= 2) {
+          r.pts[0].x = r.from.x;
+          r.pts[0].y = r.from.y;
+          r.pts[r.pts.length - 1].x = r.to.x;
+          r.pts[r.pts.length - 1].y = r.to.y;
+        }
       });
 
       return routes;
